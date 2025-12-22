@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import {
   getGoogleConnection,
-  getCalendarEvents,
+  getCalendarEventsWithAuth,
 } from '@/features/google/google.service';
 import './CalendarWidget.css';
 
@@ -21,6 +21,7 @@ export const CalendarWidget: React.FC = () => {
   const { user } = useAuth();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadEvents();
@@ -30,11 +31,13 @@ export const CalendarWidget: React.FC = () => {
     if (!user) return;
 
     setLoading(true);
+    setError(null);
 
     try {
       // Récupérer la connexion Google
       const connection = await getGoogleConnection(user.id);
       if (!connection || !connection.accessToken) {
+        setError('Connectez ou reconnectez Google pour afficher l’agenda.');
         setLoading(false);
         return;
       }
@@ -44,24 +47,27 @@ export const CalendarWidget: React.FC = () => {
       const calendarIds = [connection.selectedCalendarId || 'primary'];
 
       // Fetch événements
-      const fetchedEvents = await getCalendarEvents(
-        connection.accessToken,
+      const fetchedEvents = await getCalendarEventsWithAuth(
+        user.id,
         calendarIds.filter(Boolean) as string[],
         20
       );
 
       setEvents(fetchedEvents);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading calendar events:', error);
+      const isUnauthorized = error?.message === 'unauthorized';
+      setError(
+        isUnauthorized
+          ? 'Session Google expirée : reconnectez-vous dans Paramètres > Google.'
+          : 'Impossible de charger les événements Google'
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const groupEventsByDay = () => {
-    const now = new Date();
-    const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
-
     const grouped: { [key: string]: CalendarEvent[] } = {};
 
     events.forEach((event) => {
@@ -154,11 +160,13 @@ export const CalendarWidget: React.FC = () => {
       </div>
 
       <div className="widget-scroll timeline-container">
-        {events.length === 0 ? (
+        {error ? (
+          <div className="empty-message">{error}</div>
+        ) : events.length === 0 ? (
           <div className="empty-message">📅 Aucun événement prévu</div>
         ) : (
           <>
-            {Object.entries(groupedEvents).map(([day, dayEvents], index) => (
+            {Object.entries(groupedEvents).map(([day, dayEvents]) => (
               <div key={day} className="timeline-group">
                 <div className="timeline-header">{getDayLabel(day)}</div>
 

@@ -222,10 +222,6 @@ export const DailyTasksWidget: React.FC = () => {
     }
   };
 
-  const getActiveChild = (): Child | undefined => {
-    return children.find((c) => c.id === activeTab);
-  };
-
   const getChildColor = (icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar'): string => {
     const colors = {
       bee: '#fbbf24',

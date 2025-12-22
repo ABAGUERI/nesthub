@@ -101,6 +101,12 @@
   transform: translateY(0);
 }
 
+.weather-error {
+  color: #fca5a5;
+  font-size: 12px;
+  margin-left: 12px;
+}
+
 @media (max-width: 768px) {
   .dashboard-header {
     grid-template-columns: 1fr;
