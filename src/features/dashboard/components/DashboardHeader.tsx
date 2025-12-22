@@ -29,14 +29,23 @@ export const DashboardHeader: React.FC = () => {
   }, [config]);
 
   const loadWeather = async () => {
-    if (!config?.weatherEnabled || !config?.weatherCity) return;
+    if (!config?.moduleWeather) return;
+
+    const cityQuery = config.weatherCity?.trim();
+    const postalQuery = config.weatherPostalCode?.trim();
+    if (!cityQuery && !postalQuery) return;
 
     try {
       const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
       if (!apiKey) return;
 
+      const query = cityQuery
+        ? `q=${encodeURIComponent(cityQuery)}`
+        : `zip=${encodeURIComponent(postalQuery!)}`
+      ;
+
       const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${config.weatherCity}&appid=${apiKey}&units=metric&lang=fr`
+        `https://api.openweathermap.org/data/2.5/weather?${query}&appid=${apiKey}&units=metric&lang=fr`
       );
 
       if (response.ok) {
@@ -111,7 +120,7 @@ export const DashboardHeader: React.FC = () => {
         >
           🚪
         </button>
-        <button className="menu-btn" title="Paramètres">
+        <button className="menu-btn" title="Paramètres" onClick={() => navigate('/config')}>
           ⚙️
         </button>
       </div>
