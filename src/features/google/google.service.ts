@@ -113,7 +113,8 @@ export const refreshAccessToken = async (refreshToken: string) => {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to refresh access token');
+    console.warn('Failed to refresh access token', response.status);
+    return null;
   }
 
   const data = await response.json();
@@ -149,7 +150,9 @@ export const ensureValidToken = async (userId: string): Promise<string | null> =
       console.log('🔄 Access token expiré, refresh en cours...');
       
       // Refresher le token
-      const { accessToken, expiresIn } = await refreshAccessToken(connection.refresh_token);
+      const refreshed = await refreshAccessToken(connection.refresh_token);
+      if (!refreshed) return null;
+      const { accessToken, expiresIn } = refreshed;
       
       // Sauvegarder le nouveau token
       const newExpiresAt = new Date(Date.now() + expiresIn * 1000);
@@ -239,6 +242,9 @@ export const getCalendars = async (accessToken: string) => {
   );
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('unauthorized');
+    }
     throw new Error('Failed to fetch calendars');
   }
 
@@ -405,6 +411,9 @@ export const getCalendarEvents = async (
       );
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error('unauthorized');
+        }
         console.error(`Failed to fetch events for calendar ${calendarId}`);
         continue;
       }
@@ -449,6 +458,9 @@ export const getTasks = async (accessToken: string, taskListId: string) => {
   );
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('unauthorized');
+    }
     throw new Error('Failed to fetch tasks');
   }
 

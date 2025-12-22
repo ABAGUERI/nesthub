@@ -54,9 +54,14 @@ export const CalendarWidget: React.FC = () => {
       );
 
       setEvents(fetchedEvents);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading calendar events:', error);
-      setError('Impossible de charger les événements Google');
+      const isUnauthorized = error?.message === 'unauthorized';
+      setError(
+        isUnauthorized
+          ? 'Session Google expirée : reconnectez-vous dans Paramètres > Google.'
+          : 'Impossible de charger les événements Google'
+      );
     } finally {
       setLoading(false);
     }

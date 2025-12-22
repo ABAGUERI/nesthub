@@ -49,11 +49,6 @@ export const DashboardHeader: React.FC = () => {
         : `zip=${encodeURIComponent(postalQuery!)}`
       ;
 
-      const query = cityQuery
-        ? `q=${encodeURIComponent(cityQuery)}`
-        : `zip=${encodeURIComponent(postalQuery!)}`
-      ;
-
       const response = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?${query}&appid=${apiKey}&units=metric&lang=fr`
       );

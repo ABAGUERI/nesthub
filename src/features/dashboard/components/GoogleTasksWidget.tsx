@@ -77,7 +77,11 @@ export const GoogleTasksWidget: React.FC = () => {
               tasks: tasks || [],
               isOpen: true, // Ouvrir par défaut
             };
-          } catch (error) {
+          } catch (error: any) {
+            const isUnauthorized = error?.message === 'unauthorized';
+            if (isUnauthorized) {
+              setError('Session Google expirée : reconnectez-vous dans Paramètres > Google.');
+            }
             console.error(`Error loading tasks for list ${list.name}:`, error);
             return {
               ...list,
@@ -89,9 +93,14 @@ export const GoogleTasksWidget: React.FC = () => {
       );
 
       setTaskLists(listsWithTasks);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading tasks:', error);
-      setError('Impossible de charger les tâches Google');
+      const isUnauthorized = error?.message === 'unauthorized';
+      setError(
+        isUnauthorized
+          ? 'Session Google expirée : reconnectez-vous dans Paramètres > Google.'
+          : 'Impossible de charger les tâches Google'
+      );
     } finally {
       setLoading(false);
     }
