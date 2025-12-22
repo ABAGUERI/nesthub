@@ -59,9 +59,6 @@ export const CalendarWidget: React.FC = () => {
   };
 
   const groupEventsByDay = () => {
-    const now = new Date();
-    const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
-
     const grouped: { [key: string]: CalendarEvent[] } = {};
 
     events.forEach((event) => {
@@ -158,7 +155,7 @@ export const CalendarWidget: React.FC = () => {
           <div className="empty-message">📅 Aucun événement prévu</div>
         ) : (
           <>
-            {Object.entries(groupedEvents).map(([day, dayEvents], index) => (
+            {Object.entries(groupedEvents).map(([day, dayEvents]) => (
               <div key={day} className="timeline-group">
                 <div className="timeline-header">{getDayLabel(day)}</div>
 
