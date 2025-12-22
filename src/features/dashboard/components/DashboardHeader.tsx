@@ -13,6 +13,7 @@ export const DashboardHeader: React.FC = () => {
     temp: number;
     icon: string;
   } | null>(null);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
 
   // Mettre à jour l'heure chaque seconde
   useEffect(() => {
@@ -37,7 +38,16 @@ export const DashboardHeader: React.FC = () => {
 
     try {
       const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
-      if (!apiKey) return;
+      if (!apiKey || apiKey === 'your-openweather-api-key') {
+        setWeather(null);
+        setWeatherError('Clé météo manquante ou invalide');
+        return;
+      }
+
+      const query = cityQuery
+        ? `q=${encodeURIComponent(cityQuery)}`
+        : `zip=${encodeURIComponent(postalQuery!)}`
+      ;
 
       const query = cityQuery
         ? `q=${encodeURIComponent(cityQuery)}`
@@ -54,9 +64,15 @@ export const DashboardHeader: React.FC = () => {
           temp: Math.round(data.main.temp),
           icon: getWeatherIcon(data.weather[0].id),
         });
+        setWeatherError(null);
+      } else {
+        setWeather(null);
+        setWeatherError('Météo indisponible (vérifiez la clé/API ou le code postal)');
       }
     } catch (error) {
       console.error('Error loading weather:', error);
+      setWeather(null);
+      setWeatherError('Météo indisponible pour le moment');
     }
   };
 
@@ -106,6 +122,7 @@ export const DashboardHeader: React.FC = () => {
             <span>{weather.temp}°C</span>
           </div>
         )}
+        {weatherError && <div className="weather-error">{weatherError}</div>}
       </div>
 
       {/* Titre central */}

@@ -21,6 +21,7 @@ export const CalendarWidget: React.FC = () => {
   const { user } = useAuth();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadEvents();
@@ -30,11 +31,13 @@ export const CalendarWidget: React.FC = () => {
     if (!user) return;
 
     setLoading(true);
+    setError(null);
 
     try {
       // Récupérer la connexion Google
       const connection = await getGoogleConnection(user.id);
       if (!connection || !connection.accessToken) {
+        setError('Connectez ou reconnectez Google pour afficher l’agenda.');
         setLoading(false);
         return;
       }
@@ -53,6 +56,7 @@ export const CalendarWidget: React.FC = () => {
       setEvents(fetchedEvents);
     } catch (error) {
       console.error('Error loading calendar events:', error);
+      setError('Impossible de charger les événements Google');
     } finally {
       setLoading(false);
     }
@@ -151,7 +155,9 @@ export const CalendarWidget: React.FC = () => {
       </div>
 
       <div className="widget-scroll timeline-container">
-        {events.length === 0 ? (
+        {error ? (
+          <div className="empty-message">{error}</div>
+        ) : events.length === 0 ? (
           <div className="empty-message">📅 Aucun événement prévu</div>
         ) : (
           <>
