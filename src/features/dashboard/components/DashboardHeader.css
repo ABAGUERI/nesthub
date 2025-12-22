@@ -84,6 +84,23 @@
   color: #e2e8f0;
 }
 
+/* === LOGOUT BUTTON (ÉLÉGANT) === */
+.logout-btn {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  transform: translateY(-1px);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
 @media (max-width: 768px) {
   .dashboard-header {
     grid-template-columns: 1fr;

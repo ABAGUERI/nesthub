@@ -96,9 +96,88 @@ export const saveGoogleConnection = async (
 };
 
 /**
+ * Refresh le access token si expiré
+ */
+export const refreshAccessToken = async (refreshToken: string) => {
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      client_id: GOOGLE_CLIENT_ID,
+      client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to refresh access token');
+  }
+
+  const data = await response.json();
+  
+  return {
+    accessToken: data.access_token,
+    expiresIn: data.expires_in,
+  };
+};
+
+/**
+ * Vérifier si le token a expiré et le refresher si nécessaire
+ */
+export const ensureValidToken = async (userId: string) => {
+  const { data: connection, error } = await supabase
+    .from('google_connections')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+
+  if (error || !connection) {
+    throw new Error('No Google connection found');
+  }
+
+  // Vérifier si le token a expiré (avec marge de 5 minutes)
+  const expiresAt = new Date(connection.token_expires_at);
+  const now = new Date();
+  const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
+
+  if (expiresAt < fiveMinutesFromNow) {
+    console.log('🔄 Access token expiré, refresh en cours...');
+    
+    // Refresher le token
+    const { accessToken, expiresIn } = await refreshAccessToken(connection.refresh_token);
+    
+    // Sauvegarder le nouveau token
+    const newExpiresAt = new Date(Date.now() + expiresIn * 1000);
+    
+    const { error: updateError } = await supabase
+      .from('google_connections')
+      .update({
+        access_token: accessToken,
+        token_expires_at: newExpiresAt.toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
+
+    if (updateError) throw updateError;
+
+    console.log('✅ Access token refreshé avec succès');
+    
+    return accessToken;
+  }
+
+  return connection.access_token;
+};
+
+/**
  * Récupérer la connexion Google de l'utilisateur
  */
 export const getGoogleConnection = async (userId: string) => {
+  // Assurer que le token est valide (refresh automatique si expiré)
+  const accessToken = await ensureValidToken(userId);
+  
   const { data, error } = await supabase
     .from('google_connections')
     .select('*')
@@ -111,7 +190,7 @@ export const getGoogleConnection = async (userId: string) => {
     id: data.id,
     userId: data.user_id,
     gmailAddress: data.gmail_address,
-    accessToken: data.access_token,
+    accessToken: accessToken, // Utiliser le token refreshé
     refreshToken: data.refresh_token,
     tokenExpiresAt: data.token_expires_at,
     selectedCalendarId: data.selected_calendar_id,

@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import './DashboardHeader.css';
 
 export const DashboardHeader: React.FC = () => {
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const { config } = useClientConfig();
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState<{
@@ -48,14 +52,13 @@ export const DashboardHeader: React.FC = () => {
   };
 
   const getWeatherIcon = (weatherId: number): string => {
-    // Codes OpenWeatherMap: https://openweathermap.org/weather-conditions
-    if (weatherId >= 200 && weatherId < 300) return '⛈️'; // Orage
-    if (weatherId >= 300 && weatherId < 400) return '🌦️'; // Bruine
-    if (weatherId >= 500 && weatherId < 600) return '🌧️'; // Pluie
-    if (weatherId >= 600 && weatherId < 700) return '❄️'; // Neige
-    if (weatherId >= 700 && weatherId < 800) return '🌫️'; // Brouillard
-    if (weatherId === 800) return '☀️'; // Ciel dégagé
-    if (weatherId > 800) return '☁️'; // Nuages
+    if (weatherId >= 200 && weatherId < 300) return '⛈️';
+    if (weatherId >= 300 && weatherId < 400) return '🌦️';
+    if (weatherId >= 500 && weatherId < 600) return '🌧️';
+    if (weatherId >= 600 && weatherId < 700) return '❄️';
+    if (weatherId >= 700 && weatherId < 800) return '🌫️';
+    if (weatherId === 800) return '☀️';
+    if (weatherId > 800) return '☁️';
     return '🌤️';
   };
 
@@ -72,6 +75,11 @@ export const DashboardHeader: React.FC = () => {
       day: 'numeric',
       month: 'short',
     });
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
   };
 
   return (
@@ -94,8 +102,15 @@ export const DashboardHeader: React.FC = () => {
       {/* Titre central */}
       <div className="header-title">HUB FAMILIAL</div>
 
-      {/* Menu (placeholder pour l'instant) */}
+      {/* Menu avec bouton déconnexion */}
       <div className="header-menu">
+        <button
+          className="menu-btn logout-btn"
+          onClick={handleLogout}
+          title="Se déconnecter"
+        >
+          🚪
+        </button>
         <button className="menu-btn" title="Paramètres">
           ⚙️
         </button>

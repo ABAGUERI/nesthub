@@ -23,9 +23,9 @@
 }
 
 .children-config {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
 }
 
 .child-config {
@@ -38,12 +38,40 @@
   border-radius: 16px;
 }
 
+.child-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .child-number {
   font-size: 14px;
   font-weight: 700;
   color: #10b981;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.btn-remove-child {
+  width: 28px;
+  height: 28px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.btn-remove-child:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: scale(1.1);
 }
 
 .icon-selector {
@@ -60,8 +88,8 @@
 
 .icon-options {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
 .icon-option {
@@ -115,6 +143,26 @@
   padding: 12px;
   background: rgba(100, 116, 139, 0.1);
   border-radius: 8px;
+}
+
+.btn-add-child {
+  width: 100%;
+  padding: 16px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px dashed rgba(16, 185, 129, 0.3);
+  border-radius: 16px;
+  color: #10b981;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 24px;
+}
+
+.btn-add-child:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.5);
+  transform: translateY(-2px);
 }
 
 .error-message {
