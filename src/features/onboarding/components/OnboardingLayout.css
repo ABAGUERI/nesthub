@@ -1,0 +1,66 @@
+.onboarding-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.onboarding-content {
+  width: 100%;
+  max-width: 800px;
+}
+
+.onboarding-header {
+  margin-bottom: 40px;
+}
+
+.onboarding-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.step-indicator {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.step-text {
+  font-size: 14px;
+  color: #94a3b8;
+  text-align: center;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: 8px;
+  transition: width 0.4s ease;
+}
+
+.onboarding-step-content {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 48px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .onboarding-step-content {
+    padding: 32px 24px;
+  }
+}

@@ -1,0 +1,94 @@
+.children-widget {
+  flex: 0.5 !important;
+  padding: 15px 20px 20px 20px !important;
+}
+
+.children-container {
+  display: flex;
+  gap: 20px;
+}
+
+.child-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.child-icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.child-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.progress-placeholder {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 8px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.progress-percent {
+  font-size: 18px;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.child-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.child-money {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.child-level {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.screen-time-info {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.time-label {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.time-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}

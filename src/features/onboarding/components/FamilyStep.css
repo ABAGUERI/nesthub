@@ -1,0 +1,134 @@
+.family-step {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.step-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.step-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0 0 8px 0;
+}
+
+.step-header p {
+  font-size: 16px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.children-config {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.child-config {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.child-number {
+  font-size: 14px;
+  font-weight: 700;
+  color: #10b981;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.icon-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.icon-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.icon-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.icon-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-option:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(16, 185, 129, 0.3);
+  transform: translateY(-2px);
+}
+
+.icon-option.selected {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.icon-image {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.icon-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.icon-option.selected .icon-name {
+  color: #10b981;
+}
+
+.step-actions {
+  margin-top: 16px;
+}
+
+.step-hint {
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+  padding: 12px;
+  background: rgba(100, 116, 139, 0.1);
+  border-radius: 8px;
+}
+
+.error-message {
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 14px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .icon-options {
+    grid-template-columns: 1fr;
+  }
+}

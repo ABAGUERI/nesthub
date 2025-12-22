@@ -1,0 +1,132 @@
+/* === DASHBOARD LAYOUT === */
+.dashboard-container {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  width: 100vw;
+  padding: 20px;
+  gap: 20px;
+  background: #000000; /* Fond noir pur comme le MVP */
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+/* === WIDGETS GRID (4 colonnes) === */
+.widgets-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+}
+
+/* === WIDGET COMMUN === */
+.widget {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.widget:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.widget-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.widget-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+}
+
+/* Scrollbar styling */
+.widget-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.widget-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+
+.widget-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.widget-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* === REFRESH BUTTON === */
+.refresh-btn {
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.refresh-btn:hover {
+  opacity: 0.8;
+  transform: rotate(90deg);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1600px) {
+  .widgets-container {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 1024px) {
+  .widgets-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-container {
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .widget {
+    padding: 16px;
+  }
+}

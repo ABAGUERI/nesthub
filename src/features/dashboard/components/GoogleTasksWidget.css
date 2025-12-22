@@ -1,0 +1,104 @@
+/* === GOOGLE TASKS ACCORDEON === */
+.gtask-group {
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.gtask-group[open] {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.gtask-summary {
+  padding: 15px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #e2e8f0;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.gtask-summary::-webkit-details-marker {
+  display: none;
+}
+
+.gtask-summary::after {
+  content: '+';
+  font-size: 18px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.gtask-group[open] .gtask-summary::after {
+  content: '-';
+}
+
+.gtask-summary:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.task-count {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+/* === TASK LIST === */
+.gtask-list {
+  padding: 0 15px 15px 15px;
+}
+
+.gtask-row {
+  padding: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.gtask-row:last-child {
+  border-bottom: none;
+}
+
+.gtask-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.gtask-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #475569;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.gtask-row:hover .gtask-checkbox {
+  border-color: #10b981;
+}
+
+.gtask-row span {
+  font-size: 14px;
+  color: #cbd5e1;
+}
+
+.gtask-row.completed .gtask-checkbox {
+  background: #64748b;
+  border-color: #64748b;
+}
+
+.gtask-row.completed span {
+  text-decoration: line-through;
+  opacity: 0.5;
+}

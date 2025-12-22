@@ -1,0 +1,50 @@
+/* === STOCK TICKER === */
+.stock-ticker {
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 12px 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.stock-ticker-content {
+  display: inline-flex;
+  gap: 25px;
+  white-space: nowrap;
+  animation: scroll-ticker 60s linear infinite;
+}
+
+@keyframes scroll-ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.stock-ticker:hover .stock-ticker-content {
+  animation-play-state: paused;
+}
+
+.stock-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.stock-symbol {
+  color: #fff;
+  font-weight: 600;
+}
+
+.stock-up {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.stock-down {
+  color: #ef4444;
+  font-weight: 600;
+}
