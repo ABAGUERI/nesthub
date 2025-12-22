@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import {
   getGoogleConnection,
-  getCalendarEvents,
+  getCalendarEventsWithAuth,
 } from '@/features/google/google.service';
 import './CalendarWidget.css';
 
@@ -47,8 +47,8 @@ export const CalendarWidget: React.FC = () => {
       const calendarIds = [connection.selectedCalendarId || 'primary'];
 
       // Fetch événements
-      const fetchedEvents = await getCalendarEvents(
-        connection.accessToken,
+      const fetchedEvents = await getCalendarEventsWithAuth(
+        user.id,
         calendarIds.filter(Boolean) as string[],
         20
       );

@@ -3,7 +3,7 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import { supabase } from '@/shared/utils/supabase';
 import {
   getGoogleConnection,
-  getTasks,
+  getTasksWithAuth,
 } from '@/features/google/google.service';
 import './GoogleTasksWidget.css';
 
@@ -67,10 +67,7 @@ export const GoogleTasksWidget: React.FC = () => {
       const listsWithTasks: TaskListWithTasks[] = await Promise.all(
         lists.map(async (list) => {
           try {
-            const tasks = await getTasks(
-              connection.accessToken,
-              list.google_task_list_id
-            );
+            const tasks = await getTasksWithAuth(user.id, list.google_task_list_id);
 
             return {
               ...list,

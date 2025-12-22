@@ -181,6 +181,17 @@ export const ensureValidToken = async (userId: string): Promise<string | null> =
 };
 
 /**
+ * Obtenir un access token valide ou lever une erreur "unauthorized"
+ */
+export const getAccessTokenOrThrow = async (userId: string): Promise<string> => {
+  const token = await ensureValidToken(userId);
+  if (!token) {
+    throw new Error('unauthorized');
+  }
+  return token;
+};
+
+/**
  * Récupérer la connexion Google de l'utilisateur
  */
 export const getGoogleConnection = async (userId: string) => {
@@ -257,6 +268,14 @@ export const getCalendars = async (accessToken: string) => {
     backgroundColor: cal.backgroundColor,
     primary: cal.primary || false,
   }));
+};
+
+/**
+ * Récupérer tous les calendriers avec rafraîchissement automatique du token
+ */
+export const getCalendarsWithAuth = async (userId: string) => {
+  const token = await getAccessTokenOrThrow(userId);
+  return getCalendars(token);
 };
 
 /**
@@ -445,6 +464,18 @@ export const getCalendarEvents = async (
 };
 
 /**
+ * Récupérer les événements en rafraîchissant le token au besoin
+ */
+export const getCalendarEventsWithAuth = async (
+  userId: string,
+  calendarIds: string[],
+  maxResults: number = 20
+) => {
+  const token = await getAccessTokenOrThrow(userId);
+  return getCalendarEvents(token, calendarIds, maxResults);
+};
+
+/**
  * Récupérer les tâches d'une liste
  */
 export const getTasks = async (accessToken: string, taskListId: string) => {
@@ -467,4 +498,12 @@ export const getTasks = async (accessToken: string, taskListId: string) => {
   const data = await response.json();
   
   return data.items || [];
+};
+
+/**
+ * Récupérer les tâches d'une liste avec rafraîchissement automatique
+ */
+export const getTasksWithAuth = async (userId: string, taskListId: string) => {
+  const token = await getAccessTokenOrThrow(userId);
+  return getTasks(token, taskListId);
 };
