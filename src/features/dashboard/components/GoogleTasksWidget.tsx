@@ -30,6 +30,7 @@ export const GoogleTasksWidget: React.FC = () => {
   const { user } = useAuth();
   const [taskLists, setTaskLists] = useState<TaskListWithTasks[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -39,11 +40,13 @@ export const GoogleTasksWidget: React.FC = () => {
     if (!user) return;
 
     setLoading(true);
+    setError(null);
 
     try {
       // Récupérer la connexion Google
       const connection = await getGoogleConnection(user.id);
       if (!connection || !connection.accessToken) {
+        setError('Connectez ou reconnectez Google pour afficher vos tâches.');
         setLoading(false);
         return;
       }
@@ -88,6 +91,7 @@ export const GoogleTasksWidget: React.FC = () => {
       setTaskLists(listsWithTasks);
     } catch (error) {
       console.error('Error loading tasks:', error);
+      setError('Impossible de charger les tâches Google');
     } finally {
       setLoading(false);
     }
@@ -132,7 +136,9 @@ export const GoogleTasksWidget: React.FC = () => {
       </div>
 
       <div className="widget-scroll">
-        {taskLists.length === 0 ? (
+        {error ? (
+          <div className="empty-message">{error}</div>
+        ) : taskLists.length === 0 ? (
           <div className="empty-message">📝 Aucune tâche</div>
         ) : (
           <>
