@@ -30,6 +30,7 @@ export const GoogleTasksWidget: React.FC = () => {
   const { user } = useAuth();
   const [taskLists, setTaskLists] = useState<TaskListWithTasks[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -39,11 +40,13 @@ export const GoogleTasksWidget: React.FC = () => {
     if (!user) return;
 
     setLoading(true);
+    setError(null);
 
     try {
       // Récupérer la connexion Google
       const connection = await getGoogleConnection(user.id);
       if (!connection || !connection.accessToken) {
+        setError('Connectez ou reconnectez Google pour afficher vos tâches.');
         setLoading(false);
         return;
       }
@@ -74,7 +77,11 @@ export const GoogleTasksWidget: React.FC = () => {
               tasks: tasks || [],
               isOpen: true, // Ouvrir par défaut
             };
-          } catch (error) {
+          } catch (error: any) {
+            const isUnauthorized = error?.message === 'unauthorized';
+            if (isUnauthorized) {
+              setError('Session Google expirée : reconnectez-vous dans Paramètres > Google.');
+            }
             console.error(`Error loading tasks for list ${list.name}:`, error);
             return {
               ...list,
@@ -86,8 +93,14 @@ export const GoogleTasksWidget: React.FC = () => {
       );
 
       setTaskLists(listsWithTasks);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading tasks:', error);
+      const isUnauthorized = error?.message === 'unauthorized';
+      setError(
+        isUnauthorized
+          ? 'Session Google expirée : reconnectez-vous dans Paramètres > Google.'
+          : 'Impossible de charger les tâches Google'
+      );
     } finally {
       setLoading(false);
     }
@@ -132,7 +145,9 @@ export const GoogleTasksWidget: React.FC = () => {
       </div>
 
       <div className="widget-scroll">
-        {taskLists.length === 0 ? (
+        {error ? (
+          <div className="empty-message">{error}</div>
+        ) : taskLists.length === 0 ? (
           <div className="empty-message">📝 Aucune tâche</div>
         ) : (
           <>

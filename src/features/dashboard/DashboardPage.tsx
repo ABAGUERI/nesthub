@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/shared/hooks/useAuth';
+import React from 'react';
 import { DashboardHeader } from './components/DashboardHeader';
 import { ChildrenWidget } from './components/ChildrenWidget';
 import { DailyTasksWidget } from './components/DailyTasksWidget';
@@ -11,8 +10,6 @@ import { ChildSelectionProvider } from './contexts/ChildSelectionContext';
 import './Dashboard.css';
 
 export const DashboardPage: React.FC = () => {
-  const { user } = useAuth();
-
   return (
     <ChildSelectionProvider>
       <div className="dashboard-container">

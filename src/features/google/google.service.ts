@@ -113,7 +113,8 @@ export const refreshAccessToken = async (refreshToken: string) => {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to refresh access token');
+    console.warn('Failed to refresh access token', response.status);
+    return null;
   }
 
   const data = await response.json();
@@ -127,7 +128,7 @@ export const refreshAccessToken = async (refreshToken: string) => {
 /**
  * Vérifier si le token a expiré et le refresher si nécessaire
  */
-export const ensureValidToken = async (userId: string) => {
+export const ensureValidToken = async (userId: string): Promise<string | null> => {
   const { data: connection, error } = await supabase
     .from('google_connections')
     .select('*')
@@ -135,40 +136,48 @@ export const ensureValidToken = async (userId: string) => {
     .single();
 
   if (error || !connection) {
-    throw new Error('No Google connection found');
+    console.warn('No Google connection found or error retrieving connection.');
+    return null;
   }
 
-  // Vérifier si le token a expiré (avec marge de 5 minutes)
-  const expiresAt = new Date(connection.token_expires_at);
-  const now = new Date();
-  const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
+  try {
+    // Vérifier si le token a expiré (avec marge de 5 minutes)
+    const expiresAt = new Date(connection.token_expires_at);
+    const now = new Date();
+    const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
 
-  if (expiresAt < fiveMinutesFromNow) {
-    console.log('🔄 Access token expiré, refresh en cours...');
-    
-    // Refresher le token
-    const { accessToken, expiresIn } = await refreshAccessToken(connection.refresh_token);
-    
-    // Sauvegarder le nouveau token
-    const newExpiresAt = new Date(Date.now() + expiresIn * 1000);
-    
-    const { error: updateError } = await supabase
-      .from('google_connections')
-      .update({
-        access_token: accessToken,
-        token_expires_at: newExpiresAt.toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', userId);
+    if (expiresAt < fiveMinutesFromNow) {
+      console.log('🔄 Access token expiré, refresh en cours...');
+      
+      // Refresher le token
+      const refreshed = await refreshAccessToken(connection.refresh_token);
+      if (!refreshed) return null;
+      const { accessToken, expiresIn } = refreshed;
+      
+      // Sauvegarder le nouveau token
+      const newExpiresAt = new Date(Date.now() + expiresIn * 1000);
+      
+      const { error: updateError } = await supabase
+        .from('google_connections')
+        .update({
+          access_token: accessToken,
+          token_expires_at: newExpiresAt.toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId);
 
-    if (updateError) throw updateError;
+      if (updateError) throw updateError;
 
-    console.log('✅ Access token refreshé avec succès');
-    
-    return accessToken;
+      console.log('✅ Access token refreshé avec succès');
+      
+      return accessToken;
+    }
+
+    return connection.access_token;
+  } catch (err) {
+    console.error('Error ensuring valid Google token:', err);
+    return null;
   }
-
-  return connection.access_token;
 };
 
 /**
@@ -177,6 +186,7 @@ export const ensureValidToken = async (userId: string) => {
 export const getGoogleConnection = async (userId: string) => {
   // Assurer que le token est valide (refresh automatique si expiré)
   const accessToken = await ensureValidToken(userId);
+  if (!accessToken) return null;
   
   const { data, error } = await supabase
     .from('google_connections')
@@ -232,6 +242,9 @@ export const getCalendars = async (accessToken: string) => {
   );
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('unauthorized');
+    }
     throw new Error('Failed to fetch calendars');
   }
 
@@ -398,6 +411,9 @@ export const getCalendarEvents = async (
       );
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error('unauthorized');
+        }
         console.error(`Failed to fetch events for calendar ${calendarId}`);
         continue;
       }
@@ -442,6 +458,9 @@ export const getTasks = async (accessToken: string, taskListId: string) => {
   );
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('unauthorized');
+    }
     throw new Error('Failed to fetch tasks');
   }
 
