@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Chart, ArcElement, DoughnutController } from 'chart.js';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import { getChildrenWithProgress } from '@/shared/utils/children.service';
 import { useChildSelection } from '../contexts/ChildSelectionContext';
 import './ChildrenWidget.css';
@@ -14,12 +15,13 @@ interface Child {
   icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
   totalPoints: number;
   currentLevel: number;
-  moneyBalance: number;
-  targetMoney: number;
+  targetPoints: number;
+  screenTimeUsed?: number;
 }
 
 export const ChildrenWidget: React.FC = () => {
   const { user } = useAuth();
+  const { config } = useClientConfig();
   const { selectedChildIndex, setSelectedChildIndex, setTotalChildren } = useChildSelection();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,8 +67,8 @@ export const ChildrenWidget: React.FC = () => {
           icon: c.icon,
           totalPoints: c.progress?.total_points || 0,
           currentLevel: c.progress?.current_level || 1,
-          moneyBalance: c.progress?.money_balance || 0,
-          targetMoney: 10, // Objectif par défaut 10$
+          targetPoints: c.progress?.target_points || 1000,
+          screenTimeUsed: c.progress?.screen_time_used || 0,
         }))
       );
     } catch (error) {
@@ -90,7 +92,7 @@ export const ChildrenWidget: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const percentage = Math.min((child.moneyBalance / child.targetMoney) * 100, 100);
+    const percentage = Math.min((child.totalPoints / child.targetPoints) * 100, 100);
     const color = child.icon === 'bee' ? '#fbbf24' : '#f87171';
 
     chartsRef.current[child.id] = new Chart(ctx, {
@@ -139,7 +141,11 @@ export const ChildrenWidget: React.FC = () => {
   };
 
   const getPercentage = (child: Child): number => {
-    return Math.min((child.moneyBalance / child.targetMoney) * 100, 100);
+    if (!child || !Number.isFinite(child.totalPoints) || !Number.isFinite(child.targetPoints) || child.targetPoints <= 0) {
+      return 0;
+    }
+
+    return Math.min((child.totalPoints / child.targetPoints) * 100, 100);
   };
 
   // Navigation handlers
@@ -160,22 +166,22 @@ export const ChildrenWidget: React.FC = () => {
   };
 
   // Swipe handlers
-  const handlePointerDown = (e: React.PointerEvent) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     setTouchStart(e.clientX);
     setIsDragging(true);
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging || touchStart === null) return;
     
     // Visual feedback pendant le drag (optionnel)
     const diff = e.clientX - touchStart;
     if (Math.abs(diff) > 10) {
-      e.currentTarget.style.cursor = 'grabbing';
+      (e.currentTarget as HTMLDivElement).style.cursor = 'grabbing';
     }
   };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging || touchStart === null) {
       setIsDragging(false);
       return;
@@ -196,7 +202,7 @@ export const ChildrenWidget: React.FC = () => {
 
     setTouchStart(null);
     setIsDragging(false);
-    e.currentTarget.style.cursor = 'grab';
+    (e.currentTarget as HTMLDivElement).style.cursor = 'grab';
   };
 
   const handlePointerCancel = () => {
@@ -229,12 +235,43 @@ export const ChildrenWidget: React.FC = () => {
   const selectedChild = children[selectedChildIndex];
   const percentage = getPercentage(selectedChild);
   const hasReachedGoal = percentage >= 100;
+  const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
+  const heartsTotal = 5;
+  const minutesPerHeart = Math.max(1, config?.screenTimeDefaultAllowance || 20);
+  const totalMinutes = heartsTotal * minutesPerHeart;
+  const usedMinutes = Math.min(totalMinutes, Math.round(selectedChild?.screenTimeUsed || 0));
+  const heartsUsed = Math.min(heartsTotal, Math.ceil(usedMinutes / minutesPerHeart));
 
   return (
     <div className="widget children-widget">
       <div className="widget-header">
         <div className="widget-title">🏆 Vas-tu atteindre ton objectif?</div>
+        <div className="points-chip">
+          <span className="points-value">{selectedChild.totalPoints} pts</span>
+          <span className="points-target">/ {targetPoints}</span>
+        </div>
       </div>
+
+      <div className="child-subtitle">
+        <span className="child-subtitle-icon">{getChildIcon(selectedChild.icon)}</span>
+        <span className="child-subtitle-name">{selectedChild.firstName}</span>
+      </div>
+
+      {children.length > 1 && (
+        <div className="child-switcher">
+          {children.map((child, index) => (
+            <button
+              key={child.id}
+              className={`switcher-pill ${index === selectedChildIndex ? 'active' : ''}`}
+              onClick={() => selectChild(index)}
+              aria-label={`Voir ${child.firstName}`}
+            >
+              <span className="pill-icon">{getChildIcon(child.icon)}</span>
+              <span className="pill-name">{child.firstName}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="carousel-container">
         {/* Flèche gauche */}
@@ -257,7 +294,7 @@ export const ChildrenWidget: React.FC = () => {
           onPointerCancel={handlePointerCancel}
           style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         >
-          <div className="child-main">
+          <div className="child-main" key={selectedChild.id}>
             {/* Badge "Objectif!" si atteint */}
             {hasReachedGoal && (
               <div className="goal-badge">
@@ -266,49 +303,71 @@ export const ChildrenWidget: React.FC = () => {
               </div>
             )}
 
-            {/* Canvas pour le donut */}
-            <canvas id={`chart-${selectedChild.id}`} className="donut-chart-large"></canvas>
+            <div className="donut-and-hearts">
+              <div className="donut-wrapper">
+                <div className="donut-stack">
+                  {/* Canvas pour le donut */}
+                  <canvas id={`chart-${selectedChild.id}`} className="donut-chart-large"></canvas>
 
-            {/* Label au centre (icône) */}
-            <div className="donut-label-large">
-              <span
-                className="donut-icon-large"
-                style={{ color: getChildColor(selectedChild.icon) }}
-              >
-                {getChildIcon(selectedChild.icon)}
-              </span>
-            </div>
+                  {/* Label au centre (icône) */}
+                  <div className="donut-label-large">
+                    <span
+                      className="donut-icon-large"
+                      style={{ color: getChildColor(selectedChild.icon) }}
+                    >
+                      {getChildIcon(selectedChild.icon)}
+                    </span>
+                  </div>
+                </div>
 
-            {/* Argent */}
-            <div className="donut-money-large">
-              <div
-                className="donut-value-large"
-                style={{ color: getChildColor(selectedChild.icon) }}
-              >
-                {selectedChild.moneyBalance.toFixed(2)}$
-              </div>
-            </div>
-
-            {/* Nom de l'enfant */}
-            <div className="child-name-large">{selectedChild.firstName}</div>
-
-            {/* Temps d'écran */}
-            <div className="screen-time-compact">
-              <div className="screen-time-info">
-                <div className="time-label">Temps écran (60min/sem)</div>
-                <div className="time-value">45 min</div>
-              </div>
-              <div className="vertical-bar-container">
-                {[...Array(6)].map((_, i) => (
+                {/* Points accumulés */}
+                <div className="donut-money-large">
                   <div
-                    key={i}
-                    className={`vertical-bar ${i < 4 ? 'used' : ''}`}
-                  ></div>
-                ))}
+                    className="points-balance"
+                    style={{ color: getChildColor(selectedChild.icon) }}
+                  >
+                    {selectedChild.totalPoints} pts
+                  </div>
+                  <div className="points-target">/ {selectedChild.targetPoints} pts</div>
+                </div>
+
+                {/* Nom de l'enfant */}
+                <div className="child-name-large">{selectedChild.firstName}</div>
               </div>
-              <button className="btn-remove-time" title="Enlever 10 min">
-                -10 min
-              </button>
+
+                <div className="screen-time-hearts">
+                  <div className="hearts-label">Temps d'écran</div>
+                  <div className="hearts-column">
+                    {Array.from({ length: heartsTotal }).map((_, index) => (
+                      <span
+                        key={index}
+                        className={`heart ${index < heartsUsed ? 'used' : ''}`}
+                      >
+                        ❤️
+                      </span>
+                    ))}
+                  </div>
+                  <div className="hearts-meta">
+                    {usedMinutes} / {totalMinutes} min
+                  </div>
+                </div>
+              </div>
+
+            {/* Progression objectif */}
+            <div className="progress-track">
+              <div className="progress-label">
+                <span>Progression</span>
+                <span className="progress-value">{percentage.toFixed(0)}%</span>
+              </div>
+              <div className="progress-bar">
+                <div
+                  className="progress-bar-fill"
+                  style={{
+                    width: `${percentage}%`,
+                    backgroundColor: getChildColor(selectedChild.icon),
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
