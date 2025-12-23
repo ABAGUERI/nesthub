@@ -15,7 +15,6 @@ interface Task {
   id: string;
   name: string;
   points: number;
-  moneyValue: number;
   category: string;
   icon: string;
 }
@@ -23,6 +22,7 @@ interface Task {
 interface CompletedTask {
   id: string;
   taskId: string;
+  childId: string;
   completedAt: string;
 }
 
@@ -73,7 +73,6 @@ export const DailyTasksWidget: React.FC = () => {
             id: t.id,
             name: t.name,
             points: t.points,
-            moneyValue: t.money_value,
             category: t.category,
             icon: getCategoryIcon(t.category),
           }))
@@ -111,6 +110,7 @@ export const DailyTasksWidget: React.FC = () => {
           completedData.map((ct: any) => ({
             id: ct.id,
             taskId: ct.task_id,
+            childId: ct.child_id,
             completedAt: ct.completed_at,
           }))
         );
@@ -124,12 +124,12 @@ export const DailyTasksWidget: React.FC = () => {
     if (!user) return;
 
     const defaultTasks = [
-      { name: 'Ranger sa chambre', points: 10, money: 0.5, category: 'menage', icon: '🧹' },
-      { name: 'Mettre la table', points: 5, money: 0.25, category: 'menage', icon: '🍽️' },
-      { name: 'Vider et remplir le lave-vaisselle', points: 8, money: 0.4, category: 'menage', icon: '🧼' },
-      { name: 'Faire ses devoirs', points: 15, money: 0.75, category: 'education', icon: '📚' },
-      { name: 'Lire 20 minutes', points: 10, money: 0.5, category: 'education', icon: '📖' },
-      { name: 'Brosser ses dents', points: 5, money: 0.25, category: 'hygiene', icon: '🪥' },
+      { name: 'Ranger sa chambre', points: 10, category: 'menage', icon: '🧹' },
+      { name: 'Mettre la table', points: 5, category: 'menage', icon: '🍽️' },
+      { name: 'Vider et remplir le lave-vaisselle', points: 8, category: 'menage', icon: '🧼' },
+      { name: 'Faire ses devoirs', points: 15, category: 'education', icon: '📚' },
+      { name: 'Lire 20 minutes', points: 10, category: 'education', icon: '📖' },
+      { name: 'Brosser ses dents', points: 5, category: 'hygiene', icon: '🪥' },
     ];
 
     const { data, error } = await supabase
@@ -139,7 +139,6 @@ export const DailyTasksWidget: React.FC = () => {
           user_id: user.id,
           name: t.name,
           points: t.points,
-          money_value: t.money,
           category: t.category,
         }))
       )
@@ -151,7 +150,6 @@ export const DailyTasksWidget: React.FC = () => {
           id: t.id,
           name: t.name,
           points: t.points,
-          moneyValue: t.money_value,
           category: t.category,
           icon: getCategoryIcon(t.category),
         }))
@@ -170,9 +168,20 @@ export const DailyTasksWidget: React.FC = () => {
     return icons[category] || '✨';
   };
 
+  const getCategoryTone = (category: string): string => {
+    const tones: { [key: string]: string } = {
+      menage: 'tone-blue',
+      education: 'tone-violet',
+      hygiene: 'tone-green',
+      sport: 'tone-orange',
+      autre: 'tone-cyan',
+    };
+    return tones[category] || 'tone-cyan';
+  };
+
   const isTaskCompleted = (taskId: string, childId: string): boolean => {
     return completedTasks.some(
-      (ct) => ct.taskId === taskId && ct.id.includes(childId)
+      (ct) => ct.taskId === taskId && ct.childId === childId
     );
   };
 
@@ -187,10 +196,11 @@ export const DailyTasksWidget: React.FC = () => {
       const { error: completedError } = await supabase
         .from('completed_tasks')
         .insert({
+          id: crypto.randomUUID(),
           child_id: activeChild.id,
           task_id: task.id,
+          task_name: task.name,
           points_earned: task.points,
-          money_earned: task.moneyValue,
           completed_at: new Date().toISOString(),
         });
 
@@ -199,7 +209,7 @@ export const DailyTasksWidget: React.FC = () => {
       // Mettre à jour la progression de l'enfant
       const { data: progressData, error: progressError } = await supabase
         .from('child_progress')
-        .select('total_points, money_balance')
+        .select('total_points')
         .eq('child_id', activeChild.id)
         .single();
 
@@ -209,7 +219,6 @@ export const DailyTasksWidget: React.FC = () => {
         .from('child_progress')
         .update({
           total_points: progressData.total_points + task.points,
-          money_balance: progressData.money_balance + task.moneyValue,
         })
         .eq('child_id', activeChild.id);
 
@@ -220,10 +229,6 @@ export const DailyTasksWidget: React.FC = () => {
     } catch (error) {
       console.error('Error completing task:', error);
     }
-  };
-
-  const getActiveChild = (): Child | undefined => {
-    return children.find((c) => c.id === activeTab);
   };
 
   const getChildColor = (icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar'): string => {
@@ -299,7 +304,7 @@ export const DailyTasksWidget: React.FC = () => {
               return (
                 <div
                   key={task.id}
-                  className={`task-row ${isCompleted ? 'completed' : ''}`}
+                  className={`task-row ${isCompleted ? 'completed' : ''} ${getCategoryTone(task.category)}`}
                   onClick={() => !isCompleted && completeTask(task)}
                 >
                   <div className="task-checkbox">
@@ -309,7 +314,7 @@ export const DailyTasksWidget: React.FC = () => {
                   <div className="task-info">
                     <div className="task-name">{task.name}</div>
                     <div className="task-reward">
-                      +{task.points} pts • +{task.moneyValue.toFixed(2)}$
+                      <span className="reward-chip">+{task.points} pts ⭐</span>
                     </div>
                   </div>
                 </div>
