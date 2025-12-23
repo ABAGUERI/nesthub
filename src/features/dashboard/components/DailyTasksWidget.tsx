@@ -315,6 +315,7 @@ export const DailyTasksWidget: React.FC = () => {
                     <div className="task-name">{task.name}</div>
                     <div className="task-reward">
                       <span className="reward-chip">+{task.points} pts ⭐</span>
+                      <span className="reward-chip money">+{task.moneyValue.toFixed(2)}$ 💰</span>
                     </div>
                   </div>
                 </div>
