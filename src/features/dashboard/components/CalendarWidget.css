@@ -1,21 +1,26 @@
 /* === CALENDAR TIMELINE === */
+
 .timeline-container {
-  padding-left: 10px;
+  padding-left: 6px;
+  display: grid;
+  gap: 14px;
 }
 
 .timeline-group {
-  margin-bottom: 20px;
+  margin-bottom: 4px;
   position: relative;
+  padding-left: 16px;
 }
 
 .timeline-group::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 10px;
-  bottom: -20px;
+  top: 12px;
+  bottom: -12px;
   width: 2px;
-  background: #334155;
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.7), rgba(34, 211, 238, 0.7));
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
 }
 
 .timeline-group:last-child::before {
@@ -23,47 +28,50 @@
 }
 
 .timeline-header {
-  font-size: 13px;
-  color: #94a3b8;
-  font-weight: 700;
+  font-size: 14px;
+  color: #cbd5e1;
+  font-weight: 800;
   text-transform: uppercase;
-  margin-bottom: 10px;
-  padding-left: 20px;
+  margin-bottom: 12px;
+  padding-left: 22px;
   position: relative;
+  letter-spacing: 0.8px;
 }
 
 .timeline-header::after {
   content: '';
   position: absolute;
-  left: -4px;
-  top: 2px;
-  width: 10px;
-  height: 10px;
-  background: #64748b;
+  left: -6px;
+  top: 0px;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, #22d3ee, #a855f7);
   border-radius: 50%;
-  border: 2px solid #000000; /* Fond noir */
+  border: 2px solid #020617;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
 }
 
 /* === EVENT CARD === */
 .event-card {
   margin-left: 20px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 12px;
-  border-radius: 12px;
-  border-left: 3px solid #3b82f6;
-  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 14px 16px;
+  border-radius: 16px;
+  border-left: 4px solid #3b82f6;
+  margin-bottom: 10px;
   transition: all 0.2s;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
 .event-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  transform: translateX(2px);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(3px);
 }
 
 /* Code couleur selon urgence */
 .event-card.urgent {
   border-left-color: #ef4444;
-  background: rgba(239, 68, 68, 0.05);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .event-card.urgent .event-time {
@@ -72,7 +80,7 @@
 
 .event-card.soon {
   border-left-color: #fbbf24;
-  background: rgba(251, 191, 36, 0.05);
+  background: rgba(251, 191, 36, 0.08);
 }
 
 .event-card.soon .event-time {
@@ -81,14 +89,45 @@
 
 .event-card.future {
   border-left-color: #60a5fa;
-  background: rgba(96, 165, 250, 0.03);
+  background: rgba(96, 165, 250, 0.05);
+}
+
+.event-card.tone-blue {
+  border-left-color: #38bdf8;
+}
+
+.event-card.tone-violet {
+  border-left-color: #a855f7;
+}
+
+.event-card.tone-green {
+  border-left-color: #22c55e;
+}
+
+.event-card.tone-orange {
+  border-left-color: #fb923c;
+}
+
+.event-time-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 }
 
 .event-time {
-  font-weight: bold;
-  font-size: 13px;
-  color: #60a5fa;
+  font-weight: 800;
+  font-size: 16px;
+  color: #e0f2fe;
   margin-bottom: 4px;
+}
+
+.event-relative {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
 }
 
 .event-content {
@@ -98,15 +137,25 @@
 }
 
 .event-title {
-  font-size: 14px;
+  font-size: 16px;
   color: #e2e8f0;
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .event-calendar {
-  font-size: 11px;
-  color: #64748b;
+  font-size: 12px;
+  color: #cbd5e1;
   font-weight: 600;
+}
+
+.event-source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* === MESSAGES === */

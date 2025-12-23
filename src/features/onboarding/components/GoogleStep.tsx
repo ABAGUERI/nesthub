@@ -62,7 +62,7 @@ export const GoogleStep: React.FC = () => {
       setCalendars(cals);
 
       // Pré-sélectionner le calendrier principal
-      const primary = cals.find((c) => c.primary);
+      const primary = cals.find((calendar: Calendar) => calendar.primary);
       if (primary) {
         setSelectedCalendars([primary.id]);
       }
@@ -95,9 +95,17 @@ export const GoogleStep: React.FC = () => {
   const getTaskListsToCreate = () => {
     const lists = ['📝 Épicerie', '👨‍👩‍👧 Familiale'];
     
+    const avatarEmoji: Record<'bee' | 'ladybug' | 'butterfly' | 'caterpillar', string> = {
+      bee: '🐝',
+      ladybug: '🐞',
+      butterfly: '🦋',
+      caterpillar: '🐛',
+    };
+
     children.forEach((child) => {
       if (child.name.trim()) {
-        lists.push(`${child.icon === 'bee' ? '🐝' : '🐞'} Tâches ${child.name}`);
+        const emoji = avatarEmoji[child.icon] || '🐝';
+        lists.push(`${emoji} Tâches ${child.name}`);
       }
     });
     
