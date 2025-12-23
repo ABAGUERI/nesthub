@@ -9,7 +9,7 @@ import { Child, ChildProgress } from '@/shared/types';
 export const createChild = async (
   userId: string,
   firstName: string,
-  icon: 'bee' | 'ladybug'
+  icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar'
 ): Promise<Child> => {
   const { data, error } = await supabase
     .from('children')
@@ -115,6 +115,19 @@ export const updateChildProgress = async (
 export const deleteChild = async (childId: string): Promise<void> => {
   const { error } = await supabase.from('children').delete().eq('id', childId);
 
+  if (error) throw error;
+};
+
+// Mettre à jour un enfant (nom, icône)
+export const updateChild = async (
+  childId: string,
+  updates: Partial<Pick<Child, 'firstName' | 'icon'>>
+): Promise<void> => {
+  const dbUpdates: any = {};
+  if (updates.firstName !== undefined) dbUpdates.first_name = updates.firstName;
+  if (updates.icon !== undefined) dbUpdates.icon = updates.icon;
+
+  const { error } = await supabase.from('children').update(dbUpdates).eq('id', childId);
   if (error) throw error;
 };
 

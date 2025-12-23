@@ -6,6 +6,7 @@ import { LoginForm } from '@/features/auth/components/LoginForm';
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage';
 import { OAuthCallback } from '@/features/google/components/OAuthCallback';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
+import { ConfigPage } from '@/features/config/ConfigPage';
 import '@/styles/global.css';
 
 // Composant pour protéger les routes authentifiées
@@ -126,9 +127,7 @@ function AppRoutes() {
         path="/config"
         element={
           <ProtectedRoute>
-            <div className="page-container">
-              <h1>Configuration (À implémenter)</h1>
-            </div>
+            <ConfigPage />
           </ProtectedRoute>
         }
       />

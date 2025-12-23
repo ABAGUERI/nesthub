@@ -18,7 +18,7 @@ export interface Child {
   id: string;
   userId: string;
   firstName: string;
-  icon: 'bee' | 'ladybug';
+  icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
   createdAt: string;
 }
 
@@ -181,7 +181,7 @@ export interface OnboardingData {
   
   // Step 5-6: Famille
   hasChildren: boolean;
-  children: Array<{ firstName: string; icon: 'bee' | 'ladybug' }>;
+  children: Array<{ firstName: string; icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar' }>;
   
   // Step 7: Google
   gmailAddress: string;
