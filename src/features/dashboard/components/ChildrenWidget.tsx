@@ -137,6 +137,10 @@ export const ChildrenWidget: React.FC = () => {
   };
 
   const getPercentage = (child: Child): number => {
+    if (!child || !Number.isFinite(child.totalPoints) || !Number.isFinite(child.targetPoints) || child.targetPoints <= 0) {
+      return 0;
+    }
+
     return Math.min((child.totalPoints / child.targetPoints) * 100, 100);
   };
 
@@ -227,7 +231,7 @@ export const ChildrenWidget: React.FC = () => {
   const selectedChild = children[selectedChildIndex];
   const percentage = getPercentage(selectedChild);
   const hasReachedGoal = percentage >= 100;
-  const targetPoints = Math.max(1000, selectedChild.targetMoney * 100);
+  const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
 
   return (
     <div className="widget children-widget">
@@ -298,7 +302,7 @@ export const ChildrenWidget: React.FC = () => {
               </span>
             </div>
 
-            {/* Argent et points */}
+            {/* Points accumulés */}
             <div className="donut-money-large">
               <div
                 className="points-balance"
@@ -306,7 +310,7 @@ export const ChildrenWidget: React.FC = () => {
               >
                 {selectedChild.totalPoints} pts
               </div>
-              <div className="points-balance">{selectedChild.totalPoints} pts</div>
+              <div className="points-target">/ {selectedChild.targetPoints} pts</div>
             </div>
 
             {/* Nom de l'enfant */}

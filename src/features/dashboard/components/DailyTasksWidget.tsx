@@ -274,6 +274,21 @@ export const DailyTasksWidget: React.FC = () => {
   }
 
   const activeChild = children[selectedChildIndex];
+  if (!activeChild) {
+    return (
+      <div className="widget daily-tasks-widget">
+        <div className="widget-header">
+          <div className="widget-title">⭐ Tâches du jour</div>
+        </div>
+        <div className="empty-message">Aucun enfant sélectionné</div>
+      </div>
+    );
+  }
+
+  const safeTasks = tasks.map((task) => ({
+    ...task,
+    points: Number.isFinite(task.points) ? task.points : Number(task.points) || 0,
+  }));
 
   return (
     <div className="widget daily-tasks-widget">
@@ -295,11 +310,11 @@ export const DailyTasksWidget: React.FC = () => {
       </div>
 
       <div className="widget-scroll">
-        {tasks.length === 0 ? (
+        {safeTasks.length === 0 ? (
           <div className="empty-message">Aucune tâche disponible</div>
         ) : (
           <div className="tasks-list">
-            {tasks.map((task) => {
+            {safeTasks.map((task) => {
               const isCompleted = isTaskCompleted(task.id, activeChild.id);
               return (
                 <div
@@ -315,7 +330,6 @@ export const DailyTasksWidget: React.FC = () => {
                     <div className="task-name">{task.name}</div>
                     <div className="task-reward">
                       <span className="reward-chip">+{task.points} pts ⭐</span>
-                      <span className="reward-chip money">+{task.moneyValue.toFixed(2)}$ 💰</span>
                     </div>
                   </div>
                 </div>

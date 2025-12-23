@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TabNavigation } from './components/TabNavigation';
 import { ChildrenTab } from './components/tabs/ChildrenTab';
 import { GoogleTab } from './components/tabs/GoogleTab';
@@ -17,6 +18,7 @@ const TABS: Array<{ id: TabId; label: string; description: string; icon: string 
 
 export const ConfigPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('children');
+  const navigate = useNavigate();
 
   return (
     <div className="config-page">
@@ -28,6 +30,9 @@ export const ConfigPage: React.FC = () => {
             Gérez vos enfants, votre compte Google, vos tâches récompensées et les informations météo en quelques clics.
           </p>
         </div>
+        <button className="back-dashboard" onClick={() => navigate('/dashboard')}>
+          ← Retour au dashboard
+        </button>
         <div className="config-hero-badge">
           <div className="badge-dot" />
           <div>
