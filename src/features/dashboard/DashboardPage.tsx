@@ -22,7 +22,6 @@ export const DashboardPage: React.FC = () => {
     return [
       {
         id: 'kids',
-        enabled: config ? config.moduleChildrenRewards !== false : true,
         content: (
           <div className="screen-grid kids-screen">
             <div className="screen-card">
@@ -36,7 +35,6 @@ export const DashboardPage: React.FC = () => {
       },
       {
         id: 'agenda',
-        enabled: config ? config.moduleCalendar !== false || config.moduleTasks !== false : true,
         content: (
           <div className="screen-grid agenda-screen">
             <div className="screen-card wide">
@@ -50,7 +48,6 @@ export const DashboardPage: React.FC = () => {
       },
       {
         id: 'mobility',
-        enabled: config ? config.moduleVehicle !== false || config.moduleStocks !== false : true,
         content: (
           <div className="screen-grid mobility-screen">
             <div className="screen-card">
@@ -63,7 +60,7 @@ export const DashboardPage: React.FC = () => {
           </div>
         ),
       },
-    ].filter((screen) => screen.enabled);
+    ];
   }, [config]);
 
   const clampIndex = (index: number) => {
