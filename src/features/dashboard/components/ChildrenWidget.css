@@ -152,9 +152,10 @@
 /* === DONUT LARGE === */
 .donut-and-hearts {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) auto;
+  grid-template-columns: minmax(300px, 1.1fr) auto;
   gap: 24px;
   align-items: center;
+  justify-content: space-between;
 }
 
 .donut-wrapper {
@@ -173,9 +174,9 @@
 
 .donut-label-large {
   position: absolute;
-  top: 86px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -262,6 +263,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   min-width: 120px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  margin-left: auto;
 }
 
 .hearts-label {

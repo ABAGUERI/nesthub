@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Chart, ArcElement, DoughnutController } from 'chart.js';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import { getChildrenWithProgress } from '@/shared/utils/children.service';
 import { useChildSelection } from '../contexts/ChildSelectionContext';
 import './ChildrenWidget.css';
@@ -15,10 +16,12 @@ interface Child {
   totalPoints: number;
   currentLevel: number;
   targetPoints: number;
+  screenTimeUsed?: number;
 }
 
 export const ChildrenWidget: React.FC = () => {
   const { user } = useAuth();
+  const { config } = useClientConfig();
   const { selectedChildIndex, setSelectedChildIndex, setTotalChildren } = useChildSelection();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,6 +68,7 @@ export const ChildrenWidget: React.FC = () => {
           totalPoints: c.progress?.total_points || 0,
           currentLevel: c.progress?.current_level || 1,
           targetPoints: c.progress?.target_points || 1000,
+          screenTimeUsed: c.progress?.screen_time_used || 0,
         }))
       );
     } catch (error) {
@@ -232,8 +236,11 @@ export const ChildrenWidget: React.FC = () => {
   const percentage = getPercentage(selectedChild);
   const hasReachedGoal = percentage >= 100;
   const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
-  const heartsTotal = 6;
-  const heartsUsed = 4;
+  const heartsTotal = 5;
+  const minutesPerHeart = Math.max(1, config?.screenTimeDefaultAllowance || 20);
+  const totalMinutes = heartsTotal * minutesPerHeart;
+  const usedMinutes = Math.min(totalMinutes, Math.round(selectedChild?.screenTimeUsed || 0));
+  const heartsUsed = Math.min(heartsTotal, Math.ceil(usedMinutes / minutesPerHeart));
 
   return (
     <div className="widget children-widget">
@@ -321,22 +328,23 @@ export const ChildrenWidget: React.FC = () => {
                 <div className="child-name-large">{selectedChild.firstName}</div>
               </div>
 
-              <div className="screen-time-hearts">
-                <div className="hearts-label">Temps d'écran</div>
-                <div className="hearts-column">
-                  {Array.from({ length: heartsTotal }).map((_, index) => (
-                    <span
-                      key={index}
-                      className={`heart ${index < heartsUsed ? 'used' : ''}`}
-                    >
-                      ❤️
-                    </span>
-                  ))}
+                <div className="screen-time-hearts">
+                  <div className="hearts-label">Temps d'écran</div>
+                  <div className="hearts-column">
+                    {Array.from({ length: heartsTotal }).map((_, index) => (
+                      <span
+                        key={index}
+                        className={`heart ${index < heartsUsed ? 'used' : ''}`}
+                      >
+                        ❤️
+                      </span>
+                    ))}
+                  </div>
+                  <div className="hearts-meta">
+                    {usedMinutes} / {totalMinutes} min
+                  </div>
                 </div>
-                <div className="hearts-meta">45 / 60 min</div>
               </div>
-              <div className="points-target">/ {selectedChild.targetPoints} pts</div>
-            </div>
 
             {/* Progression objectif */}
             <div className="progress-track">

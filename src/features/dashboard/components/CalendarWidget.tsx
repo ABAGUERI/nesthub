@@ -211,9 +211,11 @@ export const CalendarWidget: React.FC = () => {
                       <div className="event-relative">{formatRelativeTime(event)}</div>
                     </div>
                     <div className="event-content">
-                      <div className="event-title">{event.summary || 'Sans titre'}</div>
-                      <div className="event-calendar">
-                        <span className="event-source-chip">{event.calendarName || 'Calendrier'}</span>
+                      <div className="event-title-row">
+                        <div className="event-title">{event.summary || 'Sans titre'}</div>
+                        <div className="event-calendar">
+                          <span className="event-source-chip">{event.calendarName || 'Calendrier'}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
