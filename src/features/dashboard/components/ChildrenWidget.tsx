@@ -335,6 +335,7 @@ export const ChildrenWidget: React.FC = () => {
                 </div>
                 <div className="hearts-meta">45 / 60 min</div>
               </div>
+              <div className="points-target">/ {selectedChild.targetPoints} pts</div>
             </div>
 
             {/* Progression objectif */}
