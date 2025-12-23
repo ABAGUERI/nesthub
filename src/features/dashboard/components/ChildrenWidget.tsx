@@ -160,22 +160,22 @@ export const ChildrenWidget: React.FC = () => {
   };
 
   // Swipe handlers
-  const handlePointerDown = (e: React.PointerEvent) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     setTouchStart(e.clientX);
     setIsDragging(true);
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging || touchStart === null) return;
     
     // Visual feedback pendant le drag (optionnel)
     const diff = e.clientX - touchStart;
     if (Math.abs(diff) > 10) {
-      e.currentTarget.style.cursor = 'grabbing';
+      (e.currentTarget as HTMLDivElement).style.cursor = 'grabbing';
     }
   };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging || touchStart === null) {
       setIsDragging(false);
       return;
@@ -196,7 +196,7 @@ export const ChildrenWidget: React.FC = () => {
 
     setTouchStart(null);
     setIsDragging(false);
-    e.currentTarget.style.cursor = 'grab';
+    (e.currentTarget as HTMLDivElement).style.cursor = 'grab';
   };
 
   const handlePointerCancel = () => {
@@ -229,12 +229,33 @@ export const ChildrenWidget: React.FC = () => {
   const selectedChild = children[selectedChildIndex];
   const percentage = getPercentage(selectedChild);
   const hasReachedGoal = percentage >= 100;
+  const targetPoints = Math.max(1000, selectedChild.targetMoney * 100);
 
   return (
     <div className="widget children-widget">
       <div className="widget-header">
         <div className="widget-title">🏆 Vas-tu atteindre ton objectif?</div>
+        <div className="points-chip">
+          <span className="points-value">{selectedChild.totalPoints} pts</span>
+          <span className="points-target">/ {targetPoints}</span>
+        </div>
       </div>
+
+      {children.length > 1 && (
+        <div className="child-switcher">
+          {children.map((child, index) => (
+            <button
+              key={child.id}
+              className={`switcher-pill ${index === selectedChildIndex ? 'active' : ''}`}
+              onClick={() => selectChild(index)}
+              aria-label={`Voir ${child.firstName}`}
+            >
+              <span className="pill-icon">{getChildIcon(child.icon)}</span>
+              <span className="pill-name">{child.firstName}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="carousel-container">
         {/* Flèche gauche */}
@@ -257,7 +278,7 @@ export const ChildrenWidget: React.FC = () => {
           onPointerCancel={handlePointerCancel}
           style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         >
-          <div className="child-main">
+          <div className="child-main" key={selectedChild.id}>
             {/* Badge "Objectif!" si atteint */}
             {hasReachedGoal && (
               <div className="goal-badge">
@@ -279,7 +300,7 @@ export const ChildrenWidget: React.FC = () => {
               </span>
             </div>
 
-            {/* Argent */}
+            {/* Argent et points */}
             <div className="donut-money-large">
               <div
                 className="donut-value-large"
@@ -287,10 +308,28 @@ export const ChildrenWidget: React.FC = () => {
               >
                 {selectedChild.moneyBalance.toFixed(2)}$
               </div>
+              <div className="points-balance">{selectedChild.totalPoints} pts</div>
             </div>
 
             {/* Nom de l'enfant */}
             <div className="child-name-large">{selectedChild.firstName}</div>
+
+            {/* Progression objectif */}
+            <div className="progress-track">
+              <div className="progress-label">
+                <span>Progression</span>
+                <span className="progress-value">{percentage.toFixed(0)}%</span>
+              </div>
+              <div className="progress-bar">
+                <div
+                  className="progress-bar-fill"
+                  style={{
+                    width: `${percentage}%`,
+                    backgroundColor: getChildColor(selectedChild.icon),
+                  }}
+                />
+              </div>
+            </div>
 
             {/* Temps d'écran */}
             <div className="screen-time-compact">
