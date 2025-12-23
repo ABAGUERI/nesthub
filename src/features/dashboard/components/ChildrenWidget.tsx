@@ -252,6 +252,11 @@ export const ChildrenWidget: React.FC = () => {
         </div>
       </div>
 
+      <div className="child-subtitle">
+        <span className="child-subtitle-icon">{getChildIcon(selectedChild.icon)}</span>
+        <span className="child-subtitle-name">{selectedChild.firstName}</span>
+      </div>
+
       {children.length > 1 && (
         <div className="child-switcher">
           {children.map((child, index) => (
@@ -300,17 +305,19 @@ export const ChildrenWidget: React.FC = () => {
 
             <div className="donut-and-hearts">
               <div className="donut-wrapper">
-                {/* Canvas pour le donut */}
-                <canvas id={`chart-${selectedChild.id}`} className="donut-chart-large"></canvas>
+                <div className="donut-stack">
+                  {/* Canvas pour le donut */}
+                  <canvas id={`chart-${selectedChild.id}`} className="donut-chart-large"></canvas>
 
-                {/* Label au centre (icône) */}
-                <div className="donut-label-large">
-                  <span
-                    className="donut-icon-large"
-                    style={{ color: getChildColor(selectedChild.icon) }}
-                  >
-                    {getChildIcon(selectedChild.icon)}
-                  </span>
+                  {/* Label au centre (icône) */}
+                  <div className="donut-label-large">
+                    <span
+                      className="donut-icon-large"
+                      style={{ color: getChildColor(selectedChild.icon) }}
+                    >
+                      {getChildIcon(selectedChild.icon)}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Points accumulés */}
