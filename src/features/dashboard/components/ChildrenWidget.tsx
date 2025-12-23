@@ -14,8 +14,7 @@ interface Child {
   icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
   totalPoints: number;
   currentLevel: number;
-  moneyBalance: number;
-  targetMoney: number;
+  targetPoints: number;
 }
 
 export const ChildrenWidget: React.FC = () => {
@@ -65,8 +64,7 @@ export const ChildrenWidget: React.FC = () => {
           icon: c.icon,
           totalPoints: c.progress?.total_points || 0,
           currentLevel: c.progress?.current_level || 1,
-          moneyBalance: c.progress?.money_balance || 0,
-          targetMoney: 10, // Objectif par défaut 10$
+          targetPoints: c.progress?.target_points || 1000,
         }))
       );
     } catch (error) {
@@ -90,7 +88,7 @@ export const ChildrenWidget: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const percentage = Math.min((child.moneyBalance / child.targetMoney) * 100, 100);
+    const percentage = Math.min((child.totalPoints / child.targetPoints) * 100, 100);
     const color = child.icon === 'bee' ? '#fbbf24' : '#f87171';
 
     chartsRef.current[child.id] = new Chart(ctx, {
@@ -139,7 +137,7 @@ export const ChildrenWidget: React.FC = () => {
   };
 
   const getPercentage = (child: Child): number => {
-    return Math.min((child.moneyBalance / child.targetMoney) * 100, 100);
+    return Math.min((child.totalPoints / child.targetPoints) * 100, 100);
   };
 
   // Navigation handlers
@@ -303,10 +301,10 @@ export const ChildrenWidget: React.FC = () => {
             {/* Argent et points */}
             <div className="donut-money-large">
               <div
-                className="donut-value-large"
+                className="points-balance"
                 style={{ color: getChildColor(selectedChild.icon) }}
               >
-                {selectedChild.moneyBalance.toFixed(2)}$
+                {selectedChild.totalPoints} pts
               </div>
               <div className="points-balance">{selectedChild.totalPoints} pts</div>
             </div>
