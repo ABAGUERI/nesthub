@@ -13,6 +13,8 @@ export const DashboardHeader: React.FC = () => {
     temp: number;
     icon: string;
   } | null>(null);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   // Mettre à jour l'heure chaque seconde
   useEffect(() => {
@@ -28,15 +30,37 @@ export const DashboardHeader: React.FC = () => {
     loadWeather();
   }, [config]);
 
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
   const loadWeather = async () => {
-    if (!config?.weatherEnabled || !config?.weatherCity) return;
+    if (!config?.moduleWeather) return;
+
+    const cityQuery = config.weatherCity?.trim();
+    const postalQuery = config.weatherPostalCode?.trim();
+    if (!cityQuery && !postalQuery) return;
 
     try {
       const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
-      if (!apiKey) return;
+      if (!apiKey || apiKey === 'your-openweather-api-key') {
+        setWeather(null);
+        setWeatherError('Clé météo manquante ou invalide');
+        return;
+      }
+
+      const query = cityQuery
+        ? `q=${encodeURIComponent(cityQuery)}`
+        : `zip=${encodeURIComponent(postalQuery!)}`
+      ;
 
       const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${config.weatherCity}&appid=${apiKey}&units=metric&lang=fr`
+        `https://api.openweathermap.org/data/2.5/weather?${query}&appid=${apiKey}&units=metric&lang=fr`
       );
 
       if (response.ok) {
@@ -45,9 +69,15 @@ export const DashboardHeader: React.FC = () => {
           temp: Math.round(data.main.temp),
           icon: getWeatherIcon(data.weather[0].id),
         });
+        setWeatherError(null);
+      } else {
+        setWeather(null);
+        setWeatherError('Météo indisponible (vérifiez la clé/API ou le code postal)');
       }
     } catch (error) {
       console.error('Error loading weather:', error);
+      setWeather(null);
+      setWeatherError('Météo indisponible pour le moment');
     }
   };
 
@@ -82,6 +112,16 @@ export const DashboardHeader: React.FC = () => {
     navigate('/login');
   };
 
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen?.();
+      setIsFullscreen(false);
+    }
+  };
+
   return (
     <div className="dashboard-header">
       {/* Heure/Date + Météo */}
@@ -97,6 +137,7 @@ export const DashboardHeader: React.FC = () => {
             <span>{weather.temp}°C</span>
           </div>
         )}
+        {weatherError && <div className="weather-error">{weatherError}</div>}
       </div>
 
       {/* Titre central */}
@@ -105,13 +146,20 @@ export const DashboardHeader: React.FC = () => {
       {/* Menu avec bouton déconnexion */}
       <div className="header-menu">
         <button
+          className={`menu-btn fullscreen-btn ${isFullscreen ? 'active' : ''}`}
+          onClick={toggleFullscreen}
+          title={isFullscreen ? 'Quitter le plein écran' : 'Passer en plein écran'}
+        >
+          {isFullscreen ? '🗗' : '🗖'}
+        </button>
+        <button
           className="menu-btn logout-btn"
           onClick={handleLogout}
           title="Se déconnecter"
         >
           🚪
         </button>
-        <button className="menu-btn" title="Paramètres">
+        <button className="menu-btn" title="Paramètres" onClick={() => navigate('/config')}>
           ⚙️
         </button>
       </div>

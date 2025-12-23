@@ -14,11 +14,10 @@ interface OnboardingContextType {
   totalSteps: number;
   
   // Étape 1: Famille
-  children: Array<{ name: string; icon: 'bee' | 'ladybug' }>;
-  setChildren: (children: Array<{ name: string; icon: 'bee' | 'ladybug' }>) => void;
+  children: Array<{ name: string; icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar' }>;
+  setChildren: (children: Array<{ name: string; icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar' }>) => void;
   
   // Étape 2: Google
-  googleConnected: boolean;
   selectedCalendars: string[];
   setSelectedCalendars: (calendars: string[]) => void;
   
@@ -48,13 +47,14 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({
   const totalSteps = 2;
   
   // State Étape 1: Famille
-  const [children, setChildren] = useState<Array<{ name: string; icon: 'bee' | 'ladybug' }>>([
+  const [children, setChildren] = useState<
+    Array<{ name: string; icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar' }>
+  >([
     { name: '', icon: 'bee' },
     { name: '', icon: 'ladybug' },
   ]);
   
   // State Étape 2: Google
-  const [googleConnected, setGoogleConnected] = useState(false);
   const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
   
   // État général
@@ -209,7 +209,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({
         totalSteps,
         children,
         setChildren,
-        googleConnected,
         selectedCalendars,
         setSelectedCalendars,
         nextStep,
