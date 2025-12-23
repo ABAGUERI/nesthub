@@ -170,6 +170,17 @@ export const DailyTasksWidget: React.FC = () => {
     return icons[category] || '✨';
   };
 
+  const getCategoryTone = (category: string): string => {
+    const tones: { [key: string]: string } = {
+      menage: 'tone-blue',
+      education: 'tone-violet',
+      hygiene: 'tone-green',
+      sport: 'tone-orange',
+      autre: 'tone-cyan',
+    };
+    return tones[category] || 'tone-cyan';
+  };
+
   const isTaskCompleted = (taskId: string, childId: string): boolean => {
     return completedTasks.some(
       (ct) => ct.taskId === taskId && ct.id.includes(childId)
@@ -295,7 +306,7 @@ export const DailyTasksWidget: React.FC = () => {
               return (
                 <div
                   key={task.id}
-                  className={`task-row ${isCompleted ? 'completed' : ''}`}
+                  className={`task-row ${isCompleted ? 'completed' : ''} ${getCategoryTone(task.category)}`}
                   onClick={() => !isCompleted && completeTask(task)}
                 >
                   <div className="task-checkbox">
@@ -305,7 +316,8 @@ export const DailyTasksWidget: React.FC = () => {
                   <div className="task-info">
                     <div className="task-name">{task.name}</div>
                     <div className="task-reward">
-                      +{task.points} pts • +{task.moneyValue.toFixed(2)}$
+                      <span className="reward-chip">+{task.points} pts ⭐</span>
+                      <span className="reward-chip money">+{task.moneyValue.toFixed(2)}$ 💰</span>
                     </div>
                   </div>
                 </div>

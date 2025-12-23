@@ -112,6 +112,29 @@ export const CalendarWidget: React.FC = () => {
     });
   };
 
+  const formatRelativeTime = (event: CalendarEvent): string => {
+    const now = new Date();
+    const startDate = new Date(event.start.dateTime || event.start.date!);
+    const diff = startDate.getTime() - now.getTime();
+
+    const hours = Math.round(diff / (1000 * 60 * 60));
+    if (hours < 0) return 'En cours';
+    if (hours < 1) return 'Dans <1h';
+    if (hours < 24) return `Dans ${hours}h`;
+
+    const days = Math.round(hours / 24);
+    if (days === 1) return 'Demain';
+    return `Dans ${days} jours`;
+  };
+
+  const getCalendarTone = (calendarName?: string) => {
+    const lower = calendarName?.toLowerCase() || '';
+    if (lower.includes('travail')) return 'tone-blue';
+    if (lower.includes('fam')) return 'tone-violet';
+    if (lower.includes('gmail') || lower.includes('perso')) return 'tone-green';
+    return 'tone-orange';
+  };
+
   const getDayLabel = (dayStr: string): string => {
     const now = new Date();
     const eventDate = events.find((e) => {
@@ -173,13 +196,16 @@ export const CalendarWidget: React.FC = () => {
                 {dayEvents.map((event) => (
                   <div
                     key={event.id}
-                    className={`event-card ${getUrgencyClass(event)}`}
+                    className={`event-card ${getUrgencyClass(event)} ${getCalendarTone(event.calendarName)}`}
                   >
-                    <div className="event-time">{formatTime(event)}</div>
+                    <div className="event-time-row">
+                      <div className="event-time">{formatTime(event)}</div>
+                      <div className="event-relative">{formatRelativeTime(event)}</div>
+                    </div>
                     <div className="event-content">
                       <div className="event-title">{event.summary || 'Sans titre'}</div>
                       <div className="event-calendar">
-                        📅 {event.calendarName || 'Calendrier'}
+                        <span className="event-source-chip">{event.calendarName || 'Calendrier'}</span>
                       </div>
                     </div>
                   </div>
