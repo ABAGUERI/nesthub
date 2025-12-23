@@ -14,6 +14,7 @@ export const DashboardHeader: React.FC = () => {
     icon: string;
   } | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   // Mettre à jour l'heure chaque seconde
   useEffect(() => {
@@ -28,6 +29,15 @@ export const DashboardHeader: React.FC = () => {
   useEffect(() => {
     loadWeather();
   }, [config]);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
 
   const loadWeather = async () => {
     if (!config?.moduleWeather) return;
@@ -102,6 +112,16 @@ export const DashboardHeader: React.FC = () => {
     navigate('/login');
   };
 
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen?.();
+      setIsFullscreen(false);
+    }
+  };
+
   return (
     <div className="dashboard-header">
       {/* Heure/Date + Météo */}
@@ -125,6 +145,13 @@ export const DashboardHeader: React.FC = () => {
 
       {/* Menu avec bouton déconnexion */}
       <div className="header-menu">
+        <button
+          className={`menu-btn fullscreen-btn ${isFullscreen ? 'active' : ''}`}
+          onClick={toggleFullscreen}
+          title={isFullscreen ? 'Quitter le plein écran' : 'Passer en plein écran'}
+        >
+          {isFullscreen ? '🗗' : '🗖'}
+        </button>
         <button
           className="menu-btn logout-btn"
           onClick={handleLogout}

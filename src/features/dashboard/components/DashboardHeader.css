@@ -66,10 +66,11 @@
 .menu-btn {
   width: 44px;
   height: 44px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  color: #94a3b8;
+  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: #cbd5e1;
   font-size: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -79,26 +80,47 @@
 }
 
 .menu-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+  border-color: rgba(255, 255, 255, 0.18);
   color: #e2e8f0;
+  transform: translateY(-1px) scale(1.02);
 }
 
 /* === LOGOUT BUTTON (ÉLÉGANT) === */
 .logout-btn {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.2);
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.35), rgba(190, 24, 93, 0.3));
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fecdd3;
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
 }
 
 .logout-btn:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #ef4444;
-  transform: translateY(-1px);
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.45), rgba(190, 24, 93, 0.35));
+  border-color: rgba(239, 68, 68, 0.7);
+  color: #ffe4e6;
+  transform: translateY(-2px) scale(1.03);
 }
 
 .logout-btn:active {
   transform: translateY(0);
+}
+
+.fullscreen-btn {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.25), rgba(16, 185, 129, 0.2));
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #dbeafe;
+}
+
+.fullscreen-btn:hover {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.35), rgba(16, 185, 129, 0.3));
+  border-color: rgba(59, 130, 246, 0.6);
+  color: #eff6ff;
+}
+
+.fullscreen-btn.active {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4), 0 10px 30px rgba(59, 130, 246, 0.25);
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.45), rgba(16, 185, 129, 0.4));
+  color: #f8fafc;
 }
 
 .weather-error {
