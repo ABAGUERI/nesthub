@@ -112,7 +112,7 @@ export const GoogleTasksWidget: React.FC = () => {
   };
 
   const getListIcon = (type: string, name: string): string => {
-    if (type === 'grocery') return '📝';
+    if (type === 'grocery' || name.toLowerCase().includes('épicerie')) return '🛒';
     if (name.toLowerCase().includes('familiale')) return '👨‍👩‍👧';
     if (name.toLowerCase().includes('sifaw')) return '🐝';
     if (name.toLowerCase().includes('lucas')) return '🐞';

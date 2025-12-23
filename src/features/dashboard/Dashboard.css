@@ -51,6 +51,7 @@
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 18px;
   width: 100%;
+  align-items: stretch;
 }
 
 .screen-grid.kids-screen {
@@ -59,7 +60,8 @@
 }
 
 .screen-grid.agenda-screen {
-  grid-template-columns: 1.1fr 0.8fr;
+  grid-template-columns: minmax(520px, 1.45fr) minmax(360px, 1fr);
+  align-items: stretch;
 }
 
 .screen-grid.mobility-screen {
@@ -73,6 +75,7 @@
   padding: 10px;
   backdrop-filter: blur(8px);
   box-shadow: 0 12px 45px rgba(0, 0, 0, 0.35);
+  height: 100%;
 }
 
 .screen-card.wide {

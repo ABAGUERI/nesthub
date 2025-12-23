@@ -232,6 +232,8 @@ export const ChildrenWidget: React.FC = () => {
   const percentage = getPercentage(selectedChild);
   const hasReachedGoal = percentage >= 100;
   const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
+  const heartsTotal = 6;
+  const heartsUsed = 4;
 
   return (
     <div className="widget children-widget">
@@ -289,32 +291,52 @@ export const ChildrenWidget: React.FC = () => {
               </div>
             )}
 
-            {/* Canvas pour le donut */}
-            <canvas id={`chart-${selectedChild.id}`} className="donut-chart-large"></canvas>
+            <div className="donut-and-hearts">
+              <div className="donut-wrapper">
+                {/* Canvas pour le donut */}
+                <canvas id={`chart-${selectedChild.id}`} className="donut-chart-large"></canvas>
 
-            {/* Label au centre (icône) */}
-            <div className="donut-label-large">
-              <span
-                className="donut-icon-large"
-                style={{ color: getChildColor(selectedChild.icon) }}
-              >
-                {getChildIcon(selectedChild.icon)}
-              </span>
-            </div>
+                {/* Label au centre (icône) */}
+                <div className="donut-label-large">
+                  <span
+                    className="donut-icon-large"
+                    style={{ color: getChildColor(selectedChild.icon) }}
+                  >
+                    {getChildIcon(selectedChild.icon)}
+                  </span>
+                </div>
 
-            {/* Points accumulés */}
-            <div className="donut-money-large">
-              <div
-                className="points-balance"
-                style={{ color: getChildColor(selectedChild.icon) }}
-              >
-                {selectedChild.totalPoints} pts
+                {/* Points accumulés */}
+                <div className="donut-money-large">
+                  <div
+                    className="points-balance"
+                    style={{ color: getChildColor(selectedChild.icon) }}
+                  >
+                    {selectedChild.totalPoints} pts
+                  </div>
+                  <div className="points-target">/ {selectedChild.targetPoints} pts</div>
+                </div>
+
+                {/* Nom de l'enfant */}
+                <div className="child-name-large">{selectedChild.firstName}</div>
+              </div>
+
+              <div className="screen-time-hearts">
+                <div className="hearts-label">Temps d'écran</div>
+                <div className="hearts-column">
+                  {Array.from({ length: heartsTotal }).map((_, index) => (
+                    <span
+                      key={index}
+                      className={`heart ${index < heartsUsed ? 'used' : ''}`}
+                    >
+                      ❤️
+                    </span>
+                  ))}
+                </div>
+                <div className="hearts-meta">45 / 60 min</div>
               </div>
               <div className="points-target">/ {selectedChild.targetPoints} pts</div>
             </div>
-
-            {/* Nom de l'enfant */}
-            <div className="child-name-large">{selectedChild.firstName}</div>
 
             {/* Progression objectif */}
             <div className="progress-track">
@@ -331,25 +353,6 @@ export const ChildrenWidget: React.FC = () => {
                   }}
                 />
               </div>
-            </div>
-
-            {/* Temps d'écran */}
-            <div className="screen-time-compact">
-              <div className="screen-time-info">
-                <div className="time-label">Temps écran (60min/sem)</div>
-                <div className="time-value">45 min</div>
-              </div>
-              <div className="vertical-bar-container">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`vertical-bar ${i < 4 ? 'used' : ''}`}
-                  ></div>
-                ))}
-              </div>
-              <button className="btn-remove-time" title="Enlever 10 min">
-                -10 min
-              </button>
             </div>
           </div>
         </div>

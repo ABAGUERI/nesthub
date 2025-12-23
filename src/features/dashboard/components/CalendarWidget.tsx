@@ -50,10 +50,18 @@ export const CalendarWidget: React.FC = () => {
       const fetchedEvents = await getCalendarEventsWithAuth(
         user.id,
         calendarIds.filter(Boolean) as string[],
-        20
+        20,
+        7
       );
+      const now = new Date();
+      const horizon = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-      setEvents(fetchedEvents);
+      const withinRange = fetchedEvents.filter((event) => {
+        const date = new Date(event.start.dateTime || event.start.date!);
+        return date >= now && date <= horizon;
+      });
+
+      setEvents(withinRange);
     } catch (error: any) {
       console.error('Error loading calendar events:', error);
       const isUnauthorized = error?.message === 'unauthorized';

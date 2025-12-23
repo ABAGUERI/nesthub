@@ -402,10 +402,12 @@ export const saveSelectedCalendars = async (
 export const getCalendarEvents = async (
   accessToken: string,
   calendarIds: string[],
-  maxResults: number = 20
+  maxResults: number = 20,
+  windowDays: number = 7
 ) => {
   const now = new Date();
   const timeMin = now.toISOString();
+  const timeMax = new Date(now.getTime() + windowDays * 24 * 60 * 60 * 1000).toISOString();
 
   const allEvents: any[] = [];
 
@@ -418,6 +420,7 @@ export const getCalendarEvents = async (
         )}/events?` +
           new URLSearchParams({
             timeMin,
+            timeMax,
             singleEvents: 'true',
             orderBy: 'startTime',
             maxResults: maxResults.toString(),
@@ -469,10 +472,11 @@ export const getCalendarEvents = async (
 export const getCalendarEventsWithAuth = async (
   userId: string,
   calendarIds: string[],
-  maxResults: number = 20
+  maxResults: number = 20,
+  windowDays: number = 7
 ) => {
   const token = await getAccessTokenOrThrow(userId);
-  return getCalendarEvents(token, calendarIds, maxResults);
+  return getCalendarEvents(token, calendarIds, maxResults, windowDays);
 };
 
 /**
