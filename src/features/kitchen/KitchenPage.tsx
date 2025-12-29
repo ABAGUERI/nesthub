@@ -28,11 +28,11 @@ export const KitchenPage: React.FC = () => {
       </header>
 
       <div className="kitchen-grid">
-        <section className="grocery-area">
-          <GroceryPanel />
-        </section>
         <section className="rotation-area">
           <RotationPanel />
+        </section>
+        <section className="grocery-area">
+          <GroceryPanel />
         </section>
         <section className="menu-area">
           <MenuPanel />

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { getCurrentRotation, RotationAssignment, RotationWeek } from '../services/rotation.service';
 
@@ -21,7 +22,11 @@ export const RotationPanel: React.FC = () => {
   }, [user]);
 
   const loadRotation = async () => {
-    if (!user) return;
+    if (!user) {
+      setRotation(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -31,6 +36,7 @@ export const RotationPanel: React.FC = () => {
     } catch (err) {
       console.error('Rotation loading error', err);
       setError('Rotation non configurée');
+      setRotation(null);
     } finally {
       setLoading(false);
     }
@@ -38,13 +44,13 @@ export const RotationPanel: React.FC = () => {
 
   const renderAssignments = (assignments: RotationAssignment[]) => {
     if (!assignments.length) {
-      return <div className="panel-empty">Rotation non configurée</div>;
+      return null;
     }
 
     return (
-      <div className="rotation-roles">
+      <div className="rotation-roles" role="list">
         {assignments.map((assignment) => (
-          <div key={`${assignment.role}-${assignment.assigneeMemberId}`} className="rotation-row">
+          <div key={`${assignment.role}-${assignment.assigneeMemberId}`} className="rotation-row" role="listitem">
             <span className="rotation-role">{assignment.role}</span>
             <div className="rotation-person">
               {assignment.assigneeAvatarUrl && (
@@ -58,17 +64,25 @@ export const RotationPanel: React.FC = () => {
     );
   };
 
+  const assignmentCount = rotation?.assignments.length ?? 0;
+  const ruleLabel = rotation?.rule ?? 'Rotation hebdomadaire (lundi)';
+
   return (
     <div className="kitchen-card">
       <div className="kitchen-card-header">
         <div>
           <p className="card-kicker">Famille</p>
           <h3>Rotation — semaine du {rotation ? formatDate(rotation.weekStart) : '...'}</h3>
+          {rotation && <p className="card-caption">Règle : {ruleLabel}</p>}
         </div>
         <button className="ghost-btn" onClick={loadRotation} aria-label="Rafraîchir la rotation">
           🔄
         </button>
       </div>
+
+      {rotation?.adjusted || rotation?.note ? (
+        <p className="rotation-adjusted">{rotation.note ? `Rotation ajustée — ${rotation.note}` : 'Rotation ajustée cette semaine'}</p>
+      ) : null}
 
       {loading ? (
         <div className="panel-loading">
@@ -77,9 +91,23 @@ export const RotationPanel: React.FC = () => {
           <div className="skeleton-line" />
         </div>
       ) : error || !rotation ? (
-        <div className="panel-empty">Rotation non configurée</div>
+        <div className="panel-empty rotation-empty">
+          <p>Rotation non configurée</p>
+          <Link className="ghost-btn" to="/config">
+            Configurer dans Paramètres
+          </Link>
+        </div>
+      ) : assignmentCount === 0 ? (
+        <div className="panel-empty rotation-empty">
+          <p>Rotation non configurée</p>
+          <Link className="ghost-btn" to="/config">
+            Configurer dans Paramètres
+          </Link>
+        </div>
       ) : (
-        renderAssignments(rotation.assignments)
+        <div className="rotation-board" aria-label="Tâches en rotation">
+          {renderAssignments(rotation.assignments)}
+        </div>
       )}
     </div>
   );

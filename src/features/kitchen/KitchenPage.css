@@ -1,6 +1,7 @@
 .kitchen-page {
   min-height: 100vh;
   padding: 32px;
+  overflow-y: auto;
   background: radial-gradient(circle at 10% 20%, rgba(120, 119, 198, 0.18), transparent 35%),
     radial-gradient(circle at 80% 10%, rgba(56, 189, 248, 0.12), transparent 30%),
     #030712;
@@ -42,8 +43,8 @@
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   grid-template-areas:
-    'grocery menu'
-    'rotation menu';
+    'rotation menu'
+    'grocery menu';
   gap: 16px;
 }
 
@@ -319,6 +320,19 @@
   gap: 8px;
 }
 
+.rotation-adjusted {
+  color: #fbbf24;
+  font-size: 14px;
+  margin: 6px 0 10px;
+}
+
+.rotation-board {
+  margin-top: 2px;
+  padding-right: 6px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
 .rotation-roles {
   display: flex;
   flex-direction: column;
@@ -329,7 +343,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -338,6 +352,8 @@
 .rotation-role {
   font-weight: 700;
   letter-spacing: 0.4px;
+  font-size: 18px;
+  color: #e2e8f0;
 }
 
 .rotation-person {
@@ -347,8 +363,8 @@
 }
 
 .rotation-avatar {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.4);
@@ -361,6 +377,13 @@
   border: 1px solid rgba(34, 211, 238, 0.35);
   color: #e0f2fe;
   font-weight: 700;
+  font-size: 16px;
+}
+
+.rotation-empty {
+  text-align: left;
+  gap: 10px;
+  align-items: flex-start;
 }
 
 @media (max-width: 1100px) {
@@ -372,8 +395,8 @@
     grid-template-columns: 1fr;
     grid-template-areas:
       'menu'
-      'grocery'
-      'rotation';
+      'rotation'
+      'grocery';
   }
 
   .kitchen-hero {

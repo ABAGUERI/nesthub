@@ -10,6 +10,9 @@ export interface RotationAssignment {
 export interface RotationWeek {
   weekStart: string;
   assignments: RotationAssignment[];
+  adjusted?: boolean;
+  note?: string | null;
+  rule?: string | null;
 }
 
 interface RotationRow {
@@ -17,6 +20,9 @@ interface RotationRow {
   assignee_member_id: string;
   assignee_name: string;
   assignee_avatar_url: string | null;
+  adjusted?: boolean | null;
+  note?: string | null;
+  rule?: string | null;
 }
 
 const formatWeekStart = (date: Date): string => {
@@ -34,7 +40,7 @@ export const getCurrentRotation = async (userId: string): Promise<RotationWeek |
 
     const { data, error } = await supabase
       .from('rotation_assignments')
-      .select('role, assignee_member_id, assignee_name, assignee_avatar_url')
+      .select('*')
       .eq('user_id', userId)
       .eq('week_start', weekStart)
       .order('role', { ascending: true });
@@ -50,7 +56,7 @@ export const getCurrentRotation = async (userId: string): Promise<RotationWeek |
 
     const rows: RotationRow[] = data as RotationRow[];
 
-    return {
+    const rotationWeek: RotationWeek = {
       weekStart,
       assignments: rows.map((row: RotationRow) => ({
         role: row.role,
@@ -59,6 +65,21 @@ export const getCurrentRotation = async (userId: string): Promise<RotationWeek |
         assigneeAvatarUrl: row.assignee_avatar_url ?? undefined,
       })),
     };
+
+    const [firstRow] = rows;
+    if (firstRow) {
+      if (typeof firstRow.adjusted !== 'undefined') {
+        rotationWeek.adjusted = Boolean(firstRow.adjusted);
+      }
+      if (typeof firstRow.note !== 'undefined') {
+        rotationWeek.note = firstRow.note ?? null;
+      }
+      if (typeof firstRow.rule !== 'undefined') {
+        rotationWeek.rule = firstRow.rule ?? null;
+      }
+    }
+
+    return rotationWeek;
   } catch (error) {
     console.warn('Rotation lookup failed:', error);
     return null;

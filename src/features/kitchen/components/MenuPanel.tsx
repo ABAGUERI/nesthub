@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { getStableFoodEmoji } from '@/shared/utils/emoji';
 import { getWeekMenu, saveWeekMenu, WeekMenu } from '../services/menu.service';
-
-const FOOD_EMOJIS = ['🍝', '🍕', '🥗', '🍛', '🍜', '🌮', '🥪', '🍗', '🐟', '🍲', '🍳', '🥘', '🍚', '🥑', '🍅', '🧀', '🥙', '🥟', '🍔'];
 
 const days = [
   { label: 'Lun', offset: 0 },
@@ -31,12 +30,6 @@ const addDays = (isoDate: string, offset: number) => {
 };
 
 const getDayKey = (weekStart: string, offset: number) => addDays(weekStart, offset).toISOString();
-
-const stableEmoji = (meal: string, seed: string) => {
-  if (!meal.trim()) return '';
-  const hash = Array.from(`${meal}-${seed}`).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return FOOD_EMOJIS[hash % FOOD_EMOJIS.length];
-};
 
 export const MenuPanel: React.FC = () => {
   const [weekStart, setWeekStart] = useState<string>(() => getWeekStart());
@@ -123,7 +116,7 @@ export const MenuPanel: React.FC = () => {
         {days.map((day) => {
           const dayKey = getDayKey(weekStart, day.offset);
           const meal = menu[dayKey] || '';
-          const emoji = stableEmoji(meal, dayKey);
+          const emoji = getStableFoodEmoji(meal, dayKey);
 
           return (
             <button key={dayKey} className="menu-row" onClick={() => openEditor(dayKey)}>
