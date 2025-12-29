@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TabNavigation } from './components/TabNavigation';
-import { ChildrenTab } from './components/tabs/ChildrenTab';
+import { FamilyTab } from './components/tabs/ChildrenTab';
 import { GoogleTab } from './components/tabs/GoogleTab';
 import { RewardsTab } from './components/tabs/RewardsTab';
 import { WeatherTab } from './components/tabs/WeatherTab';
 import './ConfigPage.css';
 
-type TabId = 'children' | 'google' | 'rewards' | 'weather';
+type TabId = 'family' | 'google' | 'rewards' | 'weather';
 
 const TABS: Array<{ id: TabId; label: string; description: string; icon: string }> = [
-  { id: 'children', label: 'Enfants', description: 'Ajouter, modifier, avatars', icon: '👨‍👩‍👧' },
+  { id: 'family', label: 'Famille', description: 'Ajouter, rôles, avatars', icon: '👨‍👩‍👧' },
   { id: 'google', label: 'Google', description: 'Adresse Gmail, agendas, tâches', icon: '📧' },
   { id: 'rewards', label: 'Récompenses', description: 'Tâches et points', icon: '🎯' },
   { id: 'weather', label: 'Météo', description: 'Ville et code postal', icon: '🌦️' },
 ];
 
 export const ConfigPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabId>('children');
+  const [activeTab, setActiveTab] = useState<TabId>('family');
   const navigate = useNavigate();
 
   return (
@@ -27,7 +27,7 @@ export const ConfigPage: React.FC = () => {
           <p className="config-kicker">Paramètres & personnalisation</p>
           <h1>Affinez votre hub familial</h1>
           <p className="config-subtitle">
-            Gérez vos enfants, votre compte Google, vos tâches récompensées et les informations météo en quelques clics.
+            Gérez votre famille, votre compte Google, vos tâches récompensées et les informations météo en quelques clics.
           </p>
         </div>
         <button className="back-dashboard" onClick={() => navigate('/dashboard')}>
@@ -46,7 +46,7 @@ export const ConfigPage: React.FC = () => {
         <TabNavigation tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="config-panel">
-          {activeTab === 'children' && <ChildrenTab />}
+          {activeTab === 'family' && <FamilyTab />}
           {activeTab === 'google' && <GoogleTab />}
           {activeTab === 'rewards' && <RewardsTab />}
           {activeTab === 'weather' && <WeatherTab />}
