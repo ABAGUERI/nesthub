@@ -46,6 +46,8 @@ export const FamilyTab: React.FC = () => {
     [children]
   );
 
+  const familyCount = sortedChildren.length;
+
   useEffect(() => {
     loadChildren();
   }, [user]);
@@ -141,6 +143,35 @@ export const FamilyTab: React.FC = () => {
       </div>
 
       {error && <div className="config-alert error">{error}</div>}
+
+      <div className="config-card">
+        <div className="config-card-header">
+          <div>
+            <h3>Rotation hebdomadaire</h3>
+            <p>La rotation de l’écran Cuisine s’appuie uniquement sur ces membres (IDs existants).</p>
+          </div>
+          <a className="ghost-button" href="/kitchen">
+            Voir la rotation
+          </a>
+        </div>
+        <div className="rotation-summary">
+          <p>{familyCount ? `${familyCount} membre(s) prêts pour la rotation.` : 'Ajoutez un membre pour activer la rotation.'}</p>
+          <div className="rotation-member-list">
+            {familyCount === 0 ? (
+              <span className="config-placeholder">Aucun membre configuré pour l’instant.</span>
+            ) : (
+              sortedChildren.map((member) => (
+                <div key={member.id} className="rotation-member-chip">
+                  <span className="rotation-name">{member.name}</span>
+                  <span className={`rotation-role-pill ${member.role === 'adult' ? 'adult' : 'child'}`}>
+                    {member.role === 'adult' ? 'Adulte' : 'Enfant'}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className="config-card">
         <div className="config-card-header">

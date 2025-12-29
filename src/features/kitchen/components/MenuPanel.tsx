@@ -37,7 +37,7 @@ export const MenuPanel: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingDay, setEditingDay] = useState<string | null>(null);
-  const [editingValue, setEditingValue] = useState('');
+  const [editingMeals, setEditingMeals] = useState<string[]>([]);
 
   const formattedWeek = useMemo(() => {
     const date = new Date(weekStart);
@@ -59,7 +59,7 @@ export const MenuPanel: React.FC = () => {
       days.forEach((day) => {
         const key = getDayKey(weekStart, day.offset);
         if (!completeMenu[key]) {
-          completeMenu[key] = '';
+          completeMenu[key] = [];
         }
       });
 
@@ -74,20 +74,33 @@ export const MenuPanel: React.FC = () => {
 
   const openEditor = (dayKey: string) => {
     setEditingDay(dayKey);
-    setEditingValue(menu[dayKey] || '');
+    const existing = menu[dayKey] || [];
+    setEditingMeals(existing.length ? existing : ['']);
   };
 
   const saveDay = async () => {
     if (!editingDay) return;
+    const sanitizedMeals = editingMeals.map((meal) => meal.trim()).filter(Boolean);
+
     const updated: WeekMenu = {
       ...menu,
-      [editingDay]: editingValue.trim(),
+      [editingDay]: sanitizedMeals,
     };
 
     setMenu(updated);
     setEditingDay(null);
-    setEditingValue('');
+    setEditingMeals([]);
     await saveWeekMenu(weekStart, updated);
+  };
+
+  const addMealField = () => setEditingMeals((prev) => [...prev, '']);
+
+  const updateMealField = (index: number, value: string) => {
+    setEditingMeals((prev) => prev.map((meal, i) => (i === index ? value : meal)));
+  };
+
+  const removeMealField = (index: number) => {
+    setEditingMeals((prev) => prev.filter((_, i) => i !== index));
   };
 
   const changeWeek = (direction: -1 | 1) => {
@@ -112,23 +125,42 @@ export const MenuPanel: React.FC = () => {
     }
 
     return (
-      <div className="menu-grid">
+      <div className="menu-grid mosaic">
         {days.map((day) => {
           const dayKey = getDayKey(weekStart, day.offset);
-          const meal = menu[dayKey] || '';
-          const emoji = getStableFoodEmoji(meal, dayKey);
+          const meals = menu[dayKey] || [];
 
           return (
-            <button key={dayKey} className="menu-row" onClick={() => openEditor(dayKey)}>
-              <div className="menu-day">
-                <span className="menu-emoji">{emoji}</span>
-                <div>
-                  <p className="menu-day-label">{day.label}</p>
-                  <p className="menu-meal">{meal || 'Ajouter un repas'}</p>
-                </div>
+            <div key={dayKey} className="menu-card" onClick={() => openEditor(dayKey)}>
+              <div className="menu-card-header">
+                <p className="menu-day-label">{day.label}</p>
+                <button
+                  className="ghost-btn ghost-btn-compact"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    openEditor(dayKey);
+                  }}
+                >
+                  ➕
+                </button>
               </div>
-              <span className="menu-edit">✏️</span>
-            </button>
+
+              <div className="menu-meals">
+                {meals.length === 0 ? (
+                  <div className="menu-meal-empty">Ajouter un repas</div>
+                ) : (
+                  meals.map((meal, index) => {
+                    const emoji = getStableFoodEmoji(meal, `${dayKey}-${index}`);
+                    return (
+                      <div key={`${dayKey}-${index}`} className="menu-meal-chip">
+                        <span className="menu-emoji">{emoji}</span>
+                        <span className="menu-meal-text">{meal}</span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
           );
         })}
       </div>
@@ -159,13 +191,30 @@ export const MenuPanel: React.FC = () => {
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal-card">
             <p className="card-kicker">Repas</p>
-            <input
-              autoFocus
-              className="grocery-input"
-              value={editingValue}
-              onChange={(e) => setEditingValue(e.target.value)}
-              placeholder="Lasagnes, tacos..."
-            />
+            <div className="meal-editor">
+              {editingMeals.map((meal, index) => {
+                const emoji = getStableFoodEmoji(meal, `${editingDay}-${index}`);
+                return (
+                  <div key={`${editingDay}-${index}`} className="meal-editor-row">
+                    <span className="menu-emoji small">{emoji}</span>
+                    <input
+                      autoFocus={index === editingMeals.length - 1}
+                      className="grocery-input"
+                      value={meal}
+                      onChange={(e) => updateMealField(index, e.target.value)}
+                      placeholder="Lasagnes, tacos..."
+                    />
+                    <button className="ghost-btn ghost-btn-compact" onClick={() => removeMealField(index)}>
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+
+              <button className="ghost-btn" onClick={addMealField}>
+                Ajouter un repas
+              </button>
+            </div>
             <div className="modal-actions">
               <button className="ghost-btn" onClick={() => setEditingDay(null)}>
                 Annuler

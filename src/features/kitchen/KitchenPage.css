@@ -138,6 +138,12 @@
   transition: all 0.2s ease;
 }
 
+.ghost-btn-compact {
+  padding: 6px 10px;
+  border-radius: 10px;
+  min-width: 0;
+}
+
 .ghost-btn:hover {
   border-color: rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.07);
@@ -256,31 +262,63 @@
 
 .menu-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.menu-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.menu-card:hover {
+  border-color: rgba(34, 211, 238, 0.35);
+  transform: translateY(-2px);
+}
+
+.menu-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu-day-label {
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  font-size: 16px;
+}
+
+.menu-meals {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.menu-row {
+.menu-meal-chip {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  gap: 10px;
+  padding: 10px 12px;
   border-radius: 12px;
-  color: inherit;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.menu-row:hover {
-  border-color: rgba(34, 211, 238, 0.45);
+.menu-meal-text {
+  color: #cbd5e1;
+  font-weight: 600;
 }
 
-.menu-day {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.menu-meal-empty {
+  color: #94a3b8;
+  font-style: italic;
 }
 
 .menu-emoji {
@@ -290,19 +328,6 @@
   background: rgba(255, 255, 255, 0.06);
   display: grid;
   place-items: center;
-  font-size: 18px;
-}
-
-.menu-day-label {
-  font-weight: 700;
-  letter-spacing: 0.4px;
-}
-
-.menu-meal {
-  color: #cbd5e1;
-}
-
-.menu-edit {
   font-size: 18px;
 }
 
@@ -323,6 +348,26 @@
   padding: 18px;
   width: min(460px, 100%);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.meal-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px 0 6px;
+}
+
+.meal-editor-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.menu-emoji.small {
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
 }
 
 .modal-actions {

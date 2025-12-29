@@ -349,9 +349,107 @@
   color: #e2e8f0;
 }
 
+.monospace {
+  font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.task-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.task-list-tile {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.02);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.task-list-tile:hover {
+  border-color: rgba(34, 211, 238, 0.35);
+  transform: translateY(-2px);
+}
+
+.task-list-tile.active {
+  border-color: rgba(16, 185, 129, 0.7);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15);
+}
+
+.task-list-title {
+  font-weight: 700;
+}
+
+.task-list-id {
+  color: #94a3b8;
+  font-size: 12px;
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.task-list-selected {
+  margin-top: 8px;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #bbf7d0;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  font-size: 12px;
+}
+
 .config-actions {
   display: flex;
   gap: 10px;
+}
+
+.rotation-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rotation-member-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rotation-member-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rotation-name {
+  font-weight: 700;
+}
+
+.rotation-role-pill {
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.rotation-role-pill.child {
+  background: rgba(56, 189, 248, 0.15);
+  color: #bae6fd;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.rotation-role-pill.adult {
+  background: rgba(129, 140, 248, 0.15);
+  color: #c7d2fe;
+  border-color: rgba(129, 140, 248, 0.35);
 }
 
 @media (max-width: 1080px) {

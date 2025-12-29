@@ -221,6 +221,11 @@ export const getGoogleConnection = async (userId: string) => {
   } : null;
 };
 
+export interface GoogleTaskList {
+  id: string;
+  title: string;
+}
+
 /**
  * Récupérer les informations du profil Google (email)
  */
@@ -276,6 +281,50 @@ export const getCalendars = async (accessToken: string) => {
 export const getCalendarsWithAuth = async (userId: string) => {
   const token = await getAccessTokenOrThrow(userId);
   return getCalendars(token);
+};
+
+export const getTaskLists = async (accessToken: string): Promise<GoogleTaskList[]> => {
+  const response = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('unauthorized');
+    }
+    throw new Error('Failed to fetch task lists');
+  }
+
+  const data = await response.json();
+  const items = Array.isArray(data.items) ? data.items : [];
+  return items.map((item: any) => ({ id: item.id, title: item.title }));
+};
+
+export const getTaskListsWithAuth = async (userId: string): Promise<GoogleTaskList[]> => {
+  const token = await getAccessTokenOrThrow(userId);
+  return getTaskLists(token);
+};
+
+export const updateGroceryListSelection = async (
+  userId: string,
+  listId: string,
+  listName: string
+): Promise<void> => {
+  const { error } = await supabase
+    .from('google_connections')
+    .upsert(
+      {
+        user_id: userId,
+        grocery_list_id: listId,
+        grocery_list_name: listName,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' }
+    );
+
+  if (error) throw error;
 };
 
 /**

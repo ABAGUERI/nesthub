@@ -1,6 +1,6 @@
 const STORAGE_KEY = 'nesthub.weekMenu';
 
-export type WeekMenu = Record<string, string>;
+export type WeekMenu = Record<string, string[]>;
 
 type WeekMenuStorage = Record<string, string>;
 
@@ -32,7 +32,17 @@ export const getWeekMenu = async (weekStart: string): Promise<WeekMenu> => {
   const menu = stored[weekStart];
   if (menu) {
     try {
-      return JSON.parse(menu) as WeekMenu;
+      const parsed = JSON.parse(menu) as Record<string, string | string[]>;
+      return Object.entries(parsed).reduce<WeekMenu>((acc, [key, value]) => {
+        if (Array.isArray(value)) {
+          acc[key] = value;
+        } else if (typeof value === 'string') {
+          acc[key] = value ? [value] : [];
+        } else {
+          acc[key] = [];
+        }
+        return acc;
+      }, {});
     } catch {
       return {};
     }
