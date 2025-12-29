@@ -511,3 +511,98 @@ export const getTasksWithAuth = async (userId: string, taskListId: string) => {
   const token = await getAccessTokenOrThrow(userId);
   return getTasks(token, taskListId);
 };
+
+export type GoogleTaskStatus = 'needsAction' | 'completed';
+
+export interface GoogleTaskItem {
+  id: string;
+  title: string;
+  status: GoogleTaskStatus;
+  completed?: string;
+}
+
+export const createTask = async (
+  accessToken: string,
+  taskListId: string,
+  title: string
+): Promise<GoogleTaskItem> => {
+  const response = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ title }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('unauthorized');
+    }
+    throw new Error('Failed to create task');
+  }
+
+  const data = await response.json();
+  return {
+    id: data.id,
+    title: data.title,
+    status: data.status,
+    completed: data.completed,
+  };
+};
+
+export const createTaskWithAuth = async (
+  userId: string,
+  taskListId: string,
+  title: string
+): Promise<GoogleTaskItem> => {
+  const token = await getAccessTokenOrThrow(userId);
+  return createTask(token, taskListId, title);
+};
+
+export const updateTaskStatus = async (
+  accessToken: string,
+  taskListId: string,
+  taskId: string,
+  status: GoogleTaskStatus
+): Promise<GoogleTaskItem> => {
+  const response = await fetch(
+    `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks/${taskId}`,
+    {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        status,
+        completed: status === 'completed' ? new Date().toISOString() : null,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('unauthorized');
+    }
+    throw new Error('Failed to update task');
+  }
+
+  const data = await response.json();
+  return {
+    id: data.id,
+    title: data.title,
+    status: data.status,
+    completed: data.completed,
+  };
+};
+
+export const updateTaskStatusWithAuth = async (
+  userId: string,
+  taskListId: string,
+  taskId: string,
+  status: GoogleTaskStatus
+): Promise<GoogleTaskItem> => {
+  const token = await getAccessTokenOrThrow(userId);
+  return updateTaskStatus(token, taskListId, taskId, status);
+};
