@@ -152,6 +152,9 @@ export const DashboardHeader: React.FC = () => {
         >
           {isFullscreen ? '🗗' : '🗖'}
         </button>
+        <button className="menu-btn" title="Cuisine" onClick={() => navigate('/kitchen')}>
+          🍽️
+        </button>
         <button
           className="menu-btn logout-btn"
           onClick={handleLogout}

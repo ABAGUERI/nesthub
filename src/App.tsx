@@ -7,6 +7,7 @@ import { OnboardingPage } from '@/features/onboarding/OnboardingPage';
 import { OAuthCallback } from '@/features/google/components/OAuthCallback';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { ConfigPage } from '@/features/config/ConfigPage';
+import { KitchenPage } from '@/features/kitchen/KitchenPage';
 import '@/styles/global.css';
 
 // Composant pour protéger les routes authentifiées
@@ -122,7 +123,16 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      
+
+      <Route
+        path="/kitchen"
+        element={
+          <ProtectedRoute>
+            <KitchenPage />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/config"
         element={
