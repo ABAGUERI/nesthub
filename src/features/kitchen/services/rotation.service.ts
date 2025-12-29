@@ -46,6 +46,11 @@ export const getCurrentRotation = async (userId: string): Promise<RotationWeek |
       .order('role', { ascending: true });
 
     if (error) {
+      if (error.message?.includes("Could not find the table 'public.rotation_assignments'")) {
+        console.info('Rotation service unavailable: rotation_assignments table missing.');
+        return null;
+      }
+
       console.warn('Rotation service unavailable:', error.message);
       return null;
     }
