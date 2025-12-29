@@ -299,6 +299,24 @@
   gap: 12px;
 }
 
+.role-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.role-switcher .ghost-button.active {
+  border-color: rgba(16, 185, 129, 0.6);
+  background: rgba(16, 185, 129, 0.12);
+  color: #befae3;
+}
+
+.input-label {
+  font-size: 13px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
 .task-inline,
 .weather-form {
   display: grid;
