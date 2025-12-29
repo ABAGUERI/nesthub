@@ -1,60 +1,51 @@
-const STORAGE_KEY = 'nesthub.weekMenu';
+import { supabase } from '@/shared/utils/supabase';
+import { WeekMenu, WeekMenuRow } from '@/shared/types/kitchen.types';
 
-export type WeekMenu = Record<string, string[]>;
-
-type WeekMenuStorage = Record<string, string>;
-
-const isBrowser = typeof window !== 'undefined';
-
-const readStorage = (): WeekMenuStorage => {
-  if (!isBrowser) return {};
+export const getWeekMenu = async (userId: string, weekStart: string): Promise<WeekMenu> => {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return {};
-    return JSON.parse(raw) as WeekMenuStorage;
-  } catch (error) {
-    console.warn('Unable to read week menu storage', error);
+    const { data, error } = await supabase
+      .from('weekly_menu')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('week_start', weekStart);
+
+    if (error || !data) return {};
+
+    const menu: WeekMenu = {};
+    (data as WeekMenuRow[]).forEach((row) => {
+      menu[row.day_iso_date] = row.meals || [];
+    });
+
+    return menu;
+  } catch (err) {
+    console.error('Error in getWeekMenu:', err);
     return {};
   }
 };
 
-const writeStorage = (data: WeekMenuStorage) => {
-  if (!isBrowser) return;
+export const saveWeekMenu = async (
+  userId: string,
+  weekStart: string,
+  weekMenu: WeekMenu
+): Promise<void> => {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.warn('Unable to persist week menu', error);
-  }
-};
+    const nonEmptyDays = Object.entries(weekMenu).filter(([, meals]) => meals && meals.length > 0);
 
-export const getWeekMenu = async (weekStart: string): Promise<WeekMenu> => {
-  const stored = readStorage();
-  const menu = stored[weekStart];
-  if (menu) {
-    try {
-      const parsed = JSON.parse(menu) as Record<string, string | string[]>;
-      return Object.entries(parsed).reduce<WeekMenu>((acc, [key, value]) => {
-        if (Array.isArray(value)) {
-          acc[key] = value;
-        } else if (typeof value === 'string') {
-          acc[key] = value ? [value] : [];
-        } else {
-          acc[key] = [];
-        }
-        return acc;
-      }, {});
-    } catch {
-      return {};
+    if (nonEmptyDays.length === 0) {
+      await supabase.from('weekly_menu').delete().eq('user_id', userId).eq('week_start', weekStart);
+      return;
     }
-  }
-  return {};
-};
 
-export const saveWeekMenu = async (weekStart: string, weekMenu: WeekMenu): Promise<void> => {
-  const stored = readStorage();
-  const updated: WeekMenuStorage = {
-    ...stored,
-    [weekStart]: JSON.stringify(weekMenu),
-  };
-  writeStorage(updated);
+    const promises = nonEmptyDays.map(([dayIso, meals]) => {
+      return supabase.from('weekly_menu').upsert(
+        { user_id: userId, week_start: weekStart, day_iso_date: dayIso, meals },
+        { onConflict: 'user_id,week_start,day_iso_date' }
+      );
+    });
+
+    await Promise.all(promises);
+  } catch (err) {
+    console.error('Error in saveWeekMenu:', err);
+    throw err;
+  }
 };

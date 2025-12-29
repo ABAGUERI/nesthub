@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TabNavigation } from './components/TabNavigation';
-import { FamilyTab } from './components/tabs/ChildrenTab';
+import { FamilyTab } from './components/tabs/FamilyTab';
+import './components/tabs/FamilyTab.css';
 import { GoogleTab } from './components/tabs/GoogleTab';
 import { RewardsTab } from './components/tabs/RewardsTab';
 import { WeatherTab } from './components/tabs/WeatherTab';

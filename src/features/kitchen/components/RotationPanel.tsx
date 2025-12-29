@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
-import { getCurrentRotation, RotationAssignment, RotationWeek } from '../services/rotation.service';
+import { getCurrentRotation } from '../services/rotation.service';
+import { RotationWeek } from '@/shared/types/kitchen.types';
 
-const formatDate = (isoDate: string) => {
+const formatDate = (isoDate: string): string => {
   const date = new Date(isoDate);
-  return date.toLocaleDateString('fr-CA', {
-    day: 'numeric',
-    month: 'long',
-  });
+  return date.toLocaleDateString('fr-CA', { day: 'numeric', month: 'long' });
 };
 
 export const RotationPanel: React.FC = () => {
@@ -16,6 +14,7 @@ export const RotationPanel: React.FC = () => {
   const [rotation, setRotation] = useState<RotationWeek | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadRotation();
@@ -27,6 +26,7 @@ export const RotationPanel: React.FC = () => {
       setLoading(false);
       return;
     }
+
     setLoading(true);
     setError(null);
 
@@ -42,54 +42,34 @@ export const RotationPanel: React.FC = () => {
     }
   };
 
-  const renderAssignments = (assignments: RotationAssignment[]) => {
-    if (!assignments.length) {
-      return null;
-    }
-
-    return (
-      <div className="rotation-roles" role="list">
-        {assignments.map((assignment) => (
-          <div key={`${assignment.role}-${assignment.assigneeMemberId}`} className="rotation-row" role="listitem">
-            <span className="rotation-role">{assignment.role}</span>
-            <div className="rotation-person">
-              {assignment.assigneeAvatarUrl && (
-                <img src={assignment.assigneeAvatarUrl} alt={assignment.assigneeName} className="rotation-avatar" />
-              )}
-              <span className="rotation-name">{assignment.assigneeName}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+  const handleRetry = () => {
+    setRefreshing(true);
+    loadRotation().finally(() => setRefreshing(false));
   };
-
-  const assignmentCount = rotation?.assignments.length ?? 0;
-  const ruleLabel = rotation?.rule ?? 'Rotation hebdomadaire (lundi)';
 
   return (
     <div className="kitchen-card">
       <div className="kitchen-card-header">
         <div>
-          <p className="card-kicker">Famille</p>
           <h3>Rotation — semaine du {rotation ? formatDate(rotation.weekStart) : '...'}</h3>
-          {rotation && <p className="card-caption">Règle : {ruleLabel}</p>}
+          {rotation && <p className="card-caption">Règle : {rotation.rule ?? 'Rotation hebdomadaire'}</p>}
         </div>
-        <button className="ghost-btn" onClick={loadRotation} aria-label="Rafraîchir la rotation">
-          🔄
+        <button className="ghost-btn" onClick={handleRetry} disabled={refreshing}>
+          {refreshing ? '⏳' : '🔄'}
         </button>
       </div>
 
-      {rotation?.adjusted || rotation?.note ? (
-        <p className="rotation-adjusted">{rotation.note ? `Rotation ajustée — ${rotation.note}` : 'Rotation ajustée cette semaine'}</p>
-      ) : null}
+      {rotation?.adjusted && (
+        <div className="rotation-adjusted">
+          {rotation.note ? `Rotation ajustée — ${rotation.note}` : 'Rotation ajustée cette semaine'}
+        </div>
+      )}
 
       <div className="panel-scroll">
         {loading ? (
           <div className="panel-loading">
             <div className="skeleton-line" />
             <div className="skeleton-line short" />
-            <div className="skeleton-line" />
           </div>
         ) : error || !rotation ? (
           <div className="panel-empty rotation-empty">
@@ -98,16 +78,26 @@ export const RotationPanel: React.FC = () => {
               Configurer dans Paramètres
             </Link>
           </div>
-        ) : assignmentCount === 0 ? (
+        ) : rotation.assignments.length === 0 ? (
           <div className="panel-empty rotation-empty">
-            <p>Rotation non configurée</p>
+            <p>Aucune assignation</p>
             <Link className="ghost-btn" to="/config">
-              Configurer dans Paramètres
+              Configurer la rotation
             </Link>
           </div>
         ) : (
-          <div className="rotation-board" aria-label="Tâches en rotation">
-            {renderAssignments(rotation.assignments)}
+          <div className="rotation-roles">
+            {rotation.assignments.map((assignment, index) => (
+              <div key={`${assignment.role}-${assignment.assigneeMemberId}-${index}`} className="rotation-row">
+                <span className="rotation-role">{assignment.role}</span>
+                <div className="rotation-person">
+                  {assignment.assigneeAvatarUrl && (
+                    <img src={assignment.assigneeAvatarUrl} alt={assignment.assigneeName} className="rotation-avatar" />
+                  )}
+                  <span className="rotation-name">{assignment.assigneeName}</span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

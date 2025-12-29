@@ -1,29 +1,5 @@
 import { supabase } from '@/shared/utils/supabase';
-
-export interface RotationAssignment {
-  role: string;
-  assigneeMemberId: string;
-  assigneeName: string;
-  assigneeAvatarUrl?: string;
-}
-
-export interface RotationWeek {
-  weekStart: string;
-  assignments: RotationAssignment[];
-  adjusted?: boolean;
-  note?: string | null;
-  rule?: string | null;
-}
-
-interface RotationRow {
-  role: string;
-  assignee_member_id: string;
-  assignee_name: string;
-  assignee_avatar_url: string | null;
-  adjusted?: boolean | null;
-  note?: string | null;
-  rule?: string | null;
-}
+import { RotationWeek, RotationAssignment } from '@/shared/types/kitchen.types';
 
 const formatWeekStart = (date: Date): string => {
   const day = date.getDay();
@@ -43,50 +19,94 @@ export const getCurrentRotation = async (userId: string): Promise<RotationWeek |
       .select('*')
       .eq('user_id', userId)
       .eq('week_start', weekStart)
-      .order('role', { ascending: true });
+      .order('sort_order', { ascending: true });
 
-    if (error) {
-      if (error.message?.includes("Could not find the table 'public.rotation_assignments'")) {
-        console.info('Rotation service unavailable: rotation_assignments table missing.');
-        return null;
-      }
+    if (error || !data || data.length === 0) return null;
 
-      console.warn('Rotation service unavailable:', error.message);
-      return null;
-    }
-
-    if (!data || data.length === 0) {
-      return null;
-    }
-
-    const rows: RotationRow[] = data as RotationRow[];
-
-    const rotationWeek: RotationWeek = {
+    return {
       weekStart,
-      assignments: rows.map((row: RotationRow) => ({
+      assignments: data.map((row: any) => ({
         role: row.role,
         assigneeMemberId: row.assignee_member_id,
         assigneeName: row.assignee_name,
-        assigneeAvatarUrl: row.assignee_avatar_url ?? undefined,
+        assigneeAvatarUrl: row.assignee_avatar_url,
+        sortOrder: row.sort_order || 0,
       })),
+      adjusted: Boolean(data[0]?.adjusted),
+      note: data[0]?.note || null,
+      rule: data[0]?.rule || null,
     };
-
-    const [firstRow] = rows;
-    if (firstRow) {
-      if (typeof firstRow.adjusted !== 'undefined') {
-        rotationWeek.adjusted = Boolean(firstRow.adjusted);
-      }
-      if (typeof firstRow.note !== 'undefined') {
-        rotationWeek.note = firstRow.note ?? null;
-      }
-      if (typeof firstRow.rule !== 'undefined') {
-        rotationWeek.rule = firstRow.rule ?? null;
-      }
-    }
-
-    return rotationWeek;
   } catch (error) {
-    console.warn('Rotation lookup failed:', error);
+    console.error('Error in getCurrentRotation:', error);
     return null;
   }
+};
+
+export const saveRotation = async (
+  userId: string,
+  weekStart: string,
+  assignments: RotationAssignment[],
+  options?: { adjusted?: boolean; note?: string; rule?: string }
+): Promise<void> => {
+  try {
+    await supabase.from('rotation_assignments').delete().eq('user_id', userId).eq('week_start', weekStart);
+
+    if (assignments.length === 0) return;
+
+    const rows = assignments.map((assignment, index) => ({
+      user_id: userId,
+      week_start: weekStart,
+      role: assignment.role,
+      assignee_member_id: assignment.assigneeMemberId,
+      assignee_name: assignment.assigneeName,
+      assignee_avatar_url: assignment.assigneeAvatarUrl || null,
+      sort_order: assignment.sortOrder ?? index,
+      adjusted: options?.adjusted ?? false,
+      note: options?.note ?? null,
+      rule: options?.rule ?? null,
+    }));
+
+    await supabase.from('rotation_assignments').insert(rows);
+  } catch (err) {
+    console.error('Error in saveRotation:', err);
+    throw err;
+  }
+};
+
+export const generateNextWeekRotation = async (userId: string): Promise<void> => {
+  const currentWeekStart = formatWeekStart(new Date());
+  const nextWeekDate = new Date(currentWeekStart);
+  nextWeekDate.setDate(nextWeekDate.getDate() + 7);
+  const nextWeekStart = nextWeekDate.toISOString();
+
+  const currentRotation = await getCurrentRotation(userId);
+  if (!currentRotation || currentRotation.assignments.length === 0) {
+    throw new Error('No current rotation');
+  }
+
+  const roles = [...new Set(currentRotation.assignments.map((a) => a.role))];
+  const members = [...new Set(currentRotation.assignments.map((a) => ({
+    id: a.assigneeMemberId,
+    name: a.assigneeName,
+    avatar: a.assigneeAvatarUrl,
+  })))];
+
+  const newAssignments: RotationAssignment[] = roles.map((role, index) => {
+    const currentMemberIndex = currentRotation.assignments.findIndex((a) => a.role === role);
+    const nextMemberIndex = (currentMemberIndex + 1) % members.length;
+    const member = members[nextMemberIndex];
+
+    return {
+      role,
+      assigneeMemberId: member.id,
+      assigneeName: member.name,
+      assigneeAvatarUrl: member.avatar,
+      sortOrder: index,
+    };
+  });
+
+  await saveRotation(userId, nextWeekStart, newAssignments, {
+    adjusted: false,
+    rule: currentRotation.rule || 'Rotation automatique hebdomadaire',
+  });
 };

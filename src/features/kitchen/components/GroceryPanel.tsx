@@ -8,9 +8,8 @@ import {
   GoogleTaskItem,
   GoogleTaskStatus,
   updateTaskStatusWithAuth,
-} from '@/features/google/google.service';
-
-interface GroceryTask extends GoogleTaskItem {}
+} from '../services/google.service';
+import { GroceryTask } from '@/shared/types/kitchen.types';
 
 export const GroceryPanel: React.FC = () => {
   const { user } = useAuth();
@@ -31,7 +30,10 @@ export const GroceryPanel: React.FC = () => {
   }, [user, config?.googleGroceryListId]);
 
   const loadGroceryTasks = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -41,16 +43,17 @@ export const GroceryPanel: React.FC = () => {
       const targetListId = connection?.groceryListId || config?.googleGroceryListId;
 
       if (!targetListId) {
-        setError('Liste Épicerie non configurée dans Google Tasks');
+        setError('Liste Épicerie non configurée');
         setTasks([]);
         setListId(null);
+        setLoading(false);
         return;
       }
 
       setListId(targetListId);
 
       const remoteTasks = await getTasksWithAuth(user.id, targetListId);
-      const normalized: GroceryTask[] = (remoteTasks || []).map((task: GoogleTaskItem) => ({
+      const normalized: GroceryTask[] = remoteTasks.map((task: GoogleTaskItem) => ({
         id: task.id,
         title: task.title,
         status: task.status as GoogleTaskStatus,
@@ -64,8 +67,9 @@ export const GroceryPanel: React.FC = () => {
       setError(
         isUnauthorized
           ? 'Session Google expirée : reconnectez-vous dans Paramètres > Google.'
-          : 'Échec de synchro'
+          : 'Échec de synchronisation'
       );
+      console.error('Grocery tasks load error:', err);
     } finally {
       setLoading(false);
     }
@@ -96,8 +100,8 @@ export const GroceryPanel: React.FC = () => {
       const updated = await updateTaskStatusWithAuth(user.id, listId, taskId, nextStatus);
       setTasks((prev) => prev.map((task) => (task.id === taskId ? updated : task)));
     } catch (err) {
-      console.error('Toggle grocery task failed', err);
-      setError('Échec de synchro');
+      console.error('Toggle task failed:', err);
+      setError('Échec de synchronisation');
       setTasks((prev) => prev.map((task) => (task.id === taskId ? current : task)));
     }
   };
@@ -110,11 +114,7 @@ export const GroceryPanel: React.FC = () => {
     if (!trimmed) return;
 
     const tempId = `temp-${Date.now()}`;
-    const optimisticTask: GroceryTask = {
-      id: tempId,
-      title: trimmed,
-      status: 'needsAction',
-    };
+    const optimisticTask: GroceryTask = { id: tempId, title: trimmed, status: 'needsAction' };
 
     setTasks((prev) => [optimisticTask, ...prev]);
     setNewItem('');
@@ -123,8 +123,8 @@ export const GroceryPanel: React.FC = () => {
       const created = await createTaskWithAuth(user.id, listId, trimmed);
       setTasks((prev) => prev.map((task) => (task.id === tempId ? created : task)));
     } catch (err) {
-      console.error('Add grocery task failed', err);
-      setError('Impossible d’ajouter cet item');
+      console.error('Add task failed:', err);
+      setError("Impossible d'ajouter cet item");
       setTasks((prev) => prev.filter((task) => task.id !== tempId));
     }
   };
@@ -140,7 +140,6 @@ export const GroceryPanel: React.FC = () => {
         <div className="panel-loading">
           <div className="skeleton-line" />
           <div className="skeleton-line short" />
-          <div className="skeleton-line" />
         </div>
       );
     }
@@ -149,7 +148,7 @@ export const GroceryPanel: React.FC = () => {
       return (
         <div className="panel-empty">
           <p>{error}</p>
-          <button className="ghost-btn" onClick={handleRetry}>
+          <button className="ghost-btn" onClick={handleRetry} disabled={refreshing}>
             {refreshing ? 'Rechargement...' : 'Réessayer'}
           </button>
         </div>
@@ -157,7 +156,7 @@ export const GroceryPanel: React.FC = () => {
     }
 
     if (!tasks.length) {
-      return <div className="panel-empty">Rien à acheter</div>;
+      return <div className="panel-empty">Liste vide</div>;
     }
 
     return (
@@ -180,10 +179,9 @@ export const GroceryPanel: React.FC = () => {
     <div className="kitchen-card">
       <div className="kitchen-card-header">
         <div>
-          <p className="card-kicker">Google Tasks</p>
           <h3>Épicerie — {resolvedListName}</h3>
         </div>
-        <button className="ghost-btn" onClick={handleRetry}>
+        <button className="ghost-btn" onClick={handleRetry} disabled={refreshing}>
           {refreshing ? '⏳' : '🔄'}
         </button>
       </div>
@@ -195,19 +193,14 @@ export const GroceryPanel: React.FC = () => {
           onChange={(e) => setNewItem(e.target.value)}
           placeholder="Ajouter un item"
           className="grocery-input"
+          disabled={!listId}
         />
         <button type="submit" className="primary-btn" disabled={!listId || !newItem.trim()}>
           Ajouter
         </button>
       </form>
 
-      <div className="panel-scroll">
-        {listId || loading || error ? (
-          renderContent()
-        ) : (
-          <div className="panel-empty">Google Tasks non configuré</div>
-        )}
-      </div>
+      <div className="panel-scroll">{renderContent()}</div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { getStableFoodEmoji } from '@/shared/utils/emoji';
 import { getWeekMenu, saveWeekMenu } from '../services/menu.service';
@@ -28,19 +28,9 @@ const getDayKey = (weekStart: string, offset: number): string => {
   return addDays(weekStart, offset).toISOString();
 };
 
-const formatWeekRange = (weekStart: string): string => {
-  const start = new Date(weekStart);
-  const end = addDays(weekStart, 6);
-  
-  const formatDate = (d: Date) => {
-    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-  };
-  
-  return `${formatDate(start)} → ${formatDate(end)}`;
-};
-
 /**
- * MenuPanel - Affiche les 7 jours en grille
+ * MenuPanel - Version moderne verticale
+ * Affiche UN jour à la fois en grand format
  */
 export const MenuPanel: React.FC = () => {
   const { user } = useAuth();
@@ -48,10 +38,18 @@ export const MenuPanel: React.FC = () => {
   const [menu, setMenu] = useState<WeekMenu>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [editingDay, setEditingDay] = useState<string | null>(null);
   const [editingMeals, setEditingMeals] = useState<string[]>([]);
-  const [editingDayLabel, setEditingDayLabel] = useState<string>('');
   const [saving, setSaving] = useState(false);
+
+  // Initialiser le jour courant (aujourd'hui de la semaine)
+  useEffect(() => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const mondayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Lun=0, Dim=6
+    setCurrentDayIndex(mondayIndex);
+  }, []);
 
   // Charger le menu au montage et quand la semaine change
   useEffect(() => {
@@ -92,20 +90,21 @@ export const MenuPanel: React.FC = () => {
   };
 
   /**
-   * Changer de semaine
+   * Changer de jour (navigation)
    */
-  const changeWeek = (direction: -1 | 1) => {
-    const currentDate = new Date(weekStart);
-    currentDate.setDate(currentDate.getDate() + direction * 7);
-    setWeekStart(getWeekStart(currentDate));
+  const changeDay = (direction: -1 | 1) => {
+    const newIndex = currentDayIndex + direction;
+    if (newIndex >= 0 && newIndex < WEEK_DAYS.length) {
+      setCurrentDayIndex(newIndex);
+    }
   };
 
   /**
-   * Ouvrir l'éditeur pour un jour
+   * Ouvrir l'éditeur pour le jour courant
    */
-  const openEditor = (dayKey: string, dayLabel: string) => {
+  const openEditor = () => {
+    const dayKey = getDayKey(weekStart, WEEK_DAYS[currentDayIndex].offset);
     setEditingDay(dayKey);
-    setEditingDayLabel(dayLabel);
     const existing = menu[dayKey] || [];
     setEditingMeals(existing.length ? [...existing] : ['']);
   };
@@ -126,7 +125,6 @@ export const MenuPanel: React.FC = () => {
     setMenu(updated);
     setEditingDay(null);
     setEditingMeals([]);
-    setEditingDayLabel('');
 
     // Sauvegarder en background
     setSaving(true);
@@ -162,16 +160,11 @@ export const MenuPanel: React.FC = () => {
     setEditingMeals((prev) => prev.filter((_, i) => i !== index));
   };
 
-  /**
-   * Déterminer si un jour est aujourd'hui
-   */
-  const isToday = (dayKey: string): boolean => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dayDate = new Date(dayKey);
-    dayDate.setHours(0, 0, 0, 0);
-    return today.getTime() === dayDate.getTime();
-  };
+  // Jour courant
+  const currentDay = WEEK_DAYS[currentDayIndex];
+  const dayKey = getDayKey(weekStart, currentDay.offset);
+  const dayDate = new Date(dayKey);
+  const meals = menu[dayKey] || [];
 
   /**
    * Rendu du contenu principal
@@ -199,89 +192,62 @@ export const MenuPanel: React.FC = () => {
     }
 
     return (
-      <>
+      <div className="menu-carousel-container">
         {/* Header avec navigation */}
-        <div className="menu-week-header">
-          <span className="week-range">{formatWeekRange(weekStart)}</span>
-          <div className="week-nav">
+        <div className="menu-day-header">
+          <div className="menu-day-display">
+            <span className="menu-day-label-large">{currentDay.fullLabel}</span>
+            <span className="menu-day-date">{dayDate.getDate()}</span>
+          </div>
+
+          <div className="week-switch">
             <button
               className="ghost-btn"
-              onClick={() => changeWeek(-1)}
-              disabled={saving}
-              aria-label="Semaine précédente"
+              onClick={() => changeDay(-1)}
+              disabled={currentDayIndex === 0 || saving}
+              aria-label="Jour précédent"
             >
               ←
             </button>
             <button
               className="ghost-btn"
-              onClick={() => changeWeek(1)}
-              disabled={saving}
-              aria-label="Semaine suivante"
+              onClick={() => changeDay(1)}
+              disabled={currentDayIndex === WEEK_DAYS.length - 1 || saving}
+              aria-label="Jour suivant"
             >
               →
             </button>
           </div>
         </div>
 
-        {/* Grille 7 jours */}
-        <div className="menu-week-grid">
-          {WEEK_DAYS.map((day) => {
-            const dayKey = getDayKey(weekStart, day.offset);
-            const dayDate = new Date(dayKey);
-            const meals = menu[dayKey] || [];
-            const today = isToday(dayKey);
-
-            return (
-              <div
-                key={dayKey}
-                className={`menu-day-card ${today ? 'today' : ''}`}
-                onClick={() => openEditor(dayKey, `${day.fullLabel} ${dayDate.getDate()}`)}
-                style={{ cursor: 'pointer' }}
-              >
-                {/* Header jour */}
-                <div className="menu-day-card-header">
-                  <span className="menu-day-label">{day.label}</span>
-                  <span className="menu-day-number">{dayDate.getDate()}</span>
+        {/* Liste des repas */}
+        <div className="menu-meals-vertical">
+          {meals.length === 0 ? (
+            <div className="menu-meal-empty-large">Aucun repas prévu</div>
+          ) : (
+            meals.map((meal, index) => {
+              const emoji = getStableFoodEmoji(meal, `${dayKey}-${index}`);
+              return (
+                <div key={`${dayKey}-${index}`} className="menu-meal-card">
+                  <span className="menu-emoji-large">{emoji}</span>
+                  <span className="menu-meal-text-large">{meal}</span>
                 </div>
-
-                {/* Liste repas */}
-                <div className="menu-day-meals">
-                  {meals.length === 0 ? (
-                    <div className="menu-day-empty">Aucun repas</div>
-                  ) : (
-                    meals.slice(0, 3).map((meal, index) => {
-                      const emoji = getStableFoodEmoji(meal, `${dayKey}-${index}`);
-                      return (
-                        <div key={`${dayKey}-${index}`} className="menu-meal-item">
-                          <span className="menu-meal-emoji">{emoji}</span>
-                          <span className="menu-meal-text">{meal}</span>
-                        </div>
-                      );
-                    })
-                  )}
-                  {meals.length > 3 && (
-                    <div className="menu-meal-item" style={{ color: '#64748b' }}>
-                      <span className="menu-meal-emoji">+</span>
-                      <span className="menu-meal-text">{meals.length - 3} de plus...</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
-        {/* Bouton modifier global */}
-        <button className="menu-edit-btn" onClick={(e) => {
-          e.stopPropagation();
-          // Ouvrir l'éditeur pour lundi par défaut
-          const mondayKey = getDayKey(weekStart, 0);
-          openEditor(mondayKey, 'Lundi');
-        }} disabled={saving}>
+        {/* Bouton d'ajout */}
+        <button
+          className="menu-add-meal-btn"
+          onClick={openEditor}
+          disabled={saving}
+          aria-label="Modifier le menu"
+        >
           <span>✏️</span>
           <span>Modifier le menu</span>
         </button>
-      </>
+      </div>
     );
   };
 
@@ -299,7 +265,9 @@ export const MenuPanel: React.FC = () => {
       {editingDay && (
         <div className="modal-backdrop" role="dialog" aria-modal="true" onClick={() => setEditingDay(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3>{editingDayLabel}</h3>
+            <h3>
+              {WEEK_DAYS[currentDayIndex]?.fullLabel || 'Jour'} {dayDate.getDate()}
+            </h3>
 
             <div className="meal-editor">
               {editingMeals.map((meal, index) => {
