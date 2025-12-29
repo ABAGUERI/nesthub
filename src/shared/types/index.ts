@@ -19,6 +19,7 @@ export interface Child {
   userId: string;
   firstName: string;
   icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
+  role?: 'child' | 'adult';
   createdAt: string;
 }
 

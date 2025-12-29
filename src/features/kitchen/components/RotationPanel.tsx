@@ -84,31 +84,33 @@ export const RotationPanel: React.FC = () => {
         <p className="rotation-adjusted">{rotation.note ? `Rotation ajustée — ${rotation.note}` : 'Rotation ajustée cette semaine'}</p>
       ) : null}
 
-      {loading ? (
-        <div className="panel-loading">
-          <div className="skeleton-line" />
-          <div className="skeleton-line short" />
-          <div className="skeleton-line" />
-        </div>
-      ) : error || !rotation ? (
-        <div className="panel-empty rotation-empty">
-          <p>Rotation non configurée</p>
-          <Link className="ghost-btn" to="/config">
-            Configurer dans Paramètres
-          </Link>
-        </div>
-      ) : assignmentCount === 0 ? (
-        <div className="panel-empty rotation-empty">
-          <p>Rotation non configurée</p>
-          <Link className="ghost-btn" to="/config">
-            Configurer dans Paramètres
-          </Link>
-        </div>
-      ) : (
-        <div className="rotation-board" aria-label="Tâches en rotation">
-          {renderAssignments(rotation.assignments)}
-        </div>
-      )}
+      <div className="panel-scroll">
+        {loading ? (
+          <div className="panel-loading">
+            <div className="skeleton-line" />
+            <div className="skeleton-line short" />
+            <div className="skeleton-line" />
+          </div>
+        ) : error || !rotation ? (
+          <div className="panel-empty rotation-empty">
+            <p>Rotation non configurée</p>
+            <Link className="ghost-btn" to="/config">
+              Configurer dans Paramètres
+            </Link>
+          </div>
+        ) : assignmentCount === 0 ? (
+          <div className="panel-empty rotation-empty">
+            <p>Rotation non configurée</p>
+            <Link className="ghost-btn" to="/config">
+              Configurer dans Paramètres
+            </Link>
+          </div>
+        ) : (
+          <div className="rotation-board" aria-label="Tâches en rotation">
+            {renderAssignments(rotation.assignments)}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

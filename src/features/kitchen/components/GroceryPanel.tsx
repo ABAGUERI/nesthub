@@ -201,11 +201,13 @@ export const GroceryPanel: React.FC = () => {
         </button>
       </form>
 
-      {listId || loading || error ? (
-        renderContent()
-      ) : (
-        <div className="panel-empty">Google Tasks non configuré</div>
-      )}
+      <div className="panel-scroll">
+        {listId || loading || error ? (
+          renderContent()
+        ) : (
+          <div className="panel-empty">Google Tasks non configuré</div>
+        )}
+      </div>
     </div>
   );
 };

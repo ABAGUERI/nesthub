@@ -5,6 +5,7 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import {
   createChild,
   deleteChild,
+  FamilyRole,
   getChildren,
   updateChild,
 } from '@/shared/utils/children.service';
@@ -15,6 +16,7 @@ interface ChildForm {
   id: string;
   name: string;
   icon: ChildIcon;
+  role: FamilyRole;
   createdAt: string;
 }
 
@@ -25,16 +27,19 @@ const ICON_OPTIONS: { value: ChildIcon; label: string; emoji: string }[] = [
   { value: 'caterpillar', label: 'Chenille', emoji: '🐛' },
 ];
 
-export const ChildrenTab: React.FC = () => {
+export const FamilyTab: React.FC = () => {
   const { user } = useAuth();
   const [children, setChildren] = useState<ChildForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [newChild, setNewChild] = useState<{ name: string; icon: ChildIcon }>({
-    name: '',
-    icon: 'bee',
-  });
+  const [newChild, setNewChild] = useState<{ name: string; icon: ChildIcon; role: FamilyRole }>(
+    {
+      name: '',
+      icon: 'bee',
+      role: 'child',
+    }
+  );
 
   const sortedChildren = useMemo(
     () => [...children].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
@@ -57,6 +62,7 @@ export const ChildrenTab: React.FC = () => {
           id: c.id,
           name: c.firstName,
           icon: c.icon as ChildIcon,
+          role: c.role ?? 'child',
           createdAt: c.createdAt,
         }))
       );
@@ -71,10 +77,10 @@ export const ChildrenTab: React.FC = () => {
     setSaving(true);
     setError(null);
     try {
-      await updateChild(child.id, { firstName: child.name.trim(), icon: child.icon });
+      await updateChild(child.id, { firstName: child.name.trim(), icon: child.icon, role: child.role });
       setChildren((prev) => prev.map((c) => (c.id === child.id ? child : c)));
     } catch (err: any) {
-      setError(err.message || 'Impossible de sauvegarder cet enfant');
+      setError(err.message || 'Impossible de sauvegarder ce membre');
     } finally {
       setSaving(false);
     }
@@ -87,7 +93,7 @@ export const ChildrenTab: React.FC = () => {
       await deleteChild(childId);
       setChildren((prev) => prev.filter((c) => c.id !== childId));
     } catch (err: any) {
-      setError(err.message || 'Impossible de supprimer cet enfant');
+      setError(err.message || 'Impossible de supprimer ce membre');
     } finally {
       setSaving(false);
     }
@@ -101,14 +107,20 @@ export const ChildrenTab: React.FC = () => {
     setSaving(true);
     setError(null);
     try {
-      const created = await createChild(user.id, newChild.name.trim(), newChild.icon);
+      const created = await createChild(user.id, newChild.name.trim(), newChild.icon, newChild.role);
       setChildren((prev) => [
         ...prev,
-        { id: created.id, name: created.firstName, icon: created.icon as ChildIcon, createdAt: created.createdAt },
+        {
+          id: created.id,
+          name: created.firstName,
+          icon: created.icon as ChildIcon,
+          role: created.role ?? 'child',
+          createdAt: created.createdAt,
+        },
       ]);
-      setNewChild({ name: '', icon: 'bee' });
+      setNewChild({ name: '', icon: 'bee', role: 'child' });
     } catch (err: any) {
-      setError(err.message || 'Impossible d’ajouter cet enfant');
+      setError(err.message || "Impossible d’ajouter ce membre");
     } finally {
       setSaving(false);
     }
@@ -123,8 +135,8 @@ export const ChildrenTab: React.FC = () => {
       <div className="panel-header">
         <div>
           <p className="panel-kicker">Famille & avatars</p>
-          <h2>Gérez vos enfants</h2>
-          <p className="panel-subtitle">Ajoutez un enfant, modifiez son prénom ou changez son avatar en un geste.</p>
+          <h2>Gérez votre famille</h2>
+          <p className="panel-subtitle">Ajoutez chaque membre (enfant ou adulte), choisissez son rôle et son avatar.</p>
         </div>
       </div>
 
@@ -133,15 +145,15 @@ export const ChildrenTab: React.FC = () => {
       <div className="config-card">
         <div className="config-card-header">
           <div>
-            <h3>Enfants actifs</h3>
-            <p>Un seul enfant apparaît dans le carrousel du dashboard, mais vous pouvez en gérer jusqu’à quatre.</p>
+            <h3>Membres actifs</h3>
+            <p>Cette liste est la source unique pour les enfants (dashboard) et les rotations.</p>
           </div>
         </div>
 
         {loading ? (
           <div className="config-placeholder">Chargement...</div>
         ) : sortedChildren.length === 0 ? (
-          <div className="config-placeholder">Aucun enfant configuré</div>
+          <div className="config-placeholder">Aucun membre configuré</div>
         ) : (
           <div className="child-grid">
             {sortedChildren.map((child) => (
@@ -177,6 +189,25 @@ export const ChildrenTab: React.FC = () => {
                   placeholder="Prénom"
                 />
 
+                <label className="input-label">Rôle</label>
+                <div className="role-switcher">
+                  {(
+                    [
+                      { value: 'child', label: 'Enfant' },
+                      { value: 'adult', label: 'Adulte' },
+                    ] as { value: FamilyRole; label: string }[]
+                  ).map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`ghost-button ${child.role === option.value ? 'active' : ''}`}
+                      onClick={() => updateLocalChild(child.id, { role: option.value })}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+
                 <Button
                   fullWidth
                   size="small"
@@ -195,8 +226,8 @@ export const ChildrenTab: React.FC = () => {
       <div className="config-card">
         <div className="config-card-header">
           <div>
-            <h3>Ajouter un enfant</h3>
-            <p>Limite: 4 enfants au total.</p>
+            <h3>Ajouter un membre</h3>
+            <p>Limite actuelle : 4 membres au total.</p>
           </div>
         </div>
         <div className="child-inline-form">
@@ -216,6 +247,25 @@ export const ChildrenTab: React.FC = () => {
               >
                 <span className="icon-emoji">{icon.emoji}</span>
                 <span>{icon.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <label className="input-label">Rôle</label>
+          <div className="role-switcher">
+            {(
+              [
+                { value: 'child', label: 'Enfant' },
+                { value: 'adult', label: 'Adulte' },
+              ] as { value: FamilyRole; label: string }[]
+            ).map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`ghost-button ${newChild.role === option.value ? 'active' : ''}`}
+                onClick={() => setNewChild({ ...newChild, role: option.value })}
+              >
+                {option.label}
               </button>
             ))}
           </div>
