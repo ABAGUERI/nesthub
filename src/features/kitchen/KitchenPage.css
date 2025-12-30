@@ -1,717 +1,932 @@
 /* =====================================================
- * KITCHEN PAGE - FULL SCREEN ULTRA-OPTIMISÉ
- * Exploite 100% hauteur/largeur - Blocs adaptés
- * Gap 5mm entre colonnes - Tout visible
+ * KITCHEN PAGE - FIXED GROCERY & ENHANCED ROTATION
  * ===================================================== */
 
-/* ----- RESET & LAYOUT GLOBAL ----- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+
+/* ----- PAGE WRAPPER ----- */
 .kitchen-page {
   height: 100vh;
   width: 100vw;
-  padding: 8px 12px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
   color: #f8fafc;
   overflow: hidden;
-  box-sizing: border-box;
+  gap: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
-/* ----- HEADER MINIMAL ----- */
+/* ----- HEADER ----- */
 .kitchen-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
-  gap: 10px;
+  gap: 16px;
   flex-shrink: 0;
-  height: 40px;
+  height: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 4px;
 }
 
 .kitchen-hero h1 {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 900;
   margin: 0;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.8px;
   background: linear-gradient(135deg, #22d3ee 0%, #a855f7 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1;
 }
 
 .kitchen-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
-/* ----- GRID 2 COLONNES FULL HEIGHT ----- */
-.kitchen-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr;
-  grid-template-areas: 'menu sidebar';
-  gap: 5px;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.menu-area {
-  grid-area: menu;
-  display: flex;
-  min-height: 0;
-}
-
-/* Sidebar 50/50 */
-.kitchen-sidebar {
-  grid-area: sidebar;
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 5px;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.grocery-area,
-.rotation-area {
-  display: flex;
-  min-height: 0;
-}
-
-/* ----- CARTES FULL HEIGHT ----- */
-.kitchen-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 10px 12px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(20px);
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  min-height: 0;
-  height: 100%;
-}
-
-.kitchen-card:hover {
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 36px rgba(34, 211, 238, 0.1);
-}
-
-.kitchen-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.kitchen-card h3 {
-  font-size: 17px;
-  margin: 0;
-  font-weight: 700;
+/* ----- BUTTONS ----- */
+.ghost-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
   color: #f8fafc;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  min-height: 36px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  line-height: 1;
+  backdrop-filter: blur(8px);
 }
 
-.card-caption {
-  color: #94a3b8;
-  font-size: 11px;
-  margin: 2px 0 0 0;
-  font-weight: 400;
+.ghost-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
 }
 
-/* ----- BOUTONS ----- */
 .primary-btn {
   background: linear-gradient(135deg, #22d3ee 0%, #a855f7 100%);
   color: #0a0e27;
   border: none;
   border-radius: 10px;
-  padding: 8px 14px;
-  font-weight: 700;
+  padding: 10px 16px;
+  font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(34, 211, 238, 0.3);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   font-size: 13px;
-  min-height: 38px;
+  min-height: 36px;
+  line-height: 1;
+  box-shadow: 0 4px 16px rgba(34, 211, 238, 0.3);
+}
+
+.primary-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(34, 211, 238, 0.4);
 }
 
 .primary-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.primary-btn:not(:disabled):active {
-  transform: scale(0.96);
-}
-
-.ghost-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #f8fafc;
-  border-radius: 10px;
-  padding: 7px 12px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 13px;
-  min-height: 38px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  backdrop-filter: blur(10px);
-}
-
-.ghost-btn-compact {
-  padding: 6px 10px;
-  border-radius: 8px;
-  min-width: 0;
-  min-height: 34px;
-}
-
-.ghost-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
-.ghost-btn:not(:disabled):active {
-  transform: scale(0.96);
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-/* ----- SCROLL INTERNE ----- */
-.panel-scroll {
+/* =====================================================
+ * 3-COLUMN GRID - OPTIMIZED SPACE
+ * ===================================================== */
+.kitchen-grid-3col {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1.2fr;
+  grid-template-rows: 1fr;
+  gap: 20px;
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 4px;
   min-height: 0;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  height: calc(100vh - 76px);
+  overflow: hidden;
 }
 
-.panel-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.panel-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.panel-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
-}
-
-/* ----- LOADING & EMPTY ----- */
-.panel-loading {
+.kitchen-col {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 6px 0;
+  min-height: 0;
+  height: 100%;
 }
 
-.skeleton-line {
-  height: 14px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.04),
-    rgba(255, 255, 255, 0.08),
-    rgba(255, 255, 255, 0.04)
-  );
-  background-size: 200% 100%;
-  border-radius: 7px;
-  animation: shimmer 1.6s infinite;
-}
-
-.skeleton-line.short {
-  width: 60%;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-.panel-empty {
-  padding: 16px 14px;
-  text-align: center;
-  color: #64748b;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
+/* =====================================================
+ * CARDS - ENHANCED DESIGN
+ * ===================================================== */
+.kitchen-card-enhanced {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.panel-empty p {
-  margin: 0;
-  font-size: 13px;
+.kitchen-card-enhanced:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
-/* ----- MENU 7 JOURS ----- */
-.menu-week-header {
+.card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+  align-items: flex-start;
+  margin-bottom: 20px;
   flex-shrink: 0;
 }
 
-.week-range {
-  font-size: 12px;
+.card-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: #f8fafc;
+  margin: 0 0 6px 0;
+  line-height: 1;
+}
+
+.card-subtitle {
+  font-size: 13px;
   color: #94a3b8;
-  font-weight: 500;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
 }
 
-.week-nav {
+/* =====================================================
+ * MENU COLUMN - IMPROVED MEAL DISPLAY
+ * ===================================================== */
+.menu-week-info {
   display: flex;
-  gap: 4px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.week-nav .ghost-btn {
-  width: 34px;
-  height: 34px;
+.week-display {
+  font-size: 14px;
+  color: #22d3ee;
+  font-weight: 800;
+  background: rgba(34, 211, 238, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.week-nav-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.week-nav-btn {
+  width: 36px;
+  height: 36px;
   padding: 0;
   font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 34px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
 }
 
-/* Grille 7 jours */
-.menu-week-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+/* Grid améliorée */
+.menu-week-grid-enhanced {
   flex: 1;
-  overflow-y: auto;
-  padding-right: 4px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 14px;
+  padding: 4px 2px;
 }
 
-.menu-week-grid::-webkit-scrollbar {
-  width: 4px;
-}
-
-.menu-week-grid::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.menu-week-grid::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
-}
-
-/* Carte jour */
-.menu-day-card {
+/* Carte jour améliorée */
+.menu-day-card-enhanced {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 7px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 12px;
   min-height: 0;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   cursor: pointer;
+  position: relative;
 }
 
-.menu-day-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+.menu-day-card-enhanced:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
-.menu-day-card.today {
+.menu-day-card-enhanced.today {
+  background: rgba(34, 211, 238, 0.12);
   border-color: rgba(34, 211, 238, 0.4);
-  background: rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
 }
 
-/* Header jour */
-.menu-day-card-header {
+.day-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
-.menu-day-label {
-  font-size: 11px;
-  font-weight: 700;
+.day-name {
+  font-size: 13px;
+  font-weight: 900;
   color: #f8fafc;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
 }
 
-.menu-day-number {
-  font-size: 14px;
-  font-weight: 700;
+.day-number {
+  font-size: 18px;
+  font-weight: 900;
   color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Liste repas */
-.menu-day-meals {
+/* Repas amélioré */
+.day-meals {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 10px;
   flex: 1;
   min-height: 0;
 }
 
-.menu-meal-item {
+.meal-item {
   display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  color: #f8fafc;
-  font-weight: 500;
-  line-height: 1.3;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
 }
 
-.menu-meal-emoji {
-  font-size: 13px;
+.meal-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.meal-emoji {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
-.menu-meal-text {
+.meal-text-container {
   flex: 1;
+  min-width: 0;
+}
+
+.meal-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.3;
   word-break: break-word;
+  overflow-wrap: break-word;
+  max-height: 2.6em;
   overflow: hidden;
-  text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
-.menu-day-empty {
-  color: #64748b;
-  font-size: 10px;
-  font-style: italic;
-  text-align: center;
-  padding: 8px 0;
-}
-
-/* Bouton edit */
-.menu-edit-btn {
-  margin-top: 6px;
-  width: 100%;
-  background: rgba(34, 211, 238, 0.08);
-  border: 1px dashed rgba(34, 211, 238, 0.3);
-  color: #22d3ee;
-  padding: 7px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 600;
-  font-size: 12px;
+/* =====================================================
+ * GROCERY COLUMN - FIXED AND ENHANCED
+ * ===================================================== */
+.grocery-header-section {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-height: 34px;
+  margin-bottom: 20px;
   flex-shrink: 0;
 }
 
-.menu-edit-btn:active {
-  transform: scale(0.98);
-  background: rgba(34, 211, 238, 0.12);
-  border-color: rgba(34, 211, 238, 0.5);
-}
-
-/* ----- ÉPICERIE ----- */
-.grocery-form {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
-  flex-shrink: 0;
-}
-
-.grocery-input {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 8px 10px;
-  color: #f8fafc;
+.grocery-stats-enhanced {
   font-size: 13px;
-  min-height: 36px;
-  transition: all 0.2s ease;
+  color: #94a3b8;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.grocery-input:focus {
+/* Input section fixée */
+.grocery-input-section-fixed {
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.grocery-input-wrapper-fixed {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.grocery-input-enhanced {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.grocery-input-enhanced:focus {
   outline: none;
-  border-color: rgba(34, 211, 238, 0.5);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2);
+  background: rgba(255, 255, 255, 0.09);
 }
 
-.grocery-input::placeholder {
-  color: #475569;
-}
-
-.grocery-list {
+/* Liste épicerie fixée */
+.grocery-list-fixed {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
+  overflow-y: auto;
+  padding-right: 8px;
+  position: relative;
 }
 
-.grocery-row {
+/* Item épicerie corrigé */
+.grocery-item-fixed {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
   color: #f8fafc;
   cursor: pointer;
-  text-align: left;
-  transition: all 0.2s ease;
-  width: 100%;
-  min-height: 38px;
+  transition: all 0.25s ease;
+  min-height: 56px;
 }
 
-.grocery-row:active {
-  transform: scale(0.98);
-  border-color: rgba(34, 211, 238, 0.3);
-  background: rgba(255, 255, 255, 0.06);
+.grocery-item-fixed:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(4px);
 }
 
-.grocery-row.done {
+.grocery-item-fixed.done {
   opacity: 0.5;
+}
+
+.grocery-item-fixed.done .item-content-fixed {
   text-decoration: line-through;
+  color: #94a3b8;
 }
 
-.grocery-row.done .grocery-title {
-  color: #64748b;
-}
-
-.grocery-title {
-  font-size: 13px;
-  font-weight: 500;
-  word-break: break-word;
-  letter-spacing: -0.1px;
-}
-
-.checkbox {
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  display: inline-flex;
+/* Checkbox corrigé */
+.checkbox-fixed {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 2.5px solid rgba(255, 255, 255, 0.2);
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: 900;
   font-size: 13px;
   color: #0a0e27;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
-.grocery-row.done .checkbox {
+.grocery-item-fixed.done .checkbox-fixed {
   background: linear-gradient(135deg, #22d3ee 0%, #a855f7 100%);
   border-color: transparent;
 }
 
-/* ----- ROTATION ----- */
-.rotation-adjusted {
-  color: #fbbf24;
-  font-size: 11px;
-  margin: 0 0 8px;
-  padding: 6px 8px;
-  background: rgba(251, 191, 36, 0.08);
-  border-left: 3px solid #fbbf24;
-  border-radius: 6px;
-  font-weight: 500;
+.item-content-fixed {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  word-break: break-word;
 }
 
-.rotation-roles {
+/* Indicateur de scroll corrigé */
+.scroll-indicator-fixed {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, 
+    rgba(10, 14, 39, 0.95) 0%,
+    rgba(10, 14, 39, 0.7) 50%,
+    transparent 100%);
+  padding: 12px 0 8px 0;
+  text-align: center;
+  display: none;
+}
+
+.grocery-list-fixed.has-scroll .scroll-indicator-fixed {
+  display: block;
+}
+
+.scroll-hint-fixed {
+  background: rgba(34, 211, 238, 0.15);
+  border: 1.5px solid rgba(34, 211, 238, 0.3);
+  color: #22d3ee;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Animation pour l'icône de rotation */
+@keyframes spinIcon {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =====================================================
+ * ROTATION COLUMN - ROUE RÉALISTE AVEC RALENTISSEMENT
+ * ===================================================== */
+
+/* Conteneur de la roue - plus compact */
+.rotation-wheel-compact {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
-.rotation-row {
+/* Cercle de rotation */
+.wheel-circle {
+  position: relative;
+  width: 120px;
+  height: 120px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 9px 12px;
-  border-radius: 9px;
+  justify-content: center;
+}
+
+/* Icônes positionnées en cercle */
+.wheel-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+/* Calcul dynamique de la position en cercle */
+.wheel-icon {
+  --angle: calc(360deg / var(--total-icons) * var(--icon-index));
+  --radius: 45px;
+  transform: 
+    translate(-50%, -50%) 
+    rotate(var(--angle)) 
+    translateY(calc(var(--radius) * -1))
+    rotate(calc(var(--angle) * -1));
+}
+
+/* Animation de rotation avec ralentissement progressif */
+.wheel-circle.spinning .wheel-icon {
+  animation: wheelSpin 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes wheelSpin {
+  0% {
+    transform: 
+      translate(-50%, -50%) 
+      rotate(var(--angle)) 
+      translateY(calc(var(--radius) * -1))
+      rotate(calc(var(--angle) * -1));
+  }
+  100% {
+    transform: 
+      translate(-50%, -50%) 
+      rotate(calc(var(--angle) + 1440deg)) 
+      translateY(calc(var(--radius) * -1))
+      rotate(calc((var(--angle) + 1440deg) * -1));
+  }
+}
+
+/* Wrapper d'icône */
+.icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  border: 2.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.icon-wrapper:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Bouton de rotation compact */
+.rotate-button-compact {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+}
+
+.rotate-button-compact:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.5);
+}
+
+.rotate-button-compact:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =====================================================
+ * TABLEAU DES TÂCHES OFFICIELLES
+ * ===================================================== */
+
+.rotation-tasks-table-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.task-table {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  min-height: 46px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* En-tête du tableau */
+.table-header {
+  display: grid;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.header-cell {
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 56px;
+}
+
+.header-cell:last-child {
+  border-right: none;
+}
+
+.task-name-header {
+  justify-content: flex-start;
+  background: rgba(34, 211, 238, 0.08);
+  color: #22d3ee;
+  letter-spacing: 0.5px;
+}
+
+.member-header {
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+}
+
+.header-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 211, 238, 0.5);
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(34, 211, 238, 0.3);
+}
+
+.header-avatar-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(168, 85, 247, 0.5);
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  color: white;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+}
+
+.header-name {
+  font-size: 12px;
+  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Corps du tableau */
+.table-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.table-row {
+  display: grid;
+  gap: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   transition: all 0.2s ease;
 }
 
-.rotation-row:hover {
+.table-row:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
 }
 
-.rotation-role {
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  font-size: 13px;
-  color: #f8fafc;
+.table-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.rotation-person {
+.table-row:nth-child(even):hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.table-cell {
+  padding: 12px 14px;
   display: flex;
   align-items: center;
-  gap: 7px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  min-height: 48px;
 }
 
-.rotation-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+.table-cell:last-child {
+  border-right: none;
 }
 
-.rotation-name {
-  padding: 4px 9px;
-  border-radius: 7px;
-  background: rgba(34, 211, 238, 0.12);
-  border: 1px solid rgba(34, 211, 238, 0.3);
-  color: #7dd3fc;
+.task-name-cell {
+  font-size: 14px;
   font-weight: 700;
-  font-size: 12px;
+  color: #f8fafc;
+  justify-content: flex-start;
+  line-height: 1.3;
 }
 
-.rotation-empty {
-  text-align: left;
-  gap: 8px;
-  align-items: flex-start;
+.member-cell {
+  justify-content: center;
 }
 
-/* ----- MODAL ----- */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: grid;
-  place-items: center;
-  padding: 16px;
-  z-index: 100;
-  backdrop-filter: blur(8px);
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-card {
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 20px;
-  width: min(440px, 100%);
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.6);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-card h3 {
+/* Badges d'assignation */
+.assignment-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #22d3ee, #14b8a6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 18px;
-  margin: 4px 0 12px;
-  color: #f8fafc;
+  font-weight: 900;
+  color: white;
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4);
+  transition: all 0.2s ease;
 }
 
-.meal-editor {
+.assignment-badge:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(34, 211, 238, 0.5);
+}
+
+.empty-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px dashed rgba(255, 255, 255, 0.1);
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 10px 0;
-}
-
-.meal-editor-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 7px;
   align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.2);
+  font-weight: 700;
 }
 
-.menu-emoji.small {
-  width: 28px;
-  height: 28px;
-  font-size: 15px;
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.08);
-  display: grid;
-  place-items: center;
+/* =====================================================
+ * RESPONSIVE TABLEAU
+ * ===================================================== */
+@media (max-width: 1200px) {
+  .header-cell {
+    padding: 10px 12px;
+    min-height: 52px;
+  }
+  
+  .header-avatar,
+  .header-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .header-name {
+    font-size: 11px;
+  }
+  
+  .task-name-cell {
+    font-size: 13px;
+  }
+  
+  .assignment-badge,
+  .empty-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
 }
 
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 7px;
-  margin-top: 14px;
+@media (max-width: 900px) {
+  .header-cell {
+    padding: 8px 10px;
+    min-height: 48px;
+    font-size: 12px;
+  }
+  
+  .header-avatar,
+  .header-avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  .header-name {
+    font-size: 10px;
+  }
+  
+  .task-name-cell {
+    font-size: 12px;
+  }
+  
+  .assignment-badge,
+  .empty-badge {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
 }
 
-/* ----- RESPONSIVE ----- */
-@media (max-width: 1024px) {
-  .kitchen-grid {
+/* =====================================================
+ * RESPONSIVE
+ * ===================================================== */
+@media (max-width: 1400px) {
+  .kitchen-page { padding: 14px 16px; }
+  .kitchen-grid-3col { gap: 16px; }
+  .kitchen-card-enhanced { padding: 16px 18px; }
+}
+
+@media (max-width: 1200px) {
+  .kitchen-grid-3col {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 2fr 1fr;
+    grid-template-areas: 
+      "menu grocery"
+      "menu rotation";
+  }
+  
+  .kitchen-col:nth-child(1) { grid-area: menu; }
+  .kitchen-col:nth-child(2) { grid-area: grocery; }
+  .kitchen-col:nth-child(3) { grid-area: rotation; }
+  
+  .rotation-wheel-compact {
+    padding: 14px 18px;
+  }
+  
+  .wheel-circle {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .wheel-icon {
+    --radius: 38px;
+  }
+  
+  .icon-wrapper {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .kitchen-grid-3col {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-    grid-template-areas:
-      'menu'
-      'sidebar';
+    grid-template-rows: 1.2fr 1fr 1fr;
+    grid-template-areas: 
+      "menu"
+      "grocery"
+      "rotation";
+    gap: 12px;
   }
-
-  .kitchen-sidebar {
-    grid-template-rows: auto auto;
-  }
-
-  .menu-week-grid {
-    grid-template-columns: repeat(3, 1fr);
+  
+  .menu-week-grid-enhanced {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 768px) {
-  .kitchen-page {
-    padding: 6px 10px;
-  }
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+}
 
-  .kitchen-hero h1 {
-    font-size: 20px;
-  }
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
 
-  .menu-week-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
