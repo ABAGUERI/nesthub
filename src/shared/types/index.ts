@@ -52,6 +52,9 @@ export interface ClientConfig {
   weatherCity: string;
   weatherPostalCode: string;
   
+  // Config rotation des tâches
+  rotationResetDay: number; // 0=Dimanche, 1=Lundi, 2=Mardi, etc.
+  
   // Config récompenses
   rewardSystem: 'points' | 'money' | 'hybrid' | 'none';
   rewardPointsToMoneyRate: number;

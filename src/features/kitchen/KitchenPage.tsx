@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MenuPanel } from './components/MenuPanel';
 import { GroceryPanel } from './components/GroceryPanel';
 import { RotationPanel } from './components/RotationPanel';
+import { TimerPanel } from './components/TimerPanel';
+import { FlippableCard } from './components/FlippableCard';
 import './KitchenPage.css';
 
 export const KitchenPage: React.FC = () => {
+  const [timerCount, setTimerCount] = useState(0);
+
   return (
     <div className="kitchen-page">
       <header className="kitchen-hero">
@@ -21,17 +25,23 @@ export const KitchenPage: React.FC = () => {
       </header>
 
       <div className="kitchen-grid-3col">
-        {/* Colonne 1: Menu amélioré */}
+        {/* Colonne 1: Menu */}
         <div className="kitchen-col">
           <MenuPanel />
         </div>
 
-        {/* Colonne 2: Épicerie corrigée */}
+        {/* Colonne 2: Carte Flippable (Épicerie ⇄ Timer) */}
         <div className="kitchen-col">
-          <GroceryPanel />
+          <FlippableCard
+            frontComponent={<GroceryPanel />}
+            backComponent={<TimerPanel onTimerCountChange={setTimerCount} />}
+            frontTitle="Épicerie"
+            backTitle="Minuteurs"
+            hasActiveTimers={timerCount > 0}
+          />
         </div>
 
-        {/* Colonne 3: Rotation avec animation Arts Martiaux */}
+        {/* Colonne 3: Rotation */}
         <div className="kitchen-col">
           <RotationPanel />
         </div>

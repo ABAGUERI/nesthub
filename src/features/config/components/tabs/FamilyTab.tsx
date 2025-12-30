@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import {
   createChild,
   deleteChild,
@@ -13,6 +14,7 @@ import {
   saveRotation,
   getCurrentRotation,
   generateNextWeekRotation,
+  getDayName,
 } from '@/features/kitchen/services/rotation.service';
 import type { Child } from '@/shared/types';
 import type { RotationAssignment } from '@/shared/types/kitchen.types';
@@ -60,6 +62,7 @@ const getWeekStart = (): string => {
  */
 export const FamilyTab: React.FC = () => {
   const { user } = useAuth();
+  const { config, updateConfig } = useClientConfig();
   const [children, setChildren] = useState<ChildForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -79,6 +82,7 @@ export const FamilyTab: React.FC = () => {
   const [rotationAssignments, setRotationAssignments] = useState<
     Record<string, string>
   >({});
+  const [rotationResetDay, setRotationResetDay] = useState<number>(config?.rotationResetDay ?? 1);
 
   // Tri par date de création
   const sortedChildren = useMemo(
@@ -92,6 +96,30 @@ export const FamilyTab: React.FC = () => {
     loadChildren();
     loadCurrentRotation();
   }, [user]);
+
+  // Synchroniser rotationResetDay avec config
+  useEffect(() => {
+    if (config?.rotationResetDay !== undefined) {
+      setRotationResetDay(config.rotationResetDay);
+    }
+  }, [config?.rotationResetDay]);
+
+  /**
+   * Sauvegarder le jour de réinitialisation
+   */
+  const handleSaveResetDay = async (day: number) => {
+    if (!user) return;
+    
+    try {
+      await updateConfig({ rotationResetDay: day });
+      setRotationResetDay(day);
+      setSuccessMessage(`Jour de réinitialisation: ${getDayName(day)}`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Failed to save reset day:', err);
+      setError('Erreur lors de la sauvegarde');
+    }
+  };
 
   /**
    * Charger les membres de la famille
@@ -391,6 +419,37 @@ export const FamilyTab: React.FC = () => {
           <div className="config-card-header">
             <h3>Configuration des rotations</h3>
             <p>Définissez les rôles et assignez-les aux membres de la famille</p>
+          </div>
+
+          {/* Jour de réinitialisation */}
+          <div className="rotation-reset-day-config">
+            <label className="input-label">
+              Jour de réinitialisation hebdomadaire
+              <span className="input-hint">
+                La rotation se réinitialisera automatiquement chaque {getDayName(rotationResetDay)}
+              </span>
+            </label>
+            <div className="day-selector">
+              {[
+                { value: 0, label: 'Dim' },
+                { value: 1, label: 'Lun' },
+                { value: 2, label: 'Mar' },
+                { value: 3, label: 'Mer' },
+                { value: 4, label: 'Jeu' },
+                { value: 5, label: 'Ven' },
+                { value: 6, label: 'Sam' },
+              ].map((day) => (
+                <button
+                  key={day.value}
+                  className={`day-button ${rotationResetDay === day.value ? 'active' : ''}`}
+                  onClick={() => handleSaveResetDay(day.value)}
+                  disabled={saving}
+                  type="button"
+                >
+                  {day.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Gestion des rôles */}

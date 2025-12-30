@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
-import { getCurrentRotation, generateNextWeekRotation } from '../services/rotation.service';
+import { useClientConfig } from '@/shared/hooks/useClientConfig';
+import { getCurrentRotation, generateCurrentWeekRotation, isResetDay, getDayName } from '../services/rotation.service';
 import { RotationWeek } from '@/shared/types/kitchen.types';
 
 // Catégories simplifiées pour la roue indicative
@@ -12,14 +13,35 @@ const CATEGORIES = [
 
 export const RotationPanel: React.FC = () => {
   const { user } = useAuth();
+  const { config } = useClientConfig();
   const [rotation, setRotation] = useState<RotationWeek | null>(null);
   const [loading, setLoading] = useState(true);
   const [rotating, setRotating] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+
+  // Jour de réinitialisation (défaut : Lundi = 1)
+  const resetDay = config?.rotationResetDay ?? 1;
+  const canRotateToday = isResetDay(resetDay);
+  const resetDayName = getDayName(resetDay);
+
+  // Calcul des tentatives
+  const attemptsUsed = rotation?.attemptsUsed || 0;
+  const MAX_ATTEMPTS = 3;
+  const attemptsRemaining = MAX_ATTEMPTS - attemptsUsed;
+  const canRotate = canRotateToday && attemptsRemaining > 0;
 
   useEffect(() => {
     loadRotation();
   }, [user]);
+
+  // Effacer le message de feedback après 5 secondes
+  useEffect(() => {
+    if (feedbackMessage) {
+      const timeout = setTimeout(() => setFeedbackMessage(null), 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [feedbackMessage]);
 
   const loadRotation = async () => {
     if (!user) {
@@ -39,19 +61,38 @@ export const RotationPanel: React.FC = () => {
   };
 
   const handleRotate = async () => {
-    if (!user || rotating) return;
+    if (!user || rotating || !canRotate) return;
     
     setRotating(true);
+    setFeedbackMessage(null);
     
     // Animation de roue qui ralentit : 2 secondes
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     try {
       setGenerating(true);
-      await generateNextWeekRotation(user.id);
-      await loadRotation();
+      console.log('Starting rotation generation...');
+      
+      const result = await generateCurrentWeekRotation(user.id);
+      
+      console.log('Rotation result:', result);
+      
+      if (result.success) {
+        // Attendre un peu pour que la DB se mette à jour
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Forcer le rechargement
+        await loadRotation();
+        
+        console.log('Rotation reloaded');
+        
+        setFeedbackMessage(result.message || 'Nouvelle rotation générée !');
+      } else {
+        setFeedbackMessage(result.message || 'Impossible de générer une nouvelle rotation');
+      }
     } catch (err) {
       console.error('Rotation failed:', err);
+      setFeedbackMessage('Erreur lors de la génération de la rotation');
     } finally {
       setRotating(false);
       setGenerating(false);
@@ -140,11 +181,54 @@ export const RotationPanel: React.FC = () => {
           ))}
         </div>
 
+        {/* Message si pas le bon jour */}
+        {!canRotateToday && (
+          <div className="rotation-locked-message">
+            <span className="lock-icon">🔒</span>
+            <span>Rotation disponible chaque {resetDayName}</span>
+          </div>
+        )}
+
+        {/* Indicateur de tentatives (si bon jour) */}
+        {canRotateToday && (
+          <div className={`attempts-indicator ${attemptsRemaining === 0 ? 'exhausted' : ''}`}>
+            <span className="attempts-label">Tentatives:</span>
+            <div className="attempts-dots">
+              {Array.from({ length: MAX_ATTEMPTS }).map((_, i) => (
+                <span 
+                  key={i} 
+                  className={`attempt-dot ${i < attemptsUsed ? 'used' : 'available'}`}
+                  title={i < attemptsUsed ? 'Utilisée' : 'Disponible'}
+                >
+                  {i < attemptsUsed ? '●' : '○'}
+                </span>
+              ))}
+            </div>
+            <span className="attempts-count">
+              {attemptsRemaining}/{MAX_ATTEMPTS}
+            </span>
+          </div>
+        )}
+
+        {/* Message de feedback */}
+        {feedbackMessage && (
+          <div className={`rotation-feedback ${attemptsRemaining === 0 ? 'warning' : 'success'}`}>
+            {feedbackMessage}
+          </div>
+        )}
+
         <button 
           className="rotate-button-compact"
           onClick={handleRotate}
-          disabled={rotating || !user}
+          disabled={rotating || !user || !canRotate}
           type="button"
+          title={
+            !canRotateToday 
+              ? `Disponible le ${resetDayName}` 
+              : attemptsRemaining === 0
+              ? 'Maximum de tentatives atteint'
+              : `${attemptsRemaining} tentative(s) restante(s)`
+          }
         >
           {rotating ? (
             <>
@@ -153,6 +237,10 @@ export const RotationPanel: React.FC = () => {
             </>
           ) : generating ? (
             'Génération...'
+          ) : !canRotateToday ? (
+            `⏰ Disponible ${resetDayName}`
+          ) : attemptsRemaining === 0 ? (
+            '🔒 3 tentatives utilisées'
           ) : (
             '⟳ Nouvelle rotation'
           )}
