@@ -1,343 +1,193 @@
-import { supabase } from '@/shared/utils/supabase';
+// src/features/kitchen/services/ai-menu.service.ts
+// Service pour générer menu + épicerie via Netlify Function
+
+import { WeekMenu } from '@/shared/types/kitchen.types';
 import type { 
-  AIMenuRequest, 
-  AIGeneratedMenu, 
-  AIMenuResponse,
-  AIUsageLog 
+  MenuAndGroceryResult, 
+  GroceryList, 
+  GroceryItem,
+  GroceryCategory,
+  AIGenerationResponse 
 } from '../types/ai-menu.types';
 
-// Configuration
-const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
-const MODEL = 'claude-sonnet-4-20250514';
-const CACHE_DURATION_DAYS = 7;
-
-// Coûts par 1M tokens (décembre 2024)
-const COSTS = {
-  'claude-sonnet-4-20250514': {
-    input: 3.0,
-    output: 15.0,
-  },
-};
-
 /**
- * Génère un hash unique pour une requête de menu
- * Même requête = même hash = même cache
+ * Génère un menu hebdomadaire + liste épicerie via API Claude
  */
-const hashRequest = (req: AIMenuRequest): string => {
-  const key = `${req.familySize}_${req.budget}_${req.restrictions.sort().join(',')}_${req.dislikes.sort().join(',')}_${req.preferences.sort().join(',')}`;
-  return btoa(key).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
-};
-
-/**
- * Récupère un menu depuis le cache
- */
-const getFromCache = async (hash: string): Promise<AIGeneratedMenu | null> => {
-  try {
-    const cacheKey = `hub_ai_menu_${hash}`;
-    const cached = localStorage.getItem(cacheKey);
-    
-    if (!cached) return null;
-    
-    const parsed = JSON.parse(cached);
-    const expiry = new Date(parsed.expiresAt);
-    
-    if (expiry < new Date()) {
-      localStorage.removeItem(cacheKey);
-      return null;
-    }
-    
-    console.log('✅ Menu trouvé en cache');
-    return parsed.menu;
-  } catch (err) {
-    console.error('Cache read error:', err);
-    return null;
-  }
-};
-
-/**
- * Sauvegarde un menu dans le cache
- */
-const saveToCache = (hash: string, menu: AIGeneratedMenu): void => {
-  try {
-    const cacheKey = `hub_ai_menu_${hash}`;
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + CACHE_DURATION_DAYS);
-    
-    localStorage.setItem(cacheKey, JSON.stringify({
-      menu,
-      expiresAt: expiresAt.toISOString(),
-    }));
-    
-    console.log('💾 Menu sauvegardé en cache');
-  } catch (err) {
-    console.error('Cache write error:', err);
-  }
-};
-
-/**
- * Construit le prompt pour Claude
- */
-const buildMenuPrompt = (req: AIMenuRequest): string => {
-  const weekStart = req.weekStart ? new Date(req.weekStart) : new Date();
-  const budget = req.budget || 200;
-  
-  return `Tu es un assistant culinaire expert pour familles québécoises/canadiennes. Génère un menu hebdomadaire complet.
-
-**CONTEXTE FAMILLE:**
-- ${req.adults} adulte(s) + ${req.children} enfant(s) = ${req.familySize} personnes
-- Budget: ${budget}$ CAD
-${req.restrictions.length > 0 ? `- Restrictions: ${req.restrictions.join(', ')}` : ''}
-${req.dislikes.length > 0 ? `- N'aiment pas: ${req.dislikes.join(', ')}` : ''}
-${req.preferences.length > 0 ? `- Préférences: ${req.preferences.join(', ')}` : ''}
-
-**CONSIGNES:**
-1. Semaine du ${weekStart.toLocaleDateString('fr-CA')} (7 jours)
-2. Un repas principal par jour (souper)
-3. Plats adaptés aux enfants ET adultes
-4. Variété: viandes, poissons, végé
-5. Temps préparation réaliste (15-45 min)
-6. Coûts réalistes épicerie Québec
-7. Génère liste d'épicerie complète par catégories
-
-**FORMAT RÉPONSE (JSON strict):**
-\`\`\`json
-{
-  "weekStart": "2025-12-30",
-  "weekEnd": "2026-01-05",
-  "days": [
-    {
-      "date": "2025-12-30",
-      "dayName": "Lundi",
-      "meals": {
-        "soir": {
-          "name": "Spaghetti sauce bolognaise",
-          "description": "Classique italien, sauce tomate maison avec boeuf haché",
-          "prepTime": 30,
-          "estimatedCost": 18,
-          "ingredients": ["spaghetti 500g", "boeuf haché 500g", "tomates 796ml", "oignon", "ail"],
-          "difficulty": "facile"
-        }
-      }
-    }
-  ],
-  "totalCost": ${budget},
-  "groceryList": [
-    {
-      "category": "Viandes & Poissons",
-      "items": [
-        {"name": "Boeuf haché", "quantity": "500g", "estimatedCost": 8}
-      ]
-    }
-  ],
-  "tips": [
-    "Préparer sauce bolognaise en double portion pour congeler",
-    "Acheter légumes en spécial cette semaine"
-  ]
-}
-\`\`\`
-
-Réponds UNIQUEMENT avec le JSON, aucun texte avant ou après.`;
-};
-
-/**
- * Parse la réponse de Claude en menu structuré
- */
-const parseMenuResponse = (text: string): AIGeneratedMenu => {
-  try {
-    // Extraire JSON du markdown si présent
-    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
-    const jsonText = jsonMatch ? jsonMatch[1] : text;
-    
-    const parsed = JSON.parse(jsonText.trim());
-    
-    // Validation basique
-    if (!parsed.days || !Array.isArray(parsed.days)) {
-      throw new Error('Format invalide: jours manquants');
-    }
-    
-    return parsed as AIGeneratedMenu;
-  } catch (err) {
-    console.error('Parse error:', err);
-    throw new Error('Impossible de parser la réponse IA');
-  }
-};
-
-/**
- * Log l'usage IA dans Supabase
- */
-const logAIUsage = async (log: AIUsageLog): Promise<void> => {
-  try {
-    await supabase.from('ai_usage_logs').insert({
-      user_id: log.userId,
-      feature: log.feature,
-      model: log.model,
-      input_tokens: log.inputTokens,
-      output_tokens: log.outputTokens,
-      cost: log.cost,
-      cached: log.cached,
-    });
-  } catch (err) {
-    console.error('Failed to log AI usage:', err);
-    // Non-blocking: ne pas fail si le log échoue
-  }
-};
-
-/**
- * Calcule le coût d'un appel API
- */
-const calculateCost = (inputTokens: number, outputTokens: number, model: string): number => {
-  const costs = COSTS[model as keyof typeof COSTS];
-  if (!costs) return 0;
-  
-  const inputCost = (inputTokens / 1_000_000) * costs.input;
-  const outputCost = (outputTokens / 1_000_000) * costs.output;
-  
-  return inputCost + outputCost;
-};
-
-/**
- * FONCTION PRINCIPALE : Génère un menu avec IA
- */
-export const generateAIMenu = async (
+export async function generateMenuAndGrocery(
   userId: string,
-  request: AIMenuRequest
-): Promise<AIMenuResponse> => {
-  console.log('🤖 Génération menu IA...', request);
-  
+  weekStart: string,
+  familySize: number = 5
+): Promise<MenuAndGroceryResult> {
+  console.log('🤖 Génération menu + épicerie via Netlify Function...');
+  console.log('User:', userId);
+  console.log('Week:', weekStart);
+  console.log('Famille:', familySize, 'personnes');
+
   try {
-    // 1. Vérifier le cache
-    const hash = hashRequest(request);
-    const cached = await getFromCache(hash);
-    
-    if (cached) {
-      // Menu trouvé en cache
-      await logAIUsage({
-        userId,
-        feature: 'menu_generation',
-        model: MODEL,
-        inputTokens: 0,
-        outputTokens: 0,
-        cost: 0,
-        cached: true,
-      });
-      
-      return {
-        success: true,
-        menu: cached,
-        cached: true,
-      };
-    }
-    
-    // 2. Vérifier la clé API
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error('Clé API Anthropic manquante');
-    }
-    
-    // 3. Appel à l'API Claude
-    const prompt = buildMenuPrompt(request);
-    
-    console.log('📤 Appel API Claude...');
-    
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // URL fonction Netlify
+    const functionUrl = getFunctionUrl();
+    console.log('📡 Appel fonction:', functionUrl);
+
+    // Timeout 30 secondes
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    // Appeler fonction
+    const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 4000,
-        messages: [{
-          role: 'user',
-          content: prompt,
-        }],
+        userId,
+        weekStart,
+        familySize,
       }),
+      signal: controller.signal,
     });
-    
+
+    clearTimeout(timeoutId);
+
+    // Vérifier statut
     if (!response.ok) {
-      const error = await response.text();
-      console.error('API Error:', error);
-      throw new Error(`API Claude erreur: ${response.status}`);
+      const error = await response.json().catch(() => ({
+        error: 'Erreur serveur',
+        message: `Status ${response.status}`,
+      }));
+      
+      console.error('❌ Erreur Netlify Function:', error);
+      throw new Error(error.message || 'Erreur génération');
+    }
+
+    // Parser réponse
+    const data: AIGenerationResponse = await response.json();
+
+    if (!data.success || !data.menu || !data.grocery) {
+      console.error('❌ Réponse invalide:', data);
+      throw new Error('Format réponse invalide');
+    }
+
+    console.log('✅ Menu + Épicerie générés avec succès');
+    console.log('Tokens:', data.usage);
+    console.log('Coût:', `$${data.usage.estimated_cost_usd.toFixed(6)}`);
+
+    // Convertir formats
+    const menu = convertMenuFormat(data.menu, weekStart);
+    const grocery = convertGroceryFormat(data.grocery);
+
+    return {
+      menu,
+      grocery,
+      usage: data.usage,
+    };
+
+  } catch (error) {
+    console.error('❌ Erreur génération:', error);
+    
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Timeout: Génération trop longue (>30s)');
+      }
+      throw error;
     }
     
-    const data = await response.json();
-    console.log('📥 Réponse reçue:', data.usage);
-    
-    // 4. Parser la réponse
-    const content = data.content[0].text;
-    const menu = parseMenuResponse(content);
-    
-    // 5. Sauvegarder en cache
-    saveToCache(hash, menu);
-    
-    // 6. Logger l'usage
-    const cost = calculateCost(
-      data.usage.input_tokens,
-      data.usage.output_tokens,
-      MODEL
-    );
-    
-    await logAIUsage({
-      userId,
-      feature: 'menu_generation',
-      model: MODEL,
-      inputTokens: data.usage.input_tokens,
-      outputTokens: data.usage.output_tokens,
-      cost,
-      cached: false,
-    });
-    
-    console.log('✅ Menu généré:', {
-      days: menu.days.length,
-      cost: `$${cost.toFixed(4)}`,
-      tokens: data.usage.input_tokens + data.usage.output_tokens,
-    });
-    
-    return {
-      success: true,
-      menu,
-      cached: false,
-      usage: {
-        inputTokens: data.usage.input_tokens,
-        outputTokens: data.usage.output_tokens,
-        cost,
-      },
-    };
-    
-  } catch (err) {
-    console.error('❌ Erreur génération menu:', err);
-    
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : 'Erreur inconnue',
-    };
+    throw new Error('Erreur inconnue lors de la génération');
   }
-};
+}
 
 /**
- * Obtenir les statistiques d'usage IA pour un utilisateur
+ * Obtenir URL fonction Netlify
  */
-export const getAIUsageStats = async (userId: string): Promise<{
-  totalCalls: number;
-  totalCost: number;
-  cachedCalls: number;
-}> => {
-  try {
-    const { data, error } = await supabase
-      .from('ai_usage_logs')
-      .select('cost, cached')
-      .eq('user_id', userId);
-    
-    if (error) throw error;
-    
-    const totalCalls = data.length;
-    const totalCost = data.reduce((sum, log) => sum + log.cost, 0);
-    const cachedCalls = data.filter(log => log.cached).length;
-    
-    return { totalCalls, totalCost, cachedCalls };
-  } catch (err) {
-    console.error('Error fetching AI stats:', err);
-    return { totalCalls: 0, totalCost: 0, cachedCalls: 0 };
+function getFunctionUrl(): string {
+  // Développement local
+  if (import.meta.env.DEV) {
+    return 'http://localhost:8888/.netlify/functions/generate-menu';
   }
-};
+  
+  // Production Netlify
+  return '/.netlify/functions/generate-menu';
+}
+
+/**
+ * Convertir format jour nommé (monday) vers date ISO
+ */
+function convertMenuFormat(
+  menuByDay: Record<string, string[]>,
+  weekStart: string
+): WeekMenu {
+  const menu: WeekMenu = {};
+  
+  const dayNames = [
+    'monday',
+    'tuesday', 
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+  ];
+
+  dayNames.forEach((dayName, index) => {
+    const meals = menuByDay[dayName] || [];
+    
+    // Calculer date ISO
+    const date = new Date(weekStart);
+    date.setDate(date.getDate() + index);
+    const dateKey = date.toISOString();
+    
+    // Nettoyer repas (max 24 caractères)
+    menu[dateKey] = meals
+      .map((meal) => meal.trim().substring(0, 24))
+      .filter(Boolean);
+  });
+
+  return menu;
+}
+
+/**
+ * Convertir format épicerie avec items cochables
+ */
+function convertGroceryFormat(
+  groceryByCategory: Record<string, string[]>
+): GroceryList {
+  const grocery: Partial<GroceryList> = {};
+  
+  const categories: GroceryCategory[] = [
+    'Viandes & Poissons',
+    'Légumes',
+    'Fruits',
+    'Féculents',
+    'Produits laitiers',
+    'Épices & condiments',
+  ];
+
+  categories.forEach((category) => {
+    const items = groceryByCategory[category] || [];
+    
+    // Convertir en items cochables
+    grocery[category] = items
+      .filter(Boolean)
+      .map((name): GroceryItem => ({
+        name: name.trim(),
+        checked: false,
+      }));
+  });
+
+  return grocery as GroceryList;
+}
+
+/**
+ * Tester connexion Netlify Function
+ */
+export async function testFunctionConnection(): Promise<boolean> {
+  try {
+    const functionUrl = getFunctionUrl();
+    const response = await fetch(functionUrl, {
+      method: 'OPTIONS',
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('❌ Test connexion échoué:', error);
+    return false;
+  }
+}

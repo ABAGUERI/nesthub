@@ -1,316 +1,413 @@
+// src/features/kitchen/components/AIMenuPanel.tsx
+// Panneau génération menu + épicerie IA avec preview éditable
+
 import React, { useState } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
-import { generateAIMenu } from '../services/ai-menu.service';
-import type { AIMenuRequest, AIGeneratedMenu } from '../types/ai-menu.types';
+import { generateMenuAndGrocery } from '../services/ai-menu.service';
+import { saveWeekMenu } from '../services/menu.service';
+import { getStableFoodEmoji } from '@/shared/utils/emoji';
+import type { WeekMenu } from '@/shared/types/kitchen.types';
+import type { GroceryList, GroceryCategory } from '../types/ai-menu.types';
+import './AIMenuPanel.css';
+
+// États du composant
+type PanelState = 'idle' | 'generating' | 'preview' | 'success' | 'error';
+
+// Calculer lundi de la semaine
+const getWeekStart = (): string => {
+  const date = new Date();
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday.toISOString();
+};
+
+// Noms de jours
+const DAY_NAMES = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
 export const AIMenuPanel: React.FC = () => {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [menu, setMenu] = useState<AIGeneratedMenu | null>(null);
+  const [state, setState] = useState<PanelState>('idle');
   const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
   
-  // État du formulaire
-  const [familySize, setFamilySize] = useState(4);
-  const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(2);
-  const [budget, setBudget] = useState(200);
-  const [restrictions, setRestrictions] = useState<string[]>([]);
-  const [dislikes, setDislikes] = useState('');
-  const [preferences, setPreferences] = useState('');
+  // Données preview éditables
+  const [previewMenu, setPreviewMenu] = useState<WeekMenu>({});
+  const [previewGrocery, setPreviewGrocery] = useState<GroceryList | null>(null);
+  const [weekStart, setWeekStart] = useState<string>('');
 
+  // Lancer génération
   const handleGenerate = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    const request: AIMenuRequest = {
-      familySize,
-      adults,
-      children,
-      budget,
-      restrictions,
-      dislikes: dislikes.split(',').map(s => s.trim()).filter(Boolean),
-      preferences: preferences.split(',').map(s => s.trim()).filter(Boolean),
-    };
-    
-    const response = await generateAIMenu(user.id, request);
-    
-    if (response.success && response.menu) {
-      setMenu(response.menu);
-      setShowForm(false);
-      
-      if (response.cached) {
-        console.log('✨ Menu chargé du cache');
-      } else if (response.usage) {
-        console.log(`💰 Coût: $${response.usage.cost.toFixed(4)}`);
-      }
-    } else {
-      setError(response.error || 'Erreur lors de la génération');
+    if (!user) {
+      setError('Utilisateur non connecté');
+      setState('error');
+      return;
     }
+
+    setState('generating');
+    setError(null);
+
+    try {
+      console.log('🤖 Début génération menu + épicerie...');
+
+      const currentWeekStart = getWeekStart();
+      setWeekStart(currentWeekStart);
+
+      // Appeler service (un seul appel API)
+      const result = await generateMenuAndGrocery(user.id, currentWeekStart, 5);
+
+      console.log('✅ Génération réussie');
+      console.log('Menu:', result.menu);
+      console.log('Épicerie:', result.grocery);
+      console.log('Coût:', `$${result.usage.estimated_cost_usd.toFixed(6)}`);
+
+      // Passer en mode preview
+      setPreviewMenu(result.menu);
+      setPreviewGrocery(result.grocery);
+      setState('preview');
+
+    } catch (err) {
+      console.error('❌ Erreur génération:', err);
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      setState('error');
+    }
+  };
+
+  // Confirmer et sauvegarder
+  const handleConfirm = async () => {
+    if (!user || !weekStart) return;
+
+    try {
+      console.log('💾 Sauvegarde menu + épicerie...');
+
+      // Sauvegarder menu dans MenuPanel
+      await saveWeekMenu(user.id, weekStart, previewMenu);
+
+      // Sauvegarder épicerie dans GroceryPanel
+      if (previewGrocery) {
+        await saveGroceryList(user.id, previewGrocery);
+      }
+
+      console.log('✅ Sauvegarde réussie');
+      
+      setState('success');
+      setTimeout(() => setState('idle'), 5000);
+
+    } catch (err) {
+      console.error('❌ Erreur sauvegarde:', err);
+      setError(err instanceof Error ? err.message : 'Erreur sauvegarde');
+      setState('error');
+    }
+  };
+
+  // Annuler
+  const handleCancel = () => {
+    setPreviewMenu({});
+    setPreviewGrocery(null);
+    setState('idle');
+  };
+
+  // Éditer repas
+  const handleEditMeal = (dayKey: string, index: number, value: string) => {
+    setPreviewMenu((prev) => ({
+      ...prev,
+      [dayKey]: prev[dayKey]?.map((meal, i) => (i === index ? value : meal)) || [],
+    }));
+  };
+
+  // Supprimer repas
+  const handleRemoveMeal = (dayKey: string, index: number) => {
+    setPreviewMenu((prev) => ({
+      ...prev,
+      [dayKey]: prev[dayKey]?.filter((_, i) => i !== index) || [],
+    }));
+  };
+
+  // Ajouter repas
+  const handleAddMeal = (dayKey: string) => {
+    setPreviewMenu((prev) => ({
+      ...prev,
+      [dayKey]: [...(prev[dayKey] || []), ''],
+    }));
+  };
+
+  // Éditer item épicerie
+  const handleEditGroceryItem = (category: GroceryCategory, index: number, value: string) => {
+    if (!previewGrocery) return;
     
-    setLoading(false);
+    setPreviewGrocery((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [category]: prev[category].map((item, i) => 
+          i === index ? { ...item, name: value } : item
+        ),
+      };
+    });
   };
 
-  const toggleRestriction = (restriction: string) => {
-    setRestrictions(prev => 
-      prev.includes(restriction)
-        ? prev.filter(r => r !== restriction)
-        : [...prev, restriction]
-    );
+  // Supprimer item épicerie
+  const handleRemoveGroceryItem = (category: GroceryCategory, index: number) => {
+    if (!previewGrocery) return;
+    
+    setPreviewGrocery((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [category]: prev[category].filter((_, i) => i !== index),
+      };
+    });
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-CA', {
-      style: 'currency',
-      currency: 'CAD',
-    }).format(amount);
+  // Ajouter item épicerie
+  const handleAddGroceryItem = (category: GroceryCategory) => {
+    if (!previewGrocery) return;
+    
+    setPreviewGrocery((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [category]: [...prev[category], { name: '', checked: false }],
+      };
+    });
   };
 
+  // Render selon état
   return (
-    <div className="kitchen-card-enhanced ai-menu-card">
-      <div className="card-header">
-        <div>
-          <h2 className="card-title">🤖 Menu IA</h2>
-          <p className="card-subtitle">
-            {menu ? 'Menu généré' : 'Générateur intelligent de menus'}
-          </p>
-        </div>
-        {menu && (
-          <button 
-            className="ghost-btn"
-            onClick={() => setShowForm(true)}
-            type="button"
-          >
-            🔄 Nouveau
-          </button>
-        )}
+    <div className="ai-menu-panel">
+      {/* Header */}
+      <div className="ai-menu-header">
+        <h2 className="ai-menu-title">
+          <span className="ai-icon">🤖</span>
+          Menu IA
+        </h2>
+        <p className="ai-menu-subtitle">
+          Génération automatique menu + épicerie
+        </p>
       </div>
 
-      {!menu && !showForm && (
-        <div className="ai-menu-intro">
-          <div className="ai-intro-icon">✨</div>
-          <h3>Génération automatique de menu</h3>
-          <p>L'IA crée un menu hebdomadaire complet adapté à votre famille :</p>
-          <ul className="ai-features-list">
-            <li>✅ 7 jours de repas équilibrés</li>
-            <li>✅ Budget respecté</li>
-            <li>✅ Restrictions alimentaires</li>
-            <li>✅ Liste d'épicerie incluse</li>
-          </ul>
-          <button
-            className="ai-generate-btn"
-            onClick={() => setShowForm(true)}
-            type="button"
-          >
-            ✨ Générer mon menu
-          </button>
-        </div>
-      )}
-
-      {showForm && (
-        <div className="ai-menu-form">
-          <div className="form-group">
-            <label>Famille</label>
-            <div className="family-inputs">
-              <input
-                type="number"
-                placeholder="Adultes"
-                value={adults}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value) || 0;
-                  setAdults(val);
-                  setFamilySize(val + children);
-                }}
-                min="1"
-                max="10"
-              />
-              <input
-                type="number"
-                placeholder="Enfants"
-                value={children}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value) || 0;
-                  setChildren(val);
-                  setFamilySize(adults + val);
-                }}
-                min="0"
-                max="10"
-              />
+      {/* Content */}
+      <div className="ai-menu-content">
+        {/* État IDLE */}
+        {state === 'idle' && (
+          <>
+            <div className="ai-feature-list">
+              <div className="ai-feature-item">
+                <span className="feature-icon">✨</span>
+                <span className="feature-text">Menu 7 jours équilibrés</span>
+              </div>
+              <div className="ai-feature-item">
+                <span className="feature-icon">🛒</span>
+                <span className="feature-text">Liste épicerie complète</span>
+              </div>
+              <div className="ai-feature-item">
+                <span className="feature-icon">✏️</span>
+                <span className="feature-text">Modifiable avant validation</span>
+              </div>
             </div>
-          </div>
 
-          <div className="form-group">
-            <label>Budget hebdomadaire</label>
-            <div className="budget-input">
-              <input
-                type="number"
-                value={budget}
-                onChange={(e) => setBudget(parseInt(e.target.value) || 0)}
-                min="50"
-                max="1000"
-                step="10"
-              />
-              <span className="currency">$ CAD</span>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Restrictions alimentaires</label>
-            <div className="restrictions-grid">
-              {['Végétarien', 'Sans gluten', 'Sans lactose', 'Halal', 'Casher'].map(r => (
-                <button
-                  key={r}
-                  className={`restriction-tag ${restrictions.includes(r) ? 'active' : ''}`}
-                  onClick={() => toggleRestriction(r)}
-                  type="button"
-                >
-                  {restrictions.includes(r) ? '✓ ' : ''}{r}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>N'aiment pas (séparé par virgules)</label>
-            <input
-              type="text"
-              placeholder="brocoli, poisson, champignons"
-              value={dislikes}
-              onChange={(e) => setDislikes(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Préférences (séparé par virgules)</label>
-            <input
-              type="text"
-              placeholder="cuisine italienne, plats rapides"
-              value={preferences}
-              onChange={(e) => setPreferences(e.target.value)}
-            />
-          </div>
-
-          {error && (
-            <div className="ai-error">
-              ⚠️ {error}
-            </div>
-          )}
-
-          <div className="form-actions">
             <button
               className="ai-generate-btn"
               onClick={handleGenerate}
-              disabled={loading}
-              type="button"
+              disabled={!user}
             >
-              {loading ? (
-                <>
-                  <span className="spinner">⟳</span>
-                  Génération en cours...
-                </>
-              ) : (
-                '✨ Générer le menu'
-              )}
+              <span className="btn-icon">✨</span>
+              <span className="btn-text">Générer menu et épicerie</span>
             </button>
-            {menu && (
-              <button
-                className="ghost-btn"
-                onClick={() => setShowForm(false)}
-                type="button"
-              >
-                Annuler
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+          </>
+        )}
 
-      {menu && !showForm && (
-        <div className="ai-menu-result">
-          {/* En-tête résumé */}
-          <div className="menu-summary">
-            <div className="summary-item">
-              <span className="summary-label">Période</span>
-              <span className="summary-value">
-                {new Date(menu.weekStart).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short' })}
-                {' - '}
-                {new Date(menu.weekEnd).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short' })}
-              </span>
-            </div>
-            <div className="summary-item">
-              <span className="summary-label">Budget</span>
-              <span className="summary-value">{formatCurrency(menu.totalCost)}</span>
-            </div>
-            <div className="summary-item">
-              <span className="summary-label">Repas</span>
-              <span className="summary-value">{menu.days.length} jours</span>
-            </div>
+        {/* État GENERATING */}
+        {state === 'generating' && (
+          <div className="ai-loading">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Génération en cours...</p>
+            <p className="loading-subtext">
+              Claude génère votre menu et liste d'épicerie
+            </p>
           </div>
+        )}
 
-          {/* Jours de la semaine */}
-          <div className="menu-days">
-            {menu.days.map((day) => (
-              <div key={day.date} className="menu-day-card">
-                <div className="day-header">
-                  <span className="day-name">{day.dayName}</span>
-                  <span className="day-date">
-                    {new Date(day.date).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short' })}
-                  </span>
-                </div>
-                
-                {day.meals.soir && (
-                  <div className="meal-card">
-                    <div className="meal-header">
-                      <h4 className="meal-name">{day.meals.soir.name}</h4>
-                      <span className="meal-cost">{formatCurrency(day.meals.soir.estimatedCost)}</span>
-                    </div>
-                    <p className="meal-description">{day.meals.soir.description}</p>
-                    <div className="meal-meta">
-                      <span className="meal-time">⏱️ {day.meals.soir.prepTime} min</span>
-                      <span className={`meal-difficulty ${day.meals.soir.difficulty}`}>
-                        {day.meals.soir.difficulty}
-                      </span>
+        {/* État PREVIEW */}
+        {state === 'preview' && (
+          <div className="ai-preview-container">
+            {/* Preview Menu */}
+            <div className="menu-preview-section">
+              <div className="preview-header">
+                <h3 className="preview-title">🍽️ Menu de la semaine</h3>
+              </div>
+              <p className="preview-subtitle">
+                Modifiez les repas si nécessaire
+              </p>
+
+              {Object.keys(previewMenu).map((dayKey, dayIndex) => {
+                const meals = previewMenu[dayKey] || [];
+                const dayName = DAY_NAMES[dayIndex];
+
+                return (
+                  <div key={dayKey} className="preview-day-card">
+                    <div className="preview-day-header">{dayName}</div>
+                    <div className="preview-meals-list">
+                      {meals.map((meal, mealIndex) => {
+                        const emoji = getStableFoodEmoji(meal, `${dayKey}-${mealIndex}`);
+                        return (
+                          <div key={mealIndex} className="preview-meal-row">
+                            <span className="meal-emoji-preview">{emoji}</span>
+                            <input
+                              className="preview-meal-input"
+                              value={meal}
+                              onChange={(e) => handleEditMeal(dayKey, mealIndex, e.target.value)}
+                              placeholder="Nom du repas"
+                              maxLength={24}
+                            />
+                            <button
+                              className="remove-meal-btn"
+                              onClick={() => handleRemoveMeal(dayKey, mealIndex)}
+                              type="button"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {meals.length < 4 && (
+                        <button
+                          className="add-meal-btn-preview"
+                          onClick={() => handleAddMeal(dayKey)}
+                          type="button"
+                        >
+                          + Ajouter repas
+                        </button>
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Liste d'épicerie */}
-          <div className="grocery-section">
-            <h3>🛒 Liste d'épicerie</h3>
-            {menu.groceryList.map((category) => (
-              <div key={category.category} className="grocery-category">
-                <h4 className="category-name">{category.category}</h4>
-                <ul className="grocery-items">
-                  {category.items.map((item, idx) => (
-                    <li key={idx} className="grocery-item">
-                      <span className="item-name">{item.name}</span>
-                      <span className="item-quantity">{item.quantity}</span>
-                      <span className="item-cost">{formatCurrency(item.estimatedCost)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          {/* Conseils */}
-          {menu.tips && menu.tips.length > 0 && (
-            <div className="tips-section">
-              <h3>💡 Conseils</h3>
-              <ul className="tips-list">
-                {menu.tips.map((tip, idx) => (
-                  <li key={idx}>{tip}</li>
-                ))}
-              </ul>
+                );
+              })}
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Preview Épicerie */}
+            {previewGrocery && (
+              <div className="grocery-preview-section">
+                <div className="preview-header">
+                  <h3 className="preview-title">🛒 Liste d'épicerie</h3>
+                </div>
+                <p className="preview-subtitle">
+                  Modifiez les ingrédients si nécessaire
+                </p>
+
+                {(Object.keys(previewGrocery) as GroceryCategory[]).map((category) => {
+                  const items = previewGrocery[category] || [];
+                  if (items.length === 0) return null;
+
+                  return (
+                    <div key={category} className="grocery-category-block">
+                      <div className="grocery-category-title">{category}</div>
+                      <div className="grocery-items-list">
+                        {items.map((item, index) => (
+                          <div key={index} className="grocery-item-row">
+                            <input
+                              type="checkbox"
+                              className="grocery-checkbox"
+                              checked={item.checked}
+                              readOnly
+                            />
+                            <input
+                              className="preview-grocery-input"
+                              value={item.name}
+                              onChange={(e) => handleEditGroceryItem(category, index, e.target.value)}
+                              placeholder="Nom ingrédient"
+                            />
+                            <button
+                              className="remove-item-btn"
+                              onClick={() => handleRemoveGroceryItem(category, index)}
+                              type="button"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          className="add-item-btn-preview"
+                          onClick={() => handleAddGroceryItem(category)}
+                          type="button"
+                        >
+                          + Ajouter item
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="preview-actions">
+              <button className="cancel-btn" onClick={handleCancel} type="button">
+                Annuler
+              </button>
+              <button className="confirm-btn" onClick={handleConfirm} type="button">
+                ✅ Confirmer menu + épicerie
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* État SUCCESS */}
+        {state === 'success' && (
+          <div className="ai-success">
+            <div className="success-icon">✅</div>
+            <p className="success-text">Menu et épicerie sauvegardés !</p>
+            <p className="success-subtext">
+              Consultez le menu et la liste d'épicerie
+            </p>
+          </div>
+        )}
+
+        {/* État ERROR */}
+        {state === 'error' && (
+          <div className="ai-error">
+            <div className="error-icon">❌</div>
+            <p className="error-text">Erreur de génération</p>
+            <p className="error-details">{error}</p>
+            <button className="retry-btn" onClick={handleGenerate} type="button">
+              Réessayer
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="ai-info">
+        <p className="info-text">
+          💰 Coût estimé : ~$0.004 par génération
+        </p>
+      </div>
     </div>
   );
 };
+
+// Helper: Sauvegarder épicerie dans Supabase
+async function saveGroceryList(userId: string, grocery: GroceryList): Promise<void> {
+  // Flatten la liste pour Supabase
+  const items: Array<{ name: string; checked: boolean; category: string }> = [];
+  
+  (Object.keys(grocery) as GroceryCategory[]).forEach((category) => {
+    grocery[category].forEach((item) => {
+      if (item.name.trim()) {
+        items.push({
+          name: item.name,
+          checked: item.checked,
+          category,
+        });
+      }
+    });
+  });
+
+  // TODO: Implémenter sauvegarde Supabase
+  // Pour l'instant, log seulement
+  console.log('🛒 Épicerie à sauvegarder:', items);
+  
+  // À implémenter:
+  // await supabase.from('grocery_list').upsert(items.map(i => ({ ...i, user_id: userId })))
+}
