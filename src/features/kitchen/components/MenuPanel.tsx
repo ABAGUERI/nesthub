@@ -63,11 +63,14 @@ export const MenuPanel: React.FC = () => {
 
     try {
       const data = await getWeekMenu(user.id, weekStart);
-      const completeMenu: WeekMenu = { ...data };
+      const completeMenu: WeekMenu = {};
+      
+      // Initialiser tous les jours avec les données chargées ou tableau vide
       WEEK_DAYS.forEach((day) => {
         const key = getDayKey(weekStart, day.offset);
-        if (!completeMenu[key]) completeMenu[key] = [];
+        completeMenu[key] = data[key] || [];
       });
+      
       setMenu(completeMenu);
     } catch (err) {
       console.error('Menu load failed', err);
@@ -83,7 +86,8 @@ export const MenuPanel: React.FC = () => {
     setWeekStart(getWeekStart(currentDate));
   };
 
-  const openEditor = (dayKey: string, dayLabel: string) => {
+  const openEditor = (dayKey: string, dayLabel: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     setEditingDay(dayKey);
     setEditingDayLabel(dayLabel);
     const existing = menu[dayKey] || [];
@@ -97,7 +101,7 @@ export const MenuPanel: React.FC = () => {
     const sanitizedMeals = editingMeals
       .map((meal) => meal.trim())
       .filter(Boolean)
-      .map(meal => meal.substring(0, 24)); // Limite à 24 caractères
+      .map(meal => meal.substring(0, 24));
 
     const updated: WeekMenu = {
       ...menu,
@@ -106,7 +110,7 @@ export const MenuPanel: React.FC = () => {
 
     setMenu(updated);
     setEditingDay(null);
-    setEditingMeals([]);
+    setEditingMeals(['']);
 
     setSaving(true);
     try {
@@ -121,11 +125,13 @@ export const MenuPanel: React.FC = () => {
   };
 
   const addMealField = () => {
-    setEditingMeals((prev) => [...prev, '']);
+    if (editingMeals.length < 4) {
+      setEditingMeals((prev) => [...prev, '']);
+    }
   };
 
   const updateMealField = (index: number, value: string) => {
-    const newValue = value.substring(0, 24); // Limite à 24 caractères
+    const newValue = value.substring(0, 24);
     setEditingMeals((prev) => prev.map((meal, i) => (i === index ? newValue : meal)));
   };
 
@@ -142,39 +148,38 @@ export const MenuPanel: React.FC = () => {
   };
 
   return (
-    <div className="kitchen-card-enhanced">
-      <div className="card-header">
-        <div>
-          <h2 className="card-title">Menu de la semaine</h2>
-          <p className="card-subtitle">Planifiez vos repas</p>
+    <div className="menu-panel">
+      {/* Header avec période à droite - TITRE UNIQUE */}
+      <div className="menu-header-with-period">
+        <h2 className="menu-title">Menu de la semaine</h2>
+        
+        <div className="week-period-navigation">
+          <div className="week-period-text">
+            {formatWeekRange(weekStart)}
+          </div>
+          <div className="week-nav-arrows">
+            <button 
+              onClick={() => changeWeek(-1)}
+              className="week-arrow-btn"
+              type="button"
+              aria-label="Semaine précédente"
+            >
+              ←
+            </button>
+            <button 
+              onClick={() => changeWeek(1)}
+              className="week-arrow-btn"
+              type="button"
+              aria-label="Semaine suivante"
+            >
+              →
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="menu-week-info">
-        <div className="week-display">
-          {formatWeekRange(weekStart)}
-        </div>
-        <div className="week-nav-buttons">
-          <button 
-            className="ghost-btn week-nav-btn" 
-            onClick={() => changeWeek(-1)}
-            type="button"
-            aria-label="Semaine précédente"
-          >
-            ←
-          </button>
-          <button 
-            className="ghost-btn week-nav-btn" 
-            onClick={() => changeWeek(1)}
-            type="button"
-            aria-label="Semaine suivante"
-          >
-            →
-          </button>
-        </div>
-      </div>
-
-      <div className="menu-week-grid-enhanced">
+      {/* Grille des jours */}
+      <div className="menu-days-grid">
         {WEEK_DAYS.map((day) => {
           const dayKey = getDayKey(weekStart, day.offset);
           const dayDate = new Date(dayKey);
@@ -185,78 +190,88 @@ export const MenuPanel: React.FC = () => {
           return (
             <div
               key={dayKey}
-              className={`menu-day-card-enhanced ${today ? 'today' : ''}`}
-              onClick={() => openEditor(dayKey, `${day.fullLabel} ${dayDate.getDate()}`)}
-              role="button"
-              tabIndex={0}
+              className={`menu-day-card ${today ? 'today' : ''}`}
             >
-              <div className="day-header">
-                <span className="day-name">{dayName}</span>
-                <span className="day-number">{dayDate.getDate()}</span>
+              {/* Header jour compact (nom + date) */}
+              <div className="day-header-compact">
+                <div className="day-name-text">{dayName}</div>
+                <div className="day-number-text">{dayDate.getDate()}</div>
               </div>
 
+              {/* Liste repas */}
               <div className="day-meals">
                 {meals.length === 0 ? (
-                  <div className="meal-item" style={{ justifyContent: 'center', opacity: 0.5 }}>
-                    <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-                      Aucun repas
-                    </span>
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '20px 0',
+                    color: '#64748b',
+                    fontSize: '12px',
+                    fontStyle: 'italic'
+                  }}>
+                    Aucun repas
                   </div>
                 ) : (
-                  meals.slice(0, 2).map((meal, index) => {
+                  meals.map((meal, index) => {
                     const emoji = getStableFoodEmoji(meal, `${dayKey}-${index}`);
                     return (
-                      <div key={`${dayKey}-${index}`} className="meal-item">
-                        <span className="meal-emoji">{emoji}</span>
-                        <div className="meal-text-container">
-                          <div className="meal-text" title={meal}>
-                            {meal}
-                          </div>
+                      <div key={`${dayKey}-${index}`} className="meal-item-compact">
+                        <div className="meal-icon">{emoji}</div>
+                        <div className="meal-title-compact" title={meal}>
+                          {meal}
                         </div>
                       </div>
                     );
                   })
                 )}
-                {meals.length > 2 && (
-                  <div className="meal-item" style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
-                    <span className="meal-emoji">+</span>
-                    <div className="meal-text-container">
-                      <div className="meal-text">
-                        {meals.length - 2} repas supplémentaires
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
+
+              {/* Bouton ajouter */}
+              <button 
+                className="add-meal-btn-compact"
+                onClick={(e) => openEditor(dayKey, `${day.fullLabel} ${dayDate.getDate()}`, e)}
+                type="button"
+              >
+                + Ajouter
+              </button>
             </div>
           );
         })}
       </div>
 
+      {/* Modal éditeur */}
       {editingDay && (
         <div className="modal-backdrop" onClick={() => setEditingDay(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3>{editingDayLabel}</h3>
+            <h3 style={{ marginBottom: '20px', color: '#f8fafc' }}>{editingDayLabel}</h3>
             
-            <div className="meal-editor" style={{ margin: '20px 0' }}>
+            <div className="meal-editor">
               {editingMeals.map((meal, index) => {
                 const charCount = meal.length;
-                const emoji = getStableFoodEmoji(meal, `${editingDay}-${index}`);
+                const emoji = getStableFoodEmoji(meal, `${editingDay}-edit-${index}`);
                 
                 return (
                   <div key={`edit-${index}`} className="meal-editor-row">
-                    <span className="meal-emoji" style={{ marginRight: '12px' }}>{emoji}</span>
+                    <span className="meal-emoji" style={{ marginRight: '12px', fontSize: '24px' }}>
+                      {emoji}
+                    </span>
                     <div style={{ flex: 1 }}>
                       <input
                         autoFocus={index === editingMeals.length - 1}
                         className="grocery-input-enhanced"
                         value={meal}
                         onChange={(e) => updateMealField(index, e.target.value)}
-                        placeholder="Ex: Spaghetti bolognaise..."
+                        placeholder="Ex: Spaghetti bolognaise"
                         maxLength={24}
                         style={{ width: '100%' }}
                       />
-                      <div className={`char-counter ${charCount > 20 ? 'warning' : ''} ${charCount >= 24 ? 'error' : ''}`}>
+                      <div 
+                        className={`char-counter ${charCount > 20 ? 'warning' : ''} ${charCount >= 24 ? 'error' : ''}`}
+                        style={{ 
+                          fontSize: '11px', 
+                          color: charCount >= 24 ? '#ef4444' : charCount > 20 ? '#f59e0b' : '#64748b',
+                          marginTop: '4px'
+                        }}
+                      >
                         {charCount}/24 caractères
                       </div>
                     </div>
@@ -285,11 +300,14 @@ export const MenuPanel: React.FC = () => {
               )}
             </div>
 
-            <div className="modal-actions">
+            <div className="modal-actions" style={{ marginTop: '24px' }}>
               <button 
                 className="ghost-btn" 
                 type="button" 
-                onClick={() => setEditingDay(null)} 
+                onClick={() => {
+                  setEditingDay(null);
+                  setEditingMeals(['']);
+                }} 
                 disabled={saving}
               >
                 Annuler

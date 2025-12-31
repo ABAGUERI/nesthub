@@ -4,13 +4,6 @@ import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import { getCurrentRotation, generateCurrentWeekRotation, isResetDay, getDayName } from '../services/rotation.service';
 import { RotationWeek } from '@/shared/types/kitchen.types';
 
-// Catégories simplifiées pour la roue indicative
-const CATEGORIES = [
-  { id: 'cuisine', name: 'Cuisine', icon: '👨‍🍳', color: 'cuisine-icon' },
-  { id: 'salle-bain', name: 'Salle de Bain', icon: '🚿', color: 'salle-bain-icon' },
-  { id: 'animaux', name: 'Animaux', icon: '🐾', color: 'animaux-icon' }
-];
-
 export const RotationPanel: React.FC = () => {
   const { user } = useAuth();
   const { config } = useClientConfig();
@@ -19,6 +12,7 @@ export const RotationPanel: React.FC = () => {
   const [rotating, setRotating] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [feedbackType, setFeedbackType] = useState<'success' | 'error'>('success');
 
   // Jour de réinitialisation (défaut : Lundi = 1)
   const resetDay = config?.rotationResetDay ?? 1;
@@ -30,6 +24,30 @@ export const RotationPanel: React.FC = () => {
   const MAX_ATTEMPTS = 3;
   const attemptsRemaining = MAX_ATTEMPTS - attemptsUsed;
   const canRotate = canRotateToday && attemptsRemaining > 0;
+
+  // État de verrouillage
+  const isLocked = !canRotateToday;
+  const nextRotationDay = resetDayName;
+
+  // Extraire les membres de famille depuis les assignments
+  const familyMembers = useMemo(() => {
+    if (!rotation?.assignments || rotation.assignments.length === 0) return [];
+
+    const membersMap = new Map<string, { id: string; name: string; avatarUrl?: string; icon?: string }>();
+    
+    rotation.assignments.forEach(assignment => {
+      if (!membersMap.has(assignment.assigneeMemberId)) {
+        membersMap.set(assignment.assigneeMemberId, {
+          id: assignment.assigneeMemberId,
+          name: assignment.assigneeName,
+          avatarUrl: assignment.assigneeAvatarUrl,
+          icon: assignment.assigneeName.charAt(0).toUpperCase()
+        });
+      }
+    });
+
+    return Array.from(membersMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [rotation]);
 
   useEffect(() => {
     loadRotation();
@@ -87,12 +105,15 @@ export const RotationPanel: React.FC = () => {
         console.log('Rotation reloaded');
         
         setFeedbackMessage(result.message || 'Nouvelle rotation générée !');
+        setFeedbackType('success');
       } else {
         setFeedbackMessage(result.message || 'Impossible de générer une nouvelle rotation');
+        setFeedbackType('error');
       }
     } catch (err) {
       console.error('Rotation failed:', err);
       setFeedbackMessage('Erreur lors de la génération de la rotation');
+      setFeedbackType('error');
     } finally {
       setRotating(false);
       setGenerating(false);
@@ -164,87 +185,91 @@ export const RotationPanel: React.FC = () => {
 
       {/* Roue compacte avec animation réaliste */}
       <div className="rotation-wheel-compact">
-        <div className={`wheel-circle ${rotating ? 'spinning' : ''}`}>
-          {CATEGORIES.map((category, index) => (
-            <div 
-              key={category.id} 
+        {/* Message verrouillage si applicable */}
+        {isLocked && (
+          <div className="rotation-locked-message">
+            <span className="lock-icon">🔒</span>
+            <span>Disponible {nextRotationDay}</span>
+          </div>
+        )}
+
+        {/* Indicateur tentatives */}
+        {!isLocked && (
+          <div className={`attempts-indicator ${attemptsUsed >= 3 ? 'exhausted' : ''}`}>
+            <span className="attempts-label">Tentatives:</span>
+            <div className="attempts-dots">
+              <span className={`attempt-dot ${attemptsUsed >= 1 ? 'used' : 'available'}`}>●</span>
+              <span className={`attempt-dot ${attemptsUsed >= 2 ? 'used' : 'available'}`}>●</span>
+              <span className={`attempt-dot ${attemptsUsed >= 3 ? 'used' : 'available'}`}>●</span>
+            </div>
+            <span className="attempts-count">({attemptsRemaining}/3)</span>
+          </div>
+        )}
+
+        {/* Cercle de rotation avec MEMBRES + TÂCHES */}
+        <div className="wheel-circle">
+          {/* Membres de la famille (rotation douce 20s) */}
+          {familyMembers.map((member, index) => (
+            <div
+              key={member.id}
               className="wheel-icon"
               style={{
                 '--icon-index': index,
-                '--total-icons': CATEGORIES.length
+                '--total-icons': familyMembers.length,
               } as React.CSSProperties}
             >
-              <div className={`icon-wrapper ${category.color}-martial`}>
-                {category.icon}
+              <div 
+                className="icon-wrapper"
+                style={{
+                  background: member.avatarUrl 
+                    ? `url(${member.avatarUrl}) center/cover`
+                    : 'linear-gradient(135deg, #8b5cf6, #a855f7)'
+                }}
+              >
+                {!member.avatarUrl && (member.icon || member.name.charAt(0))}
               </div>
             </div>
           ))}
+          
+          {/* Icônes TÂCHES avec animation cardiaque (rotation 3s + pulse) */}
+          <div className="task-icons-circle">
+            <div className="task-icon-wrapper" title="Douche">
+              🚿
+            </div>
+            <div className="task-icon-wrapper" title="Cuisine">
+              🍳
+            </div>
+            <div className="task-icon-wrapper" title="Animaux">
+              🐾
+            </div>
+          </div>
         </div>
 
-        {/* Message si pas le bon jour */}
-        {!canRotateToday && (
-          <div className="rotation-locked-message">
-            <span className="lock-icon">🔒</span>
-            <span>Rotation disponible chaque {resetDayName}</span>
-          </div>
-        )}
-
-        {/* Indicateur de tentatives (si bon jour) */}
-        {canRotateToday && (
-          <div className={`attempts-indicator ${attemptsRemaining === 0 ? 'exhausted' : ''}`}>
-            <span className="attempts-label">Tentatives:</span>
-            <div className="attempts-dots">
-              {Array.from({ length: MAX_ATTEMPTS }).map((_, i) => (
-                <span 
-                  key={i} 
-                  className={`attempt-dot ${i < attemptsUsed ? 'used' : 'available'}`}
-                  title={i < attemptsUsed ? 'Utilisée' : 'Disponible'}
-                >
-                  {i < attemptsUsed ? '●' : '○'}
-                </span>
-              ))}
-            </div>
-            <span className="attempts-count">
-              {attemptsRemaining}/{MAX_ATTEMPTS}
+        {/* Bouton rotation */}
+        {!isLocked && (
+          <button
+            className="rotate-button-compact"
+            onClick={handleRotate}
+            disabled={attemptsUsed >= 3 || rotating}
+            type="button"
+          >
+            <span style={{ animation: rotating ? 'spin 1s linear infinite' : 'none' }}>
+              ⟳
             </span>
-          </div>
+            {attemptsUsed >= 3 ? (
+              <>🔒 3 tentatives utilisées</>
+            ) : (
+              <>Nouvelle rotation</>
+            )}
+          </button>
         )}
 
-        {/* Message de feedback */}
+        {/* Message feedback */}
         {feedbackMessage && (
-          <div className={`rotation-feedback ${attemptsRemaining === 0 ? 'warning' : 'success'}`}>
+          <div className={`rotation-feedback ${feedbackType}`}>
             {feedbackMessage}
           </div>
         )}
-
-        <button 
-          className="rotate-button-compact"
-          onClick={handleRotate}
-          disabled={rotating || !user || !canRotate}
-          type="button"
-          title={
-            !canRotateToday 
-              ? `Disponible le ${resetDayName}` 
-              : attemptsRemaining === 0
-              ? 'Maximum de tentatives atteint'
-              : `${attemptsRemaining} tentative(s) restante(s)`
-          }
-        >
-          {rotating ? (
-            <>
-              <span style={{ display: 'inline-block', animation: 'spinIcon 1s linear infinite' }}>⟳</span>
-              Rotation...
-            </>
-          ) : generating ? (
-            'Génération...'
-          ) : !canRotateToday ? (
-            `⏰ Disponible ${resetDayName}`
-          ) : attemptsRemaining === 0 ? (
-            '🔒 3 tentatives utilisées'
-          ) : (
-            '⟳ Nouvelle rotation'
-          )}
-        </button>
       </div>
 
       {/* Tableau des tâches officielles */}
