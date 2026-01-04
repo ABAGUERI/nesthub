@@ -1,0 +1,421 @@
+/* src/features/kitchen/components/MenuPanel.css */
+/* Menu de la semaine - Grid 3×3 */
+
+.kitchen-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+/* Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(34, 211, 238, 0.2);
+}
+
+.card-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: #22d3ee;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.card-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+/* Week navigation */
+.menu-week-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.week-display {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.week-nav-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.week-nav-btn {
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  padding: 8px 16px;
+}
+
+/* Grid 3×3 */
+.menu-week-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* Day cards */
+.menu-day-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 140px;
+}
+
+.menu-day-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(34, 211, 238, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.2);
+}
+
+.menu-day-card.today {
+  border-color: rgba(34, 211, 238, 0.6);
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.menu-day-card.today .day-name {
+  color: #22d3ee;
+}
+
+/* Day header */
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.day-name {
+  font-size: 12px;
+  font-weight: 900;
+  color: #cbd5e1;
+  letter-spacing: 0.5px;
+}
+
+.day-number {
+  font-size: 14px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+/* Meals */
+.day-meals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.meal-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+}
+
+.meal-emoji {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.meal-text-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.meal-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-card {
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+  border: 2px solid rgba(34, 211, 238, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-card h3 {
+  font-size: 20px;
+  font-weight: 900;
+  color: #22d3ee;
+  margin: 0 0 20px 0;
+}
+
+/* Meal editor */
+.meal-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.meal-editor-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.grocery-input {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.grocery-input:focus {
+  outline: none;
+  border-color: rgba(34, 211, 238, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+}
+
+.char-counter {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.char-counter.warning {
+  color: #fbbf24;
+}
+
+.char-counter.error {
+  color: #ef4444;
+}
+
+/* Modal actions */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ghost-btn {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+
+.ghost-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(34, 211, 238, 0.3);
+  color: #f8fafc;
+}
+
+.ghost-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ghost-btn-compact {
+  padding: 8px 12px;
+  min-height: auto;
+}
+
+.primary-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  border: none;
+  border-radius: 10px;
+  color: #0f0f0f;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4);
+}
+
+.primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .menu-week-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .menu-week-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-week-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card-title {
+    font-size: 20px;
+  }
+
+  .modal-card {
+    padding: 20px;
+  }
+}
+
+/* =====================================================
+ * UX OVERRIDES (append-only)
+ * Add this block at the END of MenuPanel.css
+ * No behavior/backend change
+ * ===================================================== */
+
+.menu-panel{
+  gap: 14px;
+}
+
+/* Header: clearer hierarchy */
+.menu-header-with-period{
+  padding: 14px 14px 10px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+  backdrop-filter: blur(10px);
+}
+
+.menu-title{
+  letter-spacing: 0.2px;
+}
+
+/* Grid spacing */
+.menu-days-grid{
+  gap: 14px;
+}
+
+/* Day card: calmer borders + better hover */
+.menu-day-card{
+  border: 1px solid rgba(255,255,255,0.10);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.025));
+  border-radius: 16px;
+  box-shadow: 0 16px 50px rgba(0,0,0,0.35);
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.menu-day-card:hover{
+  transform: translateY(-1px);
+  border-color: rgba(34,211,238,0.22);
+  background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.030));
+}
+
+/* Today: more subtle, less “neon block” */
+.menu-day-card.today{
+  border-color: rgba(34,211,238,0.38);
+  box-shadow: 0 18px 60px rgba(34,211,238,0.10);
+}
+
+/* Header compact: stronger contrast */
+.day-header-compact{
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.day-name-text{ color: rgba(248,250,252,0.85); }
+.day-number-text{ color: rgba(248,250,252,0.70); }
+
+/* Meals area: more breathing room */
+.day-meals{
+  padding: 10px 0 12px;
+}
+
+/* Empty state: clearer + friendly */
+.day-meals > div[style*="textAlign: 'center'"]{
+  color: rgba(248,250,252,0.50) !important;
+}
+
+/* Add button: look like a CTA, still compact */
+.add-meal-btn-compact{
+  width: 100%;
+  margin-top: auto;
+  border-radius: 12px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.035);
+  color: rgba(248,250,252,0.88);
+  padding: 10px 12px;
+  font-weight: 700;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.add-meal-btn-compact:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(34,211,238,0.28);
+}
+
+/* Modal: less cramped, nicer */
+.modal-content{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(180deg, rgba(15,23,42,0.94), rgba(2,6,23,0.90));
+  box-shadow: 0 30px 90px rgba(0,0,0,0.60);
+}

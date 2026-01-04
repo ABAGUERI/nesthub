@@ -26,7 +26,6 @@ const getWeekStart = (): string => {
 
 // Noms de jours
 const DAY_NAMES = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-
 export const AIMenuPanel: React.FC = () => {
   const { user } = useAuth();
   const [state, setState] = useState<PanelState>('idle');
