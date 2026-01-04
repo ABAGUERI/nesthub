@@ -3,6 +3,7 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import { getStableFoodEmoji } from '@/shared/utils/emoji';
 import { getWeekMenu, saveWeekMenu } from '../services/menu.service';
 import { WeekMenu, WEEK_DAYS } from '@/shared/types/kitchen.types';
+import { TimerCard } from './TimerCard';
 
 const getWeekStart = (reference?: Date): string => {
   const date = reference ? new Date(reference) : new Date();
@@ -178,8 +179,9 @@ export const MenuPanel: React.FC = () => {
         </div>
       </div>
 
-      {/* Grille des jours */}
+      {/* Grille des jours + Minuteurs (8 éléments) */}
       <div className="menu-days-grid">
+        {/* 7 jours de la semaine */}
         {WEEK_DAYS.map((day) => {
           const dayKey = getDayKey(weekStart, day.offset);
           const dayDate = new Date(dayKey);
@@ -236,6 +238,9 @@ export const MenuPanel: React.FC = () => {
             </div>
           );
         })}
+
+        {/* 8ème élément : Minuteurs */}
+        <TimerCard />
       </div>
 
       {/* Modal éditeur */}

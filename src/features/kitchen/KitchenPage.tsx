@@ -3,11 +3,10 @@ import { Link } from 'react-router-dom';
 import { MenuPanel } from './components/MenuPanel';
 import { GroceryPanel } from './components/GroceryPanel';
 import { RotationPanel } from './components/RotationPanel';
-import { TimerPanel } from './components/TimerPanel';
 import { AIMenuPanel } from './components/AIMenuPanel';
 import './KitchenPage.css';
 
-type ActivePanel = 'menu' | 'ai-menu' | 'grocery' | 'timer';
+type ActivePanel = 'menu' | 'ai-menu' | 'grocery';
 
 export const KitchenPage: React.FC = () => {
   const [activePanel, setActivePanel] = useState<ActivePanel>('menu');
@@ -33,7 +32,7 @@ export const KitchenPage: React.FC = () => {
         {/* COLONNE GAUCHE : Menu avec barre d'icônes */}
         <div className="kitchen-col-main">
           
-          {/* Barre d'icônes en haut */}
+          {/* Barre d'icônes en haut (Menu IA + Épicerie seulement) */}
           <div className="kitchen-icon-bar">
             <button
               className={`icon-bar-btn ${activePanel === 'ai-menu' ? 'active' : ''}`}
@@ -43,16 +42,6 @@ export const KitchenPage: React.FC = () => {
             >
               <span className="icon-bar-emoji">🍽️</span>
               <span className="icon-bar-label">Menu IA</span>
-            </button>
-            
-            <button
-              className={`icon-bar-btn ${activePanel === 'timer' ? 'active' : ''}`}
-              onClick={() => setActivePanel('timer')}
-              type="button"
-              title="Minuteurs"
-            >
-              <span className="icon-bar-emoji">⏱️</span>
-              <span className="icon-bar-label">Minuteurs</span>
             </button>
             
             <button
@@ -84,7 +73,6 @@ export const KitchenPage: React.FC = () => {
             {activePanel === 'menu' && <MenuPanel />}
             {activePanel === 'ai-menu' && <AIMenuPanel />}
             {activePanel === 'grocery' && <GroceryPanel />}
-            {activePanel === 'timer' && <TimerPanel />}
           </div>
         </div>
 
