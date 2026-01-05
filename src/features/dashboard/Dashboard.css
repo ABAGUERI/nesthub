@@ -1,17 +1,25 @@
 /* === DASHBOARD LAYOUT === */
 .dashboard-container {
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  width: 100vw;
-  padding: 24px 28px;
-  gap: 18px;
+  width: 100%;
+  padding: 24px 28px 26px;
+  gap: 16px;
   background:
     radial-gradient(circle at 10% 15%, rgba(34, 211, 238, 0.12), transparent 32%),
     radial-gradient(circle at 85% 10%, rgba(168, 85, 247, 0.14), transparent 35%),
     linear-gradient(145deg, #030712 0%, #0b1224 60%, #050a16 100%);
   color: #e2e8f0;
   overflow: hidden;
+}
+
+.dashboard-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
 }
 
 .dashboard-container.carousel-mode {
@@ -21,8 +29,9 @@
 /* === CAROUSEL === */
 .dashboard-carousel {
   position: relative;
+  flex: 1;
   min-height: 70vh;
-  height: calc(100vh - 120px);
+  height: auto;
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);

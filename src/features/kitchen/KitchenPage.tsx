@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { AppHeader } from '@/shared/components/AppHeader';
 import { MenuPanel } from './components/MenuPanel';
 import { GroceryPanel } from './components/GroceryPanel';
 import { RotationPanel } from './components/RotationPanel';
@@ -13,18 +13,7 @@ export const KitchenPage: React.FC = () => {
 
   return (
     <div className="kitchen-page">
-      {/* Header */}
-      <div className="kitchen-hero">
-        <h1>Cuisine</h1>
-        <div className="kitchen-actions">
-          <Link to="/dashboard" className="ghost-btn">
-            ← Dashboard
-          </Link>
-          <Link to="/settings" className="ghost-btn">
-            ⚙️ Paramètres
-          </Link>
-        </div>
-      </div>
+      <AppHeader title="Cuisine" description="Planifiez vos repas, courses et rotations sans perdre le fil." />
 
       {/* Layout 2 colonnes : Menu (gauche) + Rotation (droite) */}
       <div className="kitchen-grid-2col">
