@@ -217,12 +217,12 @@ export const TimerCard: React.FC = () => {
       </div>
 
       {showOverlay && createPortal(
-        <div className="timer-overlay" role="dialog" aria-label="Minuteurs en cours" onClick={() => setShowOverlay(false)}>
+        <div className="timer-overlay" role="dialog" aria-label="Minuteurs en cours">
           <div className="timer-overlay-card" onClick={(e) => e.stopPropagation()}>
             <div className="timer-overlay-header">
               <div>
                 <div className="timer-overlay-title">Minuteurs analogiques</div>
-                <div className="timer-overlay-subtitle">Gestion flottante pour ne pas bouger la grille</div>
+                <div className="timer-overlay-subtitle">Vue flottante sans masquer le menu</div>
               </div>
               <button type="button" className="timer-overlay-close" onClick={() => setShowOverlay(false)} aria-label="Fermer">
                 ✕

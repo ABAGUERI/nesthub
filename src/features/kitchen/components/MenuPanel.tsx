@@ -9,6 +9,7 @@ import './MenuPanel.css';
 interface MealDraft {
   label: string;
   emoji: string;
+  useCustomEmoji?: boolean;
 }
 
 const parseMeal = (meal: string): MealDraft => {
@@ -20,10 +21,11 @@ const parseMeal = (meal: string): MealDraft => {
     return {
       emoji: emojiMatch[1] ?? '',
       label: emojiMatch[2]?.trim() || '',
+      useCustomEmoji: false,
     };
   }
 
-  return { label: trimmed, emoji: '' };
+  return { label: trimmed, emoji: '', useCustomEmoji: false };
 };
 
 const buildMealString = (meal: MealDraft): string => {
@@ -80,7 +82,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingDay, setEditingDay] = useState<string | null>(null);
-  const [editingMeals, setEditingMeals] = useState<MealDraft[]>([{ label: '', emoji: '' }]);
+  const [editingMeals, setEditingMeals] = useState<MealDraft[]>([{ label: '', emoji: '', useCustomEmoji: false }]);
   const [editingDayLabel, setEditingDayLabel] = useState<string>('');
   const [saving, setSaving] = useState(false);
 
@@ -127,7 +129,10 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
     setEditingDay(dayKey);
     setEditingDayLabel(dayLabel);
     const existing = menu[dayKey] || [];
-    setEditingMeals(existing.length > 0 ? existing.map(parseMeal) : [{ label: '', emoji: '' }]);
+    setEditingMeals(existing.length > 0 ? existing.map(meal => {
+      const parsed = parseMeal(meal);
+      return { ...parsed, useCustomEmoji: parsed.emoji ? !MEAL_EMOJI_OPTIONS.includes(parsed.emoji) : false };
+    }) : [{ label: '', emoji: '', useCustomEmoji: false }]);
   };
 
   const saveDay = async () => {
@@ -149,7 +154,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
 
     setMenu(updated);
     setEditingDay(null);
-    setEditingMeals([{ label: '', emoji: '' }]);
+    setEditingMeals([{ label: '', emoji: '', useCustomEmoji: false }]);
 
     setSaving(true);
     try {
@@ -165,7 +170,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
 
   const addMealField = () => {
     if (editingMeals.length < 4) {
-      setEditingMeals((prev) => [...prev, { label: '', emoji: '' }]);
+      setEditingMeals((prev) => [...prev, { label: '', emoji: '', useCustomEmoji: false }]);
     }
   };
 
@@ -321,6 +326,12 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
               {editingMeals.map((meal, index) => {
                 const charCount = meal.label.length;
                 const emoji = meal.emoji || getStableFoodEmoji(meal.label, `${editingDay}-edit-${index}`);
+                const selectValue = MEAL_EMOJI_OPTIONS.includes(meal.emoji)
+                  ? meal.emoji
+                  : meal.useCustomEmoji
+                    ? 'custom'
+                    : (meal.emoji ? 'custom' : '');
+                const showCustomEmojiField = selectValue === 'custom';
 
                 return (
                   <div key={`edit-${index}`} className="meal-editor-row">
@@ -333,28 +344,41 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
                           Emoji
                         </label>
                         <div className="emoji-selector">
-                          <input
+                          <select
                             id={`emoji-${index}`}
-                            className="emoji-input"
-                            value={meal.emoji}
-                            onChange={(e) => updateMealField(index, { emoji: e.target.value })}
-                            placeholder="🍽️"
-                            maxLength={4}
-                            style={{ width: '100%' }}
-                          />
-                          <div className="emoji-options" role="list">
+                            className="emoji-select"
+                            value={selectValue}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === 'custom') {
+                                updateMealField(index, {
+                                  emoji: meal.emoji && !MEAL_EMOJI_OPTIONS.includes(meal.emoji) ? meal.emoji : '',
+                                  useCustomEmoji: true,
+                                });
+                                return;
+                              }
+                              updateMealField(index, { emoji: value, useCustomEmoji: false });
+                            }}
+                          >
+                            <option value="">Choisir un emoji</option>
                             {MEAL_EMOJI_OPTIONS.map((option) => (
-                              <button
-                                key={option}
-                                type="button"
-                                className={`emoji-option ${meal.emoji === option ? 'selected' : ''}`}
-                                onClick={() => updateMealField(index, { emoji: option })}
-                                aria-label={`Choisir ${option}`}
-                              >
+                              <option key={option} value={option}>
                                 {option}
-                              </button>
+                              </option>
                             ))}
-                          </div>
+                            <option value="custom">Autre emoji</option>
+                          </select>
+
+                          {showCustomEmojiField && (
+                            <input
+                              className="emoji-input"
+                              value={meal.emoji}
+                              onChange={(e) => updateMealField(index, { emoji: e.target.value })}
+                              placeholder="🍽️"
+                              maxLength={4}
+                              style={{ width: '100%' }}
+                            />
+                          ) : null}
                         </div>
                       </div>
                       <div className="meal-label-group">
@@ -414,7 +438,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
                 type="button"
                 onClick={() => {
                   setEditingDay(null);
-                  setEditingMeals([{ label: '', emoji: '' }]);
+                  setEditingMeals([{ label: '', emoji: '', useCustomEmoji: false }]);
                 }}
                 disabled={saving}
               >
