@@ -139,7 +139,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, description }) => {
         </div>
 
         <div className="header-title">
-          <div className="brand">NestHub</div>
           {title && <div className="section-title">{title}</div>}
           {description && <p className="section-description">{description}</p>}
         </div>
