@@ -1,9 +1,11 @@
 .config-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
+  gap: 18px;
+  padding: 20px 24px 28px;
   color: #e2e8f0;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .config-hero {
