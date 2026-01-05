@@ -2,7 +2,11 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  padding-bottom: 5px;
+  padding: 10px 14px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
 }
 
 /* === HEURE + DATE + MÉTÉO === */
@@ -10,6 +14,9 @@
   display: flex;
   align-items: center;
   gap: 15px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .time-date-group {
@@ -51,16 +58,18 @@
 /* === TITRE CENTRAL === */
 .header-title {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 800;
   text-align: center;
   color: #e2e8f0;
   letter-spacing: 1px;
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
 /* === MENU === */
 .header-menu {
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 
 .menu-btn {
