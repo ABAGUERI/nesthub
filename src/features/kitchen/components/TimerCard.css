@@ -1,260 +1,284 @@
 /* =====================================================
- * TIMER CARD - COMPACT POUR GRILLE MENU (8ÈME JOUR)
+ * TIMER CARD - Style cohérent avec Menu V2 Ardoise
+ * Police Caveat + Design des day-cards
  * ===================================================== */
 
-.timer-card-compact {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 12px;
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap');
+
+/* Container principal - Même style que menu-day-card */
+.timer-card-container {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: all 0.2s ease;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
   min-height: 120px;
-  height: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
+  font-family: 'Caveat', cursive;
 }
 
-.timer-card-compact:hover {
+.timer-card-container:hover {
   background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(139, 92, 246, 0.3);
+  border-color: rgba(255, 255, 255, 0.12);
   transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Header */
-.timer-card-header {
+/* Header - Style jour */
+.timer-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  gap: 6px;
   padding-bottom: 8px;
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.timer-card-icon {
-  font-size: 20px;
+.timer-icon {
+  font-size: 32px;
   line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-.timer-card-title {
-  font-size: 13px;
-  font-weight: 900;
-  color: #8b5cf6;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  flex: 1;
+.timer-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(248, 250, 252, 0.85);
   text-align: center;
+  letter-spacing: 0.02em;
+  font-family: 'Caveat', cursive;
+  margin: 0;
 }
 
-/* Quick buttons (5, 10, 15 min) */
-.timer-quick-buttons {
-  display: flex;
-  gap: 4px;
-  justify-content: space-between;
-}
-
-.timer-quick-btn {
-  flex: 1;
-  min-height: 32px;
-  padding: 6px;
-  background: linear-gradient(135deg, #8b5cf6, #a855f7);
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: 13px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
-}
-
-.timer-quick-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.5);
-}
-
-.timer-quick-btn:active {
-  transform: translateY(0);
-}
-
-/* Liste des timers */
-.timer-list-compact {
+/* Contenu */
+.timer-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  overflow-y: auto;
-  min-height: 0;
-  padding-right: 2px;
-}
-
-/* Custom scrollbar */
-.timer-list-compact::-webkit-scrollbar {
-  width: 4px;
-}
-
-.timer-list-compact::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 2px;
-}
-
-.timer-list-compact::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.3);
-  border-radius: 2px;
-}
-
-.timer-list-compact::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.5);
-}
-
-/* Timer item mini */
-.timer-item-mini {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 0;
 }
 
-.timer-item-mini:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(139, 92, 246, 0.3);
+/* Display temps */
+.timer-display {
+  font-size: 28px;
+  font-weight: 700;
+  color: #22d3ee;
+  font-family: 'Caveat', cursive;
+  letter-spacing: 0.05em;
+  text-align: center;
+  line-height: 1;
+  min-height: 32px;
 }
 
-/* Timer ringing (alarme) */
-.timer-item-mini.ringing {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.5);
-  animation: timerPulse 1s ease-in-out infinite;
+.timer-display.active {
+  animation: timerPulse 2s ease-in-out infinite;
 }
 
 @keyframes timerPulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-    transform: scale(1);
+    color: #22d3ee;
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
-    transform: scale(1.02);
+    color: #06b6d4;
   }
 }
 
-.timer-ringing-section {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-/* Timer time display */
-.timer-mini-time {
-  font-size: 18px;
-  font-weight: 900;
-  color: #8b5cf6;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.5px;
-  flex: 1;
-}
-
-.timer-item-mini.ringing .timer-mini-time {
-  color: #ef4444;
-}
-
-/* Timer emoji (for ringing) */
-.timer-mini-emoji {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.timer-mini-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #cbd5e1;
-  flex: 1;
-}
-
-/* Timer actions */
-.timer-mini-actions {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.timer-mini-btn {
-  min-width: 28px;
-  min-height: 28px;
-  padding: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
-  color: #cbd5e1;
+/* Sous-titre */
+.timer-subtitle {
   font-size: 14px;
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.6);
+  text-align: center;
+  font-family: 'Caveat', cursive;
+  margin: 0;
+}
+
+/* Boutons */
+.timer-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: auto;
+}
+
+.timer-btn {
+  flex: 1;
+  min-height: 40px;
+  padding: 8px 12px;
+  background: rgba(34, 211, 238, 0.05);
+  border: 1.5px solid rgba(34, 211, 238, 0.25);
+  border-radius: 10px;
+  color: #22d3ee;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
+  gap: 6px;
+  font-family: 'Caveat', cursive;
 }
 
-.timer-mini-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(139, 92, 246, 0.4);
-  color: #8b5cf6;
-  transform: scale(1.1);
+.timer-btn:hover {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.4);
+  transform: scale(1.02);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.2);
 }
 
-.timer-mini-btn.stop {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
+.timer-btn:active {
+  transform: scale(0.98);
+}
+
+.timer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Bouton stop/reset rouge */
+.timer-btn.stop {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.25);
   color: #ef4444;
 }
 
-.timer-mini-btn.stop:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.5);
+.timer-btn.stop:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
 }
 
-/* Empty state */
-.timer-empty-compact {
+/* Liste minuteurs prédéfinis */
+.timer-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.timer-preset-btn {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(248, 250, 252, 0.85);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Caveat', cursive;
+}
+
+.timer-preset-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(34, 211, 238, 0.3);
+  color: rgba(248, 250, 252, 1);
+}
+
+.timer-preset-label {
+  flex: 1;
+  text-align: left;
+}
+
+.timer-preset-duration {
+  font-size: 13px;
+  color: rgba(248, 250, 252, 0.5);
+}
+
+/* Input custom */
+.timer-custom-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(248, 250, 252, 0.95);
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-family: 'Caveat', cursive;
   text-align: center;
-  padding: 16px 8px;
-  color: #64748b;
-  font-size: 11px;
-  font-style: italic;
-  line-height: 1.4;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1400px) {
-  .timer-card-compact {
-    min-height: 100px;
-  }
+.timer-custom-input:focus {
+  outline: none;
+  border-color: rgba(34, 211, 238, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+}
 
-  .timer-quick-btn {
-    min-height: 28px;
-    font-size: 12px;
-  }
+.timer-custom-input::placeholder {
+  color: rgba(248, 250, 252, 0.4);
+}
 
-  .timer-mini-time {
+/* État en cours */
+.timer-card-container.running {
+  background: rgba(34, 211, 238, 0.05);
+  border-color: rgba(34, 211, 238, 0.3);
+}
+
+.timer-card-container.running:hover {
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
+/* État terminé */
+.timer-card-container.finished {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.3);
+  animation: timerFinished 1s ease-in-out 3;
+}
+
+@keyframes timerFinished {
+  0%, 100% {
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    border-color: rgba(16, 185, 129, 0.6);
+  }
+}
+
+/* Responsive */
+@media (max-width: 1023px) {
+  .timer-card-container {
+    min-height: auto;
+  }
+  
+  .timer-display {
+    font-size: 24px;
+  }
+  
+  .timer-actions {
+    flex-direction: column;
+  }
+  
+  .timer-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .timer-icon {
+    font-size: 28px;
+  }
+  
+  .timer-title {
     font-size: 16px;
   }
-}
-
-@media (max-width: 900px) {
-  .timer-card-title {
-    font-size: 12px;
-  }
-
-  .timer-quick-btn {
-    min-height: 26px;
-    font-size: 11px;
-  }
-
-  .timer-mini-time {
-    font-size: 14px;
+  
+  .timer-display {
+    font-size: 22px;
   }
 }

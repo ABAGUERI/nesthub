@@ -1,22 +1,51 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart, ArcElement, DoughnutController } from 'chart.js';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
-import { getChildrenWithProgress } from '@/shared/utils/children.service';
 import { useChildSelection } from '../contexts/ChildSelectionContext';
+import { supabase } from '@/shared/utils/supabase'; // Ajuste le chemin selon ta config
 import './ChildrenWidget.css';
 
 // Enregistrer les éléments Chart.js
 Chart.register(ArcElement, DoughnutController);
 
+type ChildIcon = 'bee' | 'ladybug' | 'butterfly' | 'caterpillar' | string;
+
+const CHILD_ICONS: Record<string, string> = {
+  bee: '🐝',
+  ladybug: '🐞',
+  butterfly: '🦋',
+  caterpillar: '🐛',
+  dragon: '🐉',
+  unicorn: '🦄',
+  dinosaur: '🦖',
+  robot: '🤖',
+  // Valeur par défaut
+  default: '👤',
+};
+
+const CHILD_COLORS: Record<string, string> = {
+  bee: '#fbbf24',
+  ladybug: '#f87171',
+  butterfly: '#a78bfa',
+  caterpillar: '#34d399',
+  dragon: '#ef4444',
+  unicorn: '#ec4899',
+  dinosaur: '#10b981',
+  robot: '#6b7280',
+  default: '#8b5cf6',
+};
+
 interface Child {
   id: string;
   firstName: string;
-  icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
+  icon: ChildIcon;
+  avatarUrl?: string;
   totalPoints: number;
   currentLevel: number;
   targetPoints: number;
   screenTimeUsed?: number;
+  dailyLimitMinutes?: number;
 }
 
 export const ChildrenWidget: React.FC = () => {
@@ -25,7 +54,8 @@ export const ChildrenWidget: React.FC = () => {
   const { selectedChildIndex, setSelectedChildIndex, setTotalChildren } = useChildSelection();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
-  const chartsRef = useRef<{ [key: string]: Chart }>({});
+  const chartRef = useRef<Chart | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   
   // Swipe support
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,66 +66,109 @@ export const ChildrenWidget: React.FC = () => {
     loadChildren();
   }, [user]);
 
+  const selectedChild = useMemo(() => children[selectedChildIndex], [children, selectedChildIndex]);
+
   useEffect(() => {
     if (children.length > 0) {
       setTotalChildren(children.length);
-      // Créer le donut pour l'enfant sélectionné
-      const selectedChild = children[selectedChildIndex];
-      if (selectedChild) {
-        createDonutChart(selectedChild);
-      }
     }
+  }, [children, setTotalChildren]);
 
-    // Cleanup
+  useEffect(() => {
+    if (!selectedChild || !canvasRef.current) return;
+    createDonutChart(selectedChild, canvasRef.current);
+
     return () => {
-      Object.values(chartsRef.current).forEach((chart) => {
-        chart.destroy();
-      });
-      chartsRef.current = {};
+      if (chartRef.current) {
+        chartRef.current.destroy();
+        chartRef.current = null;
+      }
     };
-  }, [children, selectedChildIndex]);
+  }, [selectedChild]);
 
   const loadChildren = async () => {
     if (!user) return;
 
     try {
-      const data = await getChildrenWithProgress(user.id);
-      setChildren(
-        data.map((c: any) => ({
-          id: c.id,
-          firstName: c.first_name,
-          icon: c.icon,
-          totalPoints: c.progress?.total_points || 0,
-          currentLevel: c.progress?.current_level || 1,
-          targetPoints: c.progress?.target_points || 1000,
-          screenTimeUsed: c.progress?.screen_time_used || 0,
-        }))
+      // 1. Récupérer les enfants depuis family_members
+      const { data: childrenData, error: childrenError } = await supabase
+        .from('family_members')
+        .select('id, first_name, icon, avatar_url')
+        .eq('user_id', user.id)
+        .eq('role', 'child')
+        .order('created_at', { ascending: true });
+
+      if (childrenError) throw childrenError;
+
+      // 2. Pour chaque enfant, récupérer sa progression
+      const childrenWithProgress = await Promise.all(
+        childrenData.map(async (child) => {
+          try {
+            // Récupérer la progression de l'enfant
+            const { data: progressData } = await supabase
+              .from('child_progress') // À ajuster selon ta table
+              .select('total_points, current_level, target_points, screen_time_used')
+              .eq('child_id', child.id)
+              .maybeSingle();
+
+            // Récupérer les paramètres d'écran
+            const { data: settingsData } = await supabase
+              .from('screen_time_settings') // À ajuster selon ta table
+              .select('daily_limit_minutes')
+              .eq('child_id', child.id)
+              .maybeSingle();
+
+            return {
+              id: child.id,
+              firstName: child.first_name,
+              icon: child.icon,
+              avatarUrl: child.avatar_url,
+              totalPoints: progressData?.total_points || 0,
+              currentLevel: progressData?.current_level || 1,
+              targetPoints: progressData?.target_points || 1000,
+              screenTimeUsed: progressData?.screen_time_used || 0,
+              dailyLimitMinutes: settingsData?.daily_limit_minutes,
+            };
+          } catch (error) {
+            console.error(`Error loading progress for child ${child.id}:`, error);
+            // Retourner un enfant avec des valeurs par défaut
+            return {
+              id: child.id,
+              firstName: child.first_name,
+              icon: child.icon,
+              avatarUrl: child.avatar_url,
+              totalPoints: 0,
+              currentLevel: 1,
+              targetPoints: 1000,
+              screenTimeUsed: 0,
+              dailyLimitMinutes: undefined,
+            };
+          }
+        })
       );
+
+      setChildren(childrenWithProgress);
     } catch (error) {
-      console.error('Error loading children:', error);
+      console.error('Error loading children from family_members:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const createDonutChart = (child: Child) => {
-    const canvasId = `chart-${child.id}`;
-    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-
-    if (!canvas) return;
-
+  const createDonutChart = (child: Child, canvas: HTMLCanvasElement) => {
     // Détruire l'ancien chart s'il existe
-    if (chartsRef.current[child.id]) {
-      chartsRef.current[child.id].destroy();
+    if (chartRef.current) {
+      chartRef.current.destroy();
+      chartRef.current = null;
     }
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const percentage = Math.min((child.totalPoints / child.targetPoints) * 100, 100);
-    const color = child.icon === 'bee' ? '#fbbf24' : '#f87171';
+    const percentage = getPercentage(child);
+    const color = getChildColor(child.icon);
 
-    chartsRef.current[child.id] = new Chart(ctx, {
+    chartRef.current = new Chart(ctx, {
       type: 'doughnut',
       data: {
         datasets: [
@@ -120,24 +193,12 @@ export const ChildrenWidget: React.FC = () => {
     });
   };
 
-  const getChildIcon = (icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar'): string => {
-    const icons = {
-      bee: '🐝',
-      ladybug: '🐞',
-      butterfly: '🦋',
-      caterpillar: '🐛',
-    };
-    return icons[icon] || '🐝';
+  const getChildIcon = (icon: string): string => {
+    return CHILD_ICONS[icon] || CHILD_ICONS.default;
   };
 
-  const getChildColor = (icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar'): string => {
-    const colors = {
-      bee: '#fbbf24',      // Jaune
-      ladybug: '#f87171',  // Rouge
-      butterfly: '#a78bfa', // Violet
-      caterpillar: '#34d399', // Vert
-    };
-    return colors[icon] || '#fbbf24';
+  const getChildColor = (icon: string): string => {
+    return CHILD_COLORS[icon] || CHILD_COLORS.default;
   };
 
   const getPercentage = (child: Child): number => {
@@ -146,6 +207,45 @@ export const ChildrenWidget: React.FC = () => {
     }
 
     return Math.min((child.totalPoints / child.targetPoints) * 100, 100);
+  };
+
+  // Composant Avatar réutilisable
+  const ChildAvatar: React.FC<{
+    child: Child;
+    size?: 'small' | 'medium' | 'large';
+    className?: string;
+  }> = ({ child, size = 'medium', className = '' }) => {
+    const sizeClasses = {
+      small: 'child-avatar-small',
+      medium: 'child-avatar-medium',
+      large: 'child-avatar-large',
+    };
+
+    if (child.avatarUrl) {
+      return (
+        <img
+          src={child.avatarUrl}
+          alt={`Avatar de ${child.firstName}`}
+          className={`child-avatar ${sizeClasses[size]} ${className}`}
+          onError={(e) => {
+            // Fallback vers l'icône si l'image ne charge pas
+            e.currentTarget.style.display = 'none';
+            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+            if (fallback) fallback.style.display = 'flex';
+          }}
+        />
+      );
+    }
+
+    // Fallback sur l'icône emoji
+    return (
+      <div
+        className={`child-avatar-fallback ${sizeClasses[size]} ${className}`}
+        style={{ backgroundColor: getChildColor(child.icon) }}
+      >
+        <span>{getChildIcon(child.icon)}</span>
+      </div>
+    );
   };
 
   // Navigation handlers
@@ -174,7 +274,7 @@ export const ChildrenWidget: React.FC = () => {
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging || touchStart === null) return;
     
-    // Visual feedback pendant le drag (optionnel)
+    // Visual feedback pendant le drag
     const diff = e.clientX - touchStart;
     if (Math.abs(diff) > 10) {
       (e.currentTarget as HTMLDivElement).style.cursor = 'grabbing';
@@ -232,12 +332,15 @@ export const ChildrenWidget: React.FC = () => {
     );
   }
 
-  const selectedChild = children[selectedChildIndex];
   const percentage = getPercentage(selectedChild);
   const hasReachedGoal = percentage >= 100;
   const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
   const heartsTotal = 5;
-  const minutesPerHeart = Math.max(1, config?.screenTimeDefaultAllowance || 20);
+  const minutesPerHeart = Math.max(1, 
+    selectedChild.dailyLimitMinutes || 
+    config?.screenTimeDefaultAllowance || 
+    20
+  );
   const totalMinutes = heartsTotal * minutesPerHeart;
   const usedMinutes = Math.min(totalMinutes, Math.round(selectedChild?.screenTimeUsed || 0));
   const heartsUsed = Math.min(heartsTotal, Math.ceil(usedMinutes / minutesPerHeart));
@@ -253,7 +356,7 @@ export const ChildrenWidget: React.FC = () => {
       </div>
 
       <div className="child-subtitle">
-        <span className="child-subtitle-icon">{getChildIcon(selectedChild.icon)}</span>
+        <ChildAvatar child={selectedChild} size="small" className="child-subtitle-avatar" />
         <span className="child-subtitle-name">{selectedChild.firstName}</span>
       </div>
 
@@ -266,7 +369,7 @@ export const ChildrenWidget: React.FC = () => {
               onClick={() => selectChild(index)}
               aria-label={`Voir ${child.firstName}`}
             >
-              <span className="pill-icon">{getChildIcon(child.icon)}</span>
+              <ChildAvatar child={child} size="small" className="pill-avatar" />
               <span className="pill-name">{child.firstName}</span>
             </button>
           ))}
@@ -307,16 +410,11 @@ export const ChildrenWidget: React.FC = () => {
               <div className="donut-wrapper">
                 <div className="donut-stack">
                   {/* Canvas pour le donut */}
-                  <canvas id={`chart-${selectedChild.id}`} className="donut-chart-large"></canvas>
+                  <canvas ref={canvasRef} className="donut-chart-large" aria-label="Progression des points"></canvas>
 
-                  {/* Label au centre (icône) */}
+                  {/* Label au centre (avatar/icône) */}
                   <div className="donut-label-large">
-                    <span
-                      className="donut-icon-large"
-                      style={{ color: getChildColor(selectedChild.icon) }}
-                    >
-                      {getChildIcon(selectedChild.icon)}
-                    </span>
+                    <ChildAvatar child={selectedChild} size="large" className="donut-avatar-large" />
                   </div>
                 </div>
 
@@ -328,7 +426,7 @@ export const ChildrenWidget: React.FC = () => {
                   >
                     {selectedChild.totalPoints} pts
                   </div>
-                  <div className="points-target">/ {selectedChild.targetPoints} pts</div>
+                  <div className="points-target">/ {targetPoints} pts</div>
                 </div>
 
                 {/* Nom de l'enfant */}

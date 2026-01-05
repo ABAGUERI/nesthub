@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Timer } from '../types/timer.types';
+import './TimerCard.css'; 
 
 const STORAGE_KEY = 'hub_kitchen_timers';
+
 
 // Son d'alarme
 const playAlarm = () => {

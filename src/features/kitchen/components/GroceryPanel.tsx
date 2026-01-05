@@ -10,6 +10,7 @@ import {
   updateTaskStatusWithAuth,
 } from '../services/google.service';
 import { GroceryTask } from '@/shared/types/kitchen.types';
+import './GroceryPanel.css';
 
 export const GroceryPanel: React.FC = () => {
   const { user } = useAuth();

@@ -1,18 +1,19 @@
 /* === CHILDREN WIDGET CAROUSEL === */
 .children-widget {
   flex: 0.5 !important;
-  padding: 22px 24px !important;
+  padding: clamp(16px, 2vw, 24px) clamp(18px, 2.5vw, 32px) !important;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, rgba(79, 70, 229, 0.25), rgba(34, 197, 235, 0.12));
+  min-height: 0;
 }
 
 .points-chip {
   display: inline-flex;
   align-items: baseline;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 14px;
+  gap: clamp(4px, 0.5vw, 8px);
+  padding: clamp(6px, 1vw, 12px) clamp(8px, 1.5vw, 16px);
+  border-radius: clamp(10px, 1.5vw, 16px);
   background: rgba(255, 255, 255, 0.08);
   font-weight: 800;
   letter-spacing: 0.4px;
@@ -20,21 +21,21 @@
 }
 
 .points-value {
-  font-size: 16px;
+  font-size: clamp(14px, 1.5vw, 18px);
 }
 
 .points-target {
-  font-size: 13px;
+  font-size: clamp(11px, 1.2vw, 15px);
   color: #cbd5e1;
 }
 
 .child-subtitle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  margin: 8px 0 10px;
-  border-radius: 12px;
+  gap: clamp(6px, 0.8vw, 12px);
+  padding: clamp(6px, 1vw, 12px) clamp(8px, 1.5vw, 16px);
+  margin: clamp(4px, 1vw, 12px) 0 clamp(8px, 1.2vw, 16px);
+  border-radius: clamp(8px, 1.2vw, 14px);
   background: rgba(255, 255, 255, 0.06);
   color: #e2e8f0;
   font-weight: 800;
@@ -43,26 +44,26 @@
 }
 
 .child-subtitle-icon {
-  font-size: 20px;
+  font-size: clamp(16px, 2vw, 22px);
 }
 
 .child-subtitle-name {
-  font-size: 15px;
+  font-size: clamp(13px, 1.5vw, 17px);
 }
 
 .child-switcher {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 8px;
-  margin-bottom: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(min(120px, 30vw), 1fr));
+  gap: clamp(6px, 1vw, 12px);
+  margin-bottom: clamp(8px, 1.5vw, 20px);
 }
 
 .switcher-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
+  gap: clamp(4px, 0.8vw, 10px);
+  padding: clamp(8px, 1.2vw, 14px) clamp(10px, 1.5vw, 18px);
+  border-radius: clamp(8px, 1.2vw, 14px);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #e2e8f0;
@@ -76,11 +77,12 @@
 }
 
 .pill-icon {
-  font-size: 18px;
+  font-size: clamp(14px, 1.8vw, 20px);
 }
 
 .pill-name {
   font-weight: 700;
+  font-size: clamp(12px, 1.2vw, 15px);
 }
 
 /* === CAROUSEL CONTAINER === */
@@ -89,9 +91,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: clamp(8px, 1.5vw, 16px);
   flex: 1;
-  min-height: 480px;
+  min-height: min(60vh, 500px);
+  padding: 0 clamp(4px, 1vw, 12px);
 }
 
 .carousel-content {
@@ -99,9 +102,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  touch-action: pan-y; /* Permet scroll vertical mais pas horizontal */
+  touch-action: pan-y;
   user-select: none;
   transition: opacity 0.2s ease;
+  max-width: 100%;
 }
 
 .carousel-content:active {
@@ -113,9 +117,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: clamp(10px, 1.5vw, 18px);
   position: relative;
   animation: fadeInScale 0.3s ease;
+  width: 100%;
+  max-width: 800px;
 }
 
 @keyframes fadeInScale {
@@ -132,15 +138,15 @@
 /* === GOAL BADGE === */
 .goal-badge {
   position: absolute;
-  top: -10px;
+  top: -8px;
   right: 50%;
   transform: translateX(50%);
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  padding: 6px 16px;
-  border-radius: 20px;
+  padding: clamp(4px, 0.8vw, 8px) clamp(12px, 2vw, 20px);
+  border-radius: clamp(16px, 2.5vw, 24px);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: clamp(4px, 0.8vw, 8px);
   box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
   z-index: 10;
   animation: bounceIn 0.5s ease;
@@ -159,12 +165,12 @@
 }
 
 .goal-icon {
-  font-size: 16px;
+  font-size: clamp(14px, 1.5vw, 18px);
   line-height: 1;
 }
 
 .goal-text {
-  font-size: 13px;
+  font-size: clamp(11px, 1.2vw, 15px);
   font-weight: 700;
   color: #1a1a1a;
   text-transform: uppercase;
@@ -174,27 +180,29 @@
 /* === DONUT LARGE === */
 .donut-and-hearts {
   display: grid;
-  grid-template-columns: minmax(300px, 1.1fr) auto;
-  gap: 24px;
+  grid-template-columns: minmax(min(280px, 70vw), 1.1fr) auto;
+  gap: clamp(16px, 3vw, 32px);
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
 .donut-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: clamp(6px, 1vw, 12px);
 }
 
 .donut-stack {
   position: relative;
-  width: min(74vw, 340px);
+  width: min(70vw, 340px);
   max-width: 360px;
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 auto;
 }
 
 .donut-chart-large {
@@ -216,54 +224,48 @@
   pointer-events: none;
 }
 
-.donut-icon-large {
-  font-size: 86px;
-  line-height: 1;
-  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.7));
-}
-
 .donut-money-large {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  margin-top: -18px;
+  gap: clamp(2px, 0.5vw, 6px);
+  margin-top: clamp(-12px, -1.5vw, -18px);
 }
 
 .donut-value-large {
-  font-size: 40px;
+  font-size: clamp(28px, 4vw, 42px);
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0.4px;
 }
 
 .points-balance {
-  font-size: 18px;
+  font-size: clamp(14px, 1.8vw, 20px);
   color: #a5b4fc;
   font-weight: 700;
 }
 
 .child-name-large {
-  font-size: 22px;
+  font-size: clamp(18px, 2.5vw, 24px);
   font-weight: 800;
   color: #e2e8f0;
-  margin-top: 10px;
+  margin-top: clamp(6px, 1vw, 12px);
   letter-spacing: 0.5px;
 }
 
 .progress-track {
   width: 100%;
-  max-width: 420px;
+  max-width: min(90vw, 480px);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: clamp(6px, 1vw, 12px);
 }
 
 .progress-label {
   display: flex;
   justify-content: space-between;
   color: #cbd5e1;
-  font-size: 14px;
+  font-size: clamp(12px, 1.5vw, 16px);
 }
 
 .progress-value {
@@ -272,7 +274,7 @@
 }
 
 .progress-bar {
-  height: 14px;
+  height: clamp(10px, 1.5vw, 16px);
   background: rgba(255, 255, 255, 0.06);
   border-radius: 999px;
   overflow: hidden;
@@ -289,18 +291,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 14px 12px;
+  gap: clamp(8px, 1.2vw, 14px);
+  padding: clamp(10px, 1.5vw, 18px) clamp(10px, 1.5vw, 16px);
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 14px;
+  border-radius: clamp(10px, 1.5vw, 16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  min-width: 120px;
+  min-width: min(120px, 30vw);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  margin-left: auto;
 }
 
 .hearts-label {
-  font-size: 12px;
+  font-size: clamp(10px, 1.2vw, 14px);
   letter-spacing: 0.6px;
   text-transform: uppercase;
   color: #cbd5e1;
@@ -310,12 +311,12 @@
 .hearts-column {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: clamp(4px, 0.8vw, 8px);
   align-items: center;
 }
 
 .heart {
-  font-size: 22px;
+  font-size: clamp(18px, 2.5vw, 24px);
   opacity: 0.3;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
@@ -330,20 +331,20 @@
 }
 
 .hearts-meta {
-  font-size: 12px;
+  font-size: clamp(10px, 1.2vw, 14px);
   color: #e2e8f0;
   font-weight: 700;
 }
 
 /* === CAROUSEL ARROWS === */
 .carousel-arrow {
-  width: 48px;
-  height: 48px;
+  width: clamp(36px, 5vw, 52px);
+  height: clamp(36px, 5vw, 52px);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   color: #e2e8f0;
-  font-size: 32px;
+  font-size: clamp(24px, 3vw, 36px);
   font-weight: 300;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -371,11 +372,11 @@
 }
 
 .carousel-arrow-left {
-  margin-left: -8px;
+  margin-left: clamp(-4px, -0.5vw, -8px);
 }
 
 .carousel-arrow-right {
-  margin-right: -8px;
+  margin-right: clamp(-4px, -0.5vw, -8px);
 }
 
 /* === CAROUSEL DOTS === */
@@ -383,14 +384,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 8px 0;
+  gap: clamp(6px, 1vw, 10px);
+  margin-top: clamp(12px, 2vw, 20px);
+  padding: clamp(6px, 1vw, 12px) 0;
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
+  width: clamp(6px, 1vw, 10px);
+  height: clamp(6px, 1vw, 10px);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   border: none;
@@ -405,42 +406,149 @@
 }
 
 .dot.active {
-  width: 24px;
+  width: clamp(20px, 3vw, 28px);
   border-radius: 4px;
   transform: scale(1);
 }
 
-/* === RESPONSIVE === */
+/* === AVATARS RESPONSIVES === */
+.child-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Taille small - pour sous-titre et pill */
+.child-avatar-small {
+  width: clamp(20px, 3vw, 28px);
+  height: clamp(20px, 3vw, 28px);
+  min-width: 20px;
+  min-height: 20px;
+}
+
+/* Taille medium - pour les boutons de switcher */
+.child-avatar-medium {
+  width: clamp(32px, 4vw, 44px);
+  height: clamp(32px, 4vw, 44px);
+  min-width: 32px;
+  min-height: 32px;
+}
+
+/* Taille large - pour le centre du donut */
+.child-avatar-large {
+  width: clamp(180px, 40vw, 280px);
+  height: clamp(180px, 40vw, 280px);
+  max-width: 280px;
+  max-height: 280px;
+  min-width: 120px;
+  min-height: 120px;
+}
+
+/* Icône de fallback dans l'avatar */
+.child-avatar-fallback {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Taille des icônes dans les fallbacks */
+.child-avatar-small .child-avatar-fallback {
+  font-size: clamp(10px, 1.5vw, 14px);
+}
+
+.child-avatar-medium .child-avatar-fallback {
+  font-size: clamp(14px, 2vw, 20px);
+}
+
+.child-avatar-large .child-avatar-fallback {
+  font-size: clamp(48px, 10vw, 86px);
+}
+
+.child-subtitle-avatar {
+  margin-right: clamp(6px, 0.8vw, 10px);
+}
+
+.pill-avatar {
+  margin-right: clamp(4px, 0.6vw, 8px);
+}
+
+/* Gestion du fallback d'image */
+.child-avatar + .child-avatar-fallback {
+  display: none;
+}
+
+/* Icône dans le centre du donut (si pas d'avatar) */
+.donut-icon-large {
+  font-size: clamp(48px, 10vw, 86px);
+  line-height: 1;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.7));
+}
+
+/* === RESPONSIVE BREAKPOINTS === */
 @media (max-width: 768px) {
+  .donut-and-hearts {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: clamp(20px, 4vw, 32px);
+  }
+  
+  .screen-time-hearts {
+    order: 2;
+    width: 100%;
+    max-width: 300px;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: clamp(12px, 2vw, 16px);
+  }
+  
+  .hearts-column {
+    flex-direction: row;
+  }
+  
   .carousel-container {
-    min-height: 350px;
+    min-height: min(70vh, 500px);
   }
-
-  .donut-chart-large {
-    width: 160px !important;
-    height: 160px !important;
+  
+  .donut-stack {
+    width: min(80vw, 300px);
   }
+}
 
-  .donut-label-large {
-    top: 52px;
+@media (max-width: 480px) {
+  .children-widget {
+    padding: 16px !important;
   }
-
-  .donut-icon-large {
-    font-size: 48px;
+  
+  .child-switcher {
+    grid-template-columns: repeat(auto-fit, minmax(min(100px, 40vw), 1fr));
   }
-
-  .donut-value-large {
-    font-size: 24px;
-  }
-
-  .child-name-large {
-    font-size: 18px;
-  }
-
+  
   .carousel-arrow {
-    width: 40px;
-    height: 40px;
-    font-size: 28px;
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+  }
+  
+  .carousel-arrow-left {
+    margin-left: -4px;
+  }
+  
+  .carousel-arrow-right {
+    margin-right: -4px;
+  }
+  
+  .donut-stack {
+    width: min(85vw, 260px);
+  }
+  
+  .child-avatar-large {
+    width: clamp(140px, 50vw, 220px);
+    height: clamp(140px, 50vw, 220px);
   }
 }
 
@@ -448,7 +556,7 @@
 .loading-message,
 .empty-message {
   text-align: center;
-  padding: 40px 20px;
+  padding: clamp(30px, 5vw, 50px) clamp(16px, 3vw, 24px);
   color: #64748b;
-  font-size: 14px;
+  font-size: clamp(13px, 1.5vw, 16px);
 }

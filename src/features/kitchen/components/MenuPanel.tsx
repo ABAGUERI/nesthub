@@ -4,6 +4,7 @@ import { getStableFoodEmoji } from '@/shared/utils/emoji';
 import { getWeekMenu, saveWeekMenu } from '../services/menu.service';
 import { WeekMenu, WEEK_DAYS } from '@/shared/types/kitchen.types';
 import { TimerCard } from './TimerCard';
+import './MenuPanel.css';
 
 const getWeekStart = (reference?: Date): string => {
   const date = reference ? new Date(reference) : new Date();
@@ -38,7 +39,12 @@ const formatWeekRange = (weekStart: string): string => {
   return `${start.getDate()} ${startMonth} - ${end.getDate()} ${endMonth}`;
 };
 
-export const MenuPanel: React.FC = () => {
+interface MenuPanelProps {
+  onShowAIMenu?: () => void;
+  onShowGrocery?: () => void;
+}
+
+export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocery }) => {
   const { user } = useAuth();
   const [weekStart, setWeekStart] = useState<string>(() => getWeekStart());
   const [menu, setMenu] = useState<WeekMenu>({});
@@ -150,10 +156,34 @@ export const MenuPanel: React.FC = () => {
 
   return (
     <div className="menu-panel">
-      {/* Header avec période à droite - TITRE UNIQUE */}
+      {/* Header V2 - Titre + Boutons + Navigation sur 1 ligne */}
       <div className="menu-header-with-period">
-        <h2 className="menu-title">Menu de la semaine</h2>
+        {/* Zone gauche : Titre + Boutons */}
+        <div className="menu-header-left">
+          <h2 className="menu-title">Menu de la semaine</h2>
+          
+          <div className="menu-action-btns">
+            <button
+              className="menu-action-btn"
+              onClick={onShowAIMenu}
+              type="button"
+              title="Menu IA"
+            >
+              🍽️
+            </button>
+            
+            <button
+              className="menu-action-btn"
+              onClick={onShowGrocery}
+              type="button"
+              title="Épicerie"
+            >
+              🛒
+            </button>
+          </div>
+        </div>
         
+        {/* Zone droite : Navigation semaine */}
         <div className="week-period-navigation">
           <div className="week-period-text">
             {formatWeekRange(weekStart)}
@@ -233,7 +263,7 @@ export const MenuPanel: React.FC = () => {
                 onClick={(e) => openEditor(dayKey, `${day.fullLabel} ${dayDate.getDate()}`, e)}
                 type="button"
               >
-                + Ajouter
+                Ajouter
               </button>
             </div>
           );
