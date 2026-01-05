@@ -5,12 +5,10 @@
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  background: radial-gradient(circle at 20% 20%, rgba(34, 211, 238, 0.08), transparent 35%),
-    radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.05), transparent 25%),
-    rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(145deg, rgba(10, 17, 35, 0.8), rgba(12, 22, 45, 0.75));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
   font-family: 'Caveat', cursive;
   min-height: 220px;
 }
@@ -33,11 +31,11 @@
 }
 
 .timer-card-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: #e0f2fe;
   margin: 0;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
 }
 
 .timer-card-subtitle {
@@ -49,20 +47,20 @@
 .timer-controls {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .timer-quick-buttons {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
 .timer-quick-btn {
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(34, 211, 238, 0.25);
-  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
   color: #e0f2fe;
   font-weight: 800;
   font-size: 16px;
@@ -71,15 +69,20 @@
 }
 
 .timer-quick-btn:hover {
-  background: rgba(34, 211, 238, 0.15);
-  box-shadow: 0 6px 18px rgba(34, 211, 238, 0.2);
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.35);
+  box-shadow: 0 10px 24px rgba(34, 211, 238, 0.2);
+}
+
+.timer-quick-btn.highlight {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(14, 165, 233, 0.18));
+  border-color: rgba(34, 211, 238, 0.45);
 }
 
 .timer-custom-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 48px;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
 }
 
 .timer-custom-input {
@@ -152,6 +155,13 @@
   transition: all 0.2s ease;
 }
 
+.timer-overlay-btn.subtle {
+  justify-self: start;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+  color: rgba(248, 250, 252, 0.85);
+}
+
 .timer-overlay-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -160,6 +170,15 @@
 .timer-overlay-btn:not(:disabled):hover {
   box-shadow: 0 8px 18px rgba(34, 211, 238, 0.25);
   transform: translateY(-1px);
+}
+
+.timer-custom-row.overlay-row {
+  grid-template-columns: 1.3fr 0.7fr 52px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 6px;
 }
 
 .timer-analog-list {

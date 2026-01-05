@@ -97,8 +97,8 @@ export const TimerCard: React.FC = () => {
     };
   }, []);
 
-  const addTimer = (minutes: number, label: string) => {
-    const duration = Math.max(1, minutes) * 60;
+  const addTimer = (seconds: number, label: string) => {
+    const duration = Math.max(1, seconds);
     const newTimer: Timer = {
       id: Date.now().toString(),
       label,
@@ -113,15 +113,15 @@ export const TimerCard: React.FC = () => {
     setShowOverlay(true);
   };
 
-  const handleQuickTimer = (minutes: number) => {
-    addTimer(minutes, `${minutes} min`);
+  const handleQuickTimer = (seconds: number, label: string) => {
+    addTimer(seconds, label);
   };
 
   const addCustomTimer = () => {
     const minutes = parseInt(customMinutes, 10);
     if (isNaN(minutes) || minutes <= 0) return;
 
-    addTimer(minutes, customLabel.trim() || `${minutes} min`);
+    addTimer(minutes * 60, customLabel.trim() || `${minutes} min`);
     setCustomLabel('');
     setCustomMinutes('');
   };
@@ -161,43 +161,32 @@ export const TimerCard: React.FC = () => {
 
         <div className="timer-controls">
           <div className="timer-quick-buttons">
-            {[5, 10, 15].map((minutes) => (
+            {[{ seconds: 45, label: '45 sec' }, { seconds: 60, label: '1 min' }, { seconds: 300, label: '5 min' }].map((preset) => (
               <button
-                key={minutes}
+                key={preset.label}
                 className="timer-quick-btn"
-                onClick={() => handleQuickTimer(minutes)}
+                onClick={() => handleQuickTimer(preset.seconds, preset.label)}
                 type="button"
               >
-                {minutes} min
+                {preset.label}
               </button>
             ))}
-          </div>
-
-          <div className="timer-custom-row">
-            <input
-              className="timer-custom-input"
-              placeholder="Nom du minuteur"
-              value={customLabel}
-              onChange={(e) => setCustomLabel(e.target.value)}
-              maxLength={30}
-            />
-            <input
-              className="timer-custom-input"
-              placeholder="Minutes"
-              value={customMinutes}
-              onChange={(e) => setCustomMinutes(e.target.value)}
-              type="number"
-              min={1}
-            />
             <button
-              className="timer-add-btn"
-              onClick={addCustomTimer}
+              className="timer-quick-btn highlight"
+              onClick={() => setShowOverlay(true)}
               type="button"
-              disabled={!customMinutes}
             >
-              +
+              Personnalisé
             </button>
           </div>
+
+          <button
+            className="timer-overlay-btn subtle"
+            type="button"
+            onClick={() => setShowOverlay(true)}
+          >
+            Voir les minuteurs
+          </button>
         </div>
 
         <div className="timer-floating-summary">
@@ -230,6 +219,32 @@ export const TimerCard: React.FC = () => {
             </div>
 
             <div className="timer-analog-list">
+              <div className="timer-custom-row overlay-row">
+                <input
+                  className="timer-custom-input"
+                  placeholder="Nom du minuteur"
+                  value={customLabel}
+                  onChange={(e) => setCustomLabel(e.target.value)}
+                  maxLength={30}
+                />
+                <input
+                  className="timer-custom-input"
+                  placeholder="Minutes"
+                  value={customMinutes}
+                  onChange={(e) => setCustomMinutes(e.target.value)}
+                  type="number"
+                  min={1}
+                />
+                <button
+                  className="timer-add-btn"
+                  onClick={addCustomTimer}
+                  type="button"
+                  disabled={!customMinutes}
+                >
+                  +
+                </button>
+              </div>
+
               {ringingTimers.length > 0 && (
                 <div className="timer-ringing">
                   {ringingTimers.map(timer => (
