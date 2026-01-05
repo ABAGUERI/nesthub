@@ -28,13 +28,21 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
   const listRef = useRef<HTMLDivElement>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
 
+  const visibleTasks = useMemo(() => {
+    const toDateValue = (value?: string) => (value ? new Date(value).getTime() : 0);
+
+    return [...tasks]
+      .filter((task) => task.status !== 'completed')
+      .sort((a, b) => toDateValue(b.updated ?? b.completed) - toDateValue(a.updated ?? a.completed));
+  }, [tasks]);
+
   useEffect(() => {
     loadGroceryTasks();
   }, [user, config?.googleGroceryListId]);
 
   useEffect(() => {
     checkScroll();
-  }, [tasks]);
+  }, [visibleTasks]);
 
   const checkScroll = () => {
     if (listRef.current) {
@@ -78,6 +86,7 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
         title: task.title,
         status: task.status as GoogleTaskStatus,
         completed: task.completed,
+        updated: task.updated,
       }));
 
       setTasks(normalized);
@@ -101,10 +110,17 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
     if (!current) return;
     const nextStatus: GoogleTaskStatus = current.status === 'completed' ? 'needsAction' : 'completed';
 
+    const updatedTimestamp = new Date().toISOString();
+
     setTasks((prev) =>
       prev.map((task) =>
         task.id === taskId
-          ? { ...task, status: nextStatus, completed: nextStatus === 'completed' ? new Date().toISOString() : undefined }
+          ? {
+              ...task,
+              status: nextStatus,
+              completed: nextStatus === 'completed' ? updatedTimestamp : undefined,
+              updated: updatedTimestamp,
+            }
           : task
       )
     );
@@ -125,7 +141,7 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
     if (!trimmed) return;
 
     const tempId = `temp-${Date.now()}`;
-    const optimisticTask: GroceryTask = { id: tempId, title: trimmed, status: 'needsAction' };
+    const optimisticTask: GroceryTask = { id: tempId, title: trimmed, status: 'needsAction', updated: new Date().toISOString() };
     setTasks((prev) => [optimisticTask, ...prev]);
     setNewItem('');
 
@@ -148,7 +164,7 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
         </div>
         <div className="grocery-header-actions">
           <div className="grocery-stats-enhanced">
-            {tasks.length} item{tasks.length !== 1 ? 's' : ''}
+            {visibleTasks.length} item{visibleTasks.length !== 1 ? 's' : ''}
           </div>
           {onBackToMenu && (
             <button type="button" className="panel-back-btn" onClick={onBackToMenu}>
@@ -202,7 +218,7 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
               {refreshing ? '⏳ Rechargement...' : '🔄 Réessayer'}
             </button>
           </div>
-        ) : tasks.length === 0 ? (
+        ) : visibleTasks.length === 0 ? (
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
@@ -223,7 +239,7 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
           </div>
         ) : (
           <>
-            {tasks.map((task) => (
+            {visibleTasks.map((task) => (
               <button
                 key={task.id}
                 className={`grocery-item-fixed ${task.status === 'completed' ? 'done' : ''}`}
