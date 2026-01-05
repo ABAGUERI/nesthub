@@ -1,0 +1,565 @@
+/* =====================================================
+ * FAMILY TAB - AVATARS + MEMBRES
+ * ===================================================== */
+
+.family-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Grid membres */
+.family-members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+/* Carte membre */
+.family-member-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+
+.family-member-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Avatar section */
+.member-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.1);
+}
+
+.member-avatar {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid var(--child-color, #64748b);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  transition: all 0.3s ease;
+}
+
+.family-member-card:hover .member-avatar {
+  transform: scale(1.05);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 0 0 6px var(--child-color);
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+}
+
+.avatar-icon {
+  font-size: 64px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.avatar-uploading {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Avatar actions */
+.avatar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.avatar-btn {
+  min-height: 36px;
+  padding: 8px 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.avatar-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.avatar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.avatar-btn-upload {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border-color: #8b5cf6;
+  color: white;
+}
+
+.avatar-btn-upload:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7c3aed, #9333ea);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.avatar-btn-delete {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.avatar-btn-delete:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Info section */
+.member-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Icon options compact */
+.icon-options-compact {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.icon-btn {
+  min-width: 48px;
+  min-height: 48px;
+  padding: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.icon-btn.active {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+/* Role toggle */
+.role-toggle {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.role-btn {
+  flex: 1;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+}
+
+.role-btn.active {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: #8b5cf6;
+  color: #a855f7;
+}
+
+/* Member actions */
+.member-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.delete-member-btn {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-member-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: translateY(-1px);
+}
+
+.delete-member-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Add member form */
+.add-member-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 500px;
+}
+
+.icon-btn .icon-emoji {
+  font-size: 24px;
+}
+
+.icon-btn .icon-label {
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+/* =====================================================
+ * ROTATION TAB - TASKS + ASSIGNMENTS
+ * ===================================================== */
+
+.rotation-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Day selector */
+.day-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.day-btn {
+  min-width: 56px;
+  min-height: 48px;
+  padding: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.day-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.day-btn.active {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border-color: #8b5cf6;
+  color: white;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.day-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Tasks list */
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.task-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.task-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.task-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.task-icon-select {
+  min-width: 60px;
+  min-height: 44px;
+  padding: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-size: 20px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.task-btn {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.task-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.task-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.task-btn-save {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.task-btn-save:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.3);
+}
+
+.task-btn-delete {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.task-btn-delete:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Add task form */
+.add-task-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  padding-top: 16px;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Assignments */
+.assignments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.assignment-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.assignment-task {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.assignment-select {
+  min-width: 200px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.assignment-select:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.assignment-select:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* Rotation actions */
+.rotation-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* Alerts */
+.config-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.config-alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.config-alert-success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1.5px solid rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .family-members-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-task-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .assignment-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .assignment-select {
+    min-width: auto;
+  }
+
+  .rotation-actions {
+    flex-direction: column;
+  }
+}

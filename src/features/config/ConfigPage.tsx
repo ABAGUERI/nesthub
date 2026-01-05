@@ -1,19 +1,21 @@
+import './components/FamilyRotationTabs.css';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TabNavigation } from './components/TabNavigation';
 import { FamilyTab } from './components/tabs/FamilyTab';
-import './components/tabs/FamilyTab.css';
+import { RotationTab } from './components/tabs/RotationTab';
 import { GoogleTab } from './components/tabs/GoogleTab';
 import { RewardsTab } from './components/tabs/RewardsTab';
 import { WeatherTab } from './components/tabs/WeatherTab';
 import './ConfigPage.css';
 
-type TabId = 'family' | 'google' | 'rewards' | 'weather';
+type TabId = 'family' | 'rotation' | 'google' | 'rewards' | 'weather';
 
 const TABS: Array<{ id: TabId; label: string; description: string; icon: string }> = [
-  { id: 'family', label: 'Famille', description: 'Ajouter, rôles, avatars', icon: '👨‍👩‍👧' },
-  { id: 'google', label: 'Google', description: 'Adresse Gmail, agendas, tâches', icon: '📧' },
-  { id: 'rewards', label: 'Récompenses', description: 'Tâches et points', icon: '🎯' },
+  { id: 'family', label: 'Famille', description: 'Membres et avatars', icon: '👨‍👩‍👧' },
+  { id: 'rotation', label: 'Rotation', description: 'Tâches et assignations', icon: '🔄' },
+  { id: 'google', label: 'Google', description: 'Gmail, agendas, tâches', icon: '📧' },
+  { id: 'rewards', label: 'Récompenses', description: 'Points et argent', icon: '🎯' },
   { id: 'weather', label: 'Météo', description: 'Ville et code postal', icon: '🌦️' },
 ];
 
@@ -28,7 +30,7 @@ export const ConfigPage: React.FC = () => {
           <p className="config-kicker">Paramètres & personnalisation</p>
           <h1>Affinez votre hub familial</h1>
           <p className="config-subtitle">
-            Gérez votre famille, votre compte Google, vos tâches récompensées et les informations météo en quelques clics.
+            Gérez votre famille, vos rotations de tâches, votre compte Google et vos récompenses en quelques clics.
           </p>
         </div>
         <button className="back-dashboard" onClick={() => navigate('/dashboard')}>
@@ -37,8 +39,8 @@ export const ConfigPage: React.FC = () => {
         <div className="config-hero-badge">
           <div className="badge-dot" />
           <div>
-            <p className="badge-label">Vue tactile</p>
-            <p className="badge-desc">Zones larges + animations douces</p>
+            <p className="badge-label">Vue tactile optimisée</p>
+            <p className="badge-desc">Interface moderne et fluide</p>
           </div>
         </div>
       </div>
@@ -48,6 +50,7 @@ export const ConfigPage: React.FC = () => {
 
         <div className="config-panel">
           {activeTab === 'family' && <FamilyTab />}
+          {activeTab === 'rotation' && <RotationTab />}
           {activeTab === 'google' && <GoogleTab />}
           {activeTab === 'rewards' && <RewardsTab />}
           {activeTab === 'weather' && <WeatherTab />}

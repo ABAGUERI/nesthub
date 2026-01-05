@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { useAuth } from '@/shared/hooks/useAuth';
-import { useClientConfig } from '@/shared/hooks/useClientConfig';
+import { supabase } from '@/shared/utils/supabase';
 import {
   createChild,
   deleteChild,
@@ -10,14 +10,8 @@ import {
   getChildren,
   updateChild,
 } from '@/shared/utils/children.service';
-import {
-  saveRotation,
-  getCurrentRotation,
-  generateNextWeekRotation,
-  getDayName,
-} from '@/features/kitchen/services/rotation.service';
+import { uploadAvatar, deleteAvatar, validateAvatarFile, getAvatarUrl } from '../../services/avatar.service';
 import type { Child } from '@/shared/types';
-import type { RotationAssignment } from '@/shared/types/kitchen.types';
 
 type ChildIcon = 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
 
@@ -26,6 +20,7 @@ interface ChildForm {
   name: string;
   icon: ChildIcon;
   role: FamilyRole;
+  avatar_url?: string;
   createdAt: string;
 }
 
@@ -36,94 +31,34 @@ const ICON_OPTIONS: { value: ChildIcon; label: string; emoji: string }[] = [
   { value: 'caterpillar', label: 'Chenille', emoji: '🐛' },
 ];
 
-const DEFAULT_ROLES = [
-  'Cuisine',
-  'Vaisselle',
-  'Poubelles',
-  'Salle de bain',
-  'Rangement',
-];
-
-/**
- * Obtenir le lundi de la semaine courante
- */
-const getWeekStart = (): string => {
-  const date = new Date();
-  const day = date.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const monday = new Date(date);
-  monday.setDate(date.getDate() + diff);
-  monday.setHours(0, 0, 0, 0);
-  return monday.toISOString();
+const DEFAULT_COLORS: Record<string, string> = {
+  'bee': '#22d3ee',
+  'ladybug': '#10b981',
+  'butterfly': '#a855f7',
+  'caterpillar': '#fb923c'
 };
 
-/**
- * FamilyTab - Gestion de la famille et des rotations
- */
 export const FamilyTab: React.FC = () => {
   const { user } = useAuth();
-  const { config, updateConfig } = useClientConfig();
   const [children, setChildren] = useState<ChildForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Nouvel enfant/membre
   const [newChild, setNewChild] = useState<{ name: string; icon: ChildIcon; role: FamilyRole }>({
     name: '',
     icon: 'bee',
     role: 'child',
   });
 
-  // Configuration rotation
-  const [rotationRoles, setRotationRoles] = useState<string[]>([...DEFAULT_ROLES]);
-  const [newRole, setNewRole] = useState('');
-  const [rotationAssignments, setRotationAssignments] = useState<
-    Record<string, string>
-  >({});
-  const [rotationResetDay, setRotationResetDay] = useState<number>(config?.rotationResetDay ?? 1);
-
-  // Tri par date de création
-  const sortedChildren = useMemo(
-    () => [...children].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
-    [children]
-  );
-
-  const familyCount = sortedChildren.length;
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     loadChildren();
-    loadCurrentRotation();
   }, [user]);
 
-  // Synchroniser rotationResetDay avec config
-  useEffect(() => {
-    if (config?.rotationResetDay !== undefined) {
-      setRotationResetDay(config.rotationResetDay);
-    }
-  }, [config?.rotationResetDay]);
-
-  /**
-   * Sauvegarder le jour de réinitialisation
-   */
-  const handleSaveResetDay = async (day: number) => {
-    if (!user) return;
-    
-    try {
-      await updateConfig({ rotationResetDay: day });
-      setRotationResetDay(day);
-      setSuccessMessage(`Jour de réinitialisation: ${getDayName(day)}`);
-      setTimeout(() => setSuccessMessage(null), 3000);
-    } catch (err) {
-      console.error('Failed to save reset day:', err);
-      setError('Erreur lors de la sauvegarde');
-    }
-  };
-
-  /**
-   * Charger les membres de la famille
-   */
   const loadChildren = async () => {
     if (!user) return;
     setLoading(true);
@@ -137,6 +72,7 @@ export const FamilyTab: React.FC = () => {
           name: c.firstName,
           icon: c.icon as ChildIcon,
           role: c.role ?? 'child',
+          avatar_url: c.avatarUrl,
           createdAt: c.createdAt,
         }))
       );
@@ -147,40 +83,12 @@ export const FamilyTab: React.FC = () => {
       setLoading(false);
     }
   };
+  console.log('children', children)
 
-  /**
-   * Charger la rotation courante
-   */
-  const loadCurrentRotation = async () => {
-    if (!user) return;
-
-    try {
-      const rotation = await getCurrentRotation(user.id);
-      if (rotation && rotation.assignments.length > 0) {
-        // Construire le mapping role → membre
-        const assignments: Record<string, string> = {};
-        const roles: string[] = [];
-
-        rotation.assignments.forEach((assignment) => {
-          assignments[assignment.role] = assignment.assigneeMemberId;
-          if (!roles.includes(assignment.role)) {
-            roles.push(assignment.role);
-          }
-        });
-
-        setRotationAssignments(assignments);
-        if (roles.length > 0) {
-          setRotationRoles(roles);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load rotation:', err);
-    }
+  const updateLocalChild = (childId: string, updates: Partial<ChildForm>) => {
+    setChildren((prev) => prev.map((c) => (c.id === childId ? { ...c, ...updates } : c)));
   };
 
-  /**
-   * Mettre à jour un membre
-   */
   const handleUpdateChild = async (child: ChildForm) => {
     setSaving(true);
     setError(null);
@@ -192,7 +100,6 @@ export const FamilyTab: React.FC = () => {
         icon: child.icon,
         role: child.role,
       });
-      setChildren((prev) => prev.map((c) => (c.id === child.id ? child : c)));
       setSuccessMessage('Membre mis à jour');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: unknown) {
@@ -203,15 +110,22 @@ export const FamilyTab: React.FC = () => {
     }
   };
 
-  /**
-   * Supprimer un membre
-   */
   const handleDeleteChild = async (childId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) return;
 
     setSaving(true);
     setError(null);
     try {
+      // Supprimer avatar si existe
+      const child = children.find(c => c.id === childId);
+      if (child?.avatar_url && user) {
+        try {
+          await deleteAvatar(user.id, childId);
+        } catch (err) {
+          console.warn('Avatar delete failed:', err);
+        }
+      }
+
       await deleteChild(childId);
       setChildren((prev) => prev.filter((c) => c.id !== childId));
       setSuccessMessage('Membre supprimé');
@@ -224,9 +138,6 @@ export const FamilyTab: React.FC = () => {
     }
   };
 
-  /**
-   * Ajouter un nouveau membre
-   */
   const handleAddChild = async () => {
     if (!user || !newChild.name.trim()) {
       setError('Veuillez saisir un prénom');
@@ -250,6 +161,7 @@ export const FamilyTab: React.FC = () => {
           name: created.firstName,
           icon: created.icon as ChildIcon,
           role: created.role ?? 'child',
+          avatar_url: created.avatarUrl,
           createdAt: created.createdAt,
         },
       ]);
@@ -264,265 +176,94 @@ export const FamilyTab: React.FC = () => {
     }
   };
 
-  /**
-   * Mettre à jour localement un membre
-   */
-  const updateLocalChild = (id: string, updates: Partial<ChildForm>) => {
-    setChildren((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
-  };
-
-  /**
-   * Ajouter un nouveau rôle de rotation
-   */
-  const handleAddRole = () => {
-    const trimmed = newRole.trim();
-    if (!trimmed || rotationRoles.includes(trimmed)) {
-      setError('Rôle invalide ou déjà existant');
-      return;
-    }
-    setRotationRoles((prev) => [...prev, trimmed]);
-    setNewRole('');
-  };
-
-  /**
-   * Supprimer un rôle
-   */
-  const handleRemoveRole = (role: string) => {
-    setRotationRoles((prev) => prev.filter((r) => r !== role));
-    setRotationAssignments((prev) => {
-      const updated = { ...prev };
-      delete updated[role];
-      return updated;
-    });
-  };
-
-  /**
-   * Sauvegarder la rotation
-   */
-  const handleSaveRotation = async () => {
+  const handleAvatarUpload = async (childId: string, file: File) => {
     if (!user) return;
 
-    const assignments: RotationAssignment[] = rotationRoles
-      .map((role, index) => {
-        const memberId = rotationAssignments[role];
-        if (!memberId) return null;
-
-        const member = sortedChildren.find((c) => c.id === memberId);
-        if (!member) return null;
-
-        return {
-          role,
-          assigneeMemberId: memberId,
-          assigneeName: member.name,
-          sortOrder: index,
-        };
-      })
-      .filter((a): a is RotationAssignment => a !== null);
-
-    if (assignments.length === 0) {
-      setError('Aucune assignation configurée');
+    const validationError = validateAvatarFile(file);
+    if (validationError) {
+      setError(validationError);
+      setTimeout(() => setError(null), 3000);
       return;
     }
 
-    setSaving(true);
+    setUploadingId(childId);
     setError(null);
 
     try {
-      const weekStart = getWeekStart();
-      await saveRotation(user.id, weekStart, assignments, {
-        rule: 'Rotation manuelle',
-      });
-      setSuccessMessage('Rotation sauvegardée pour cette semaine');
+      const avatarUrl = await uploadAvatar(user.id, childId, file);
+
+      // Mettre à jour DB
+      const { error: updateError } = await supabase
+        .from('family_members')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', childId)
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        console.error('DB update error:', updateError);
+        throw new Error(`Erreur sauvegarde DB: ${updateError.message}`);
+      }
+
+      updateLocalChild(childId, { avatar_url: avatarUrl });
+      setSuccessMessage('Avatar mis à jour');
       setTimeout(() => setSuccessMessage(null), 3000);
-    } catch (err) {
-      console.error('Failed to save rotation:', err);
-      setError('Erreur lors de la sauvegarde');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur upload avatar';
+      setError(message);
+      setTimeout(() => setError(null), 3000);
     } finally {
-      setSaving(false);
+      setUploadingId(null);
     }
   };
 
-  /**
-   * Générer la rotation automatique de la prochaine semaine
-   */
-  const handleGenerateNextWeek = async () => {
-    if (!user) return;
+  const handleDeleteAvatar = async (childId: string) => {
+    if (!user || !confirm('Supprimer l\'avatar ?')) return;
 
-    setSaving(true);
+    setUploadingId(childId);
     setError(null);
 
     try {
-      await generateNextWeekRotation(user.id);
-      setSuccessMessage('Rotation de la prochaine semaine générée');
+      await deleteAvatar(user.id, childId);
+
+      // Mettre à jour DB
+      const { error: updateError } = await supabase
+        .from('family_members')
+        .update({ avatar_url: null })
+        .eq('id', childId)
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        console.error('DB update error:', updateError);
+        throw new Error(`Erreur suppression DB: ${updateError.message}`);
+      }
+
+      updateLocalChild(childId, { avatar_url: undefined });
+      setSuccessMessage('Avatar supprimé');
       setTimeout(() => setSuccessMessage(null), 3000);
-    } catch (err) {
-      console.error('Failed to generate next week:', err);
-      setError('Erreur : configurez d\'abord la rotation courante');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur suppression avatar';
+      setError(message);
+      setTimeout(() => setError(null), 3000);
     } finally {
-      setSaving(false);
+      setUploadingId(null);
     }
   };
+
+  const sortedChildren = [...children].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 
   return (
-    <div className="config-tab-panel">
-      <div className="panel-header">
-        <div>
-          <p className="panel-kicker">Famille & avatars</p>
-          <h2>Gérez votre famille</h2>
-          <p className="panel-subtitle">
-            Ajoutez chaque membre (enfant ou adulte), choisissez son rôle et son avatar.
-          </p>
+    <div className="family-tab">
+      {/* Messages */}
+      {error && (
+        <div className="config-alert config-alert-error">
+          <span>⚠️</span>
+          <span>{error}</span>
         </div>
-      </div>
-
-      {error && <div className="config-alert error">{error}</div>}
-      {successMessage && <div className="config-alert success">{successMessage}</div>}
-
-      {/* Aperçu Rotation */}
-      <div className="config-card">
-        <div className="config-card-header">
-          <div>
-            <h3>Rotation hebdomadaire</h3>
-            <p>
-              La rotation de l'écran Cuisine s'appuie sur ces membres. Configurez les assignations
-              ci-dessous.
-            </p>
-          </div>
-          <a className="ghost-button" href="/kitchen">
-            Voir la rotation
-          </a>
-        </div>
-        <div className="rotation-summary">
-          <p>
-            {familyCount
-              ? `${familyCount} membre(s) prêts pour la rotation.`
-              : 'Ajoutez un membre pour activer la rotation.'}
-          </p>
-          {familyCount > 0 && (
-            <div className="rotation-member-list">
-              {sortedChildren.map((member) => (
-                <div key={member.id} className="rotation-member-chip">
-                  <span className="rotation-name">{member.name}</span>
-                  <span className={`rotation-role-pill ${member.role === 'adult' ? 'adult' : 'child'}`}>
-                    {member.role === 'adult' ? 'Adulte' : 'Enfant'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Configuration Rotation */}
-      {familyCount > 0 && (
-        <div className="config-card">
-          <div className="config-card-header">
-            <h3>Configuration des rotations</h3>
-            <p>Définissez les rôles et assignez-les aux membres de la famille</p>
-          </div>
-
-          {/* Jour de réinitialisation */}
-          <div className="rotation-reset-day-config">
-            <label className="input-label">
-              Jour de réinitialisation hebdomadaire
-              <span className="input-hint">
-                La rotation se réinitialisera automatiquement chaque {getDayName(rotationResetDay)}
-              </span>
-            </label>
-            <div className="day-selector">
-              {[
-                { value: 0, label: 'Dim' },
-                { value: 1, label: 'Lun' },
-                { value: 2, label: 'Mar' },
-                { value: 3, label: 'Mer' },
-                { value: 4, label: 'Jeu' },
-                { value: 5, label: 'Ven' },
-                { value: 6, label: 'Sam' },
-              ].map((day) => (
-                <button
-                  key={day.value}
-                  className={`day-button ${rotationResetDay === day.value ? 'active' : ''}`}
-                  onClick={() => handleSaveResetDay(day.value)}
-                  disabled={saving}
-                  type="button"
-                >
-                  {day.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Gestion des rôles */}
-          <div className="rotation-roles-config">
-            <label className="input-label">Rôles disponibles</label>
-            <div className="role-list">
-              {rotationRoles.map((role) => (
-                <div key={role} className="role-item">
-                  <span>{role}</span>
-                  <button
-                    className="ghost-button ghost-button-compact"
-                    onClick={() => handleRemoveRole(role)}
-                    disabled={saving}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="add-role-form">
-              <Input
-                label="Ajouter un rôle"
-                placeholder="Ex: Aspirateur, Lessive..."
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value)}
-              />
-              <Button onClick={handleAddRole} disabled={!newRole.trim() || saving}>
-                Ajouter le rôle
-              </Button>
-            </div>
-          </div>
-
-          {/* Assignations */}
-          <div className="rotation-assignments">
-            <label className="input-label">Assignations de cette semaine</label>
-            {rotationRoles.map((role) => (
-              <div key={role} className="assignment-row">
-                <span className="assignment-role">{role}</span>
-                <select
-                  className="assignment-select"
-                  value={rotationAssignments[role] || ''}
-                  onChange={(e) =>
-                    setRotationAssignments((prev) => ({
-                      ...prev,
-                      [role]: e.target.value,
-                    }))
-                  }
-                  disabled={saving}
-                >
-                  <option value="">— Sélectionner —</option>
-                  {sortedChildren.map((member) => (
-                    <option key={member.id} value={member.id}>
-                      {member.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
-
-          <div className="rotation-actions">
-            <Button onClick={handleSaveRotation} isLoading={saving} disabled={saving}>
-              Sauvegarder la rotation
-            </Button>
-            <Button
-              onClick={handleGenerateNextWeek}
-              disabled={saving}
-              variant="secondary"
-            >
-              Générer semaine prochaine
-            </Button>
-          </div>
+      )}
+      {successMessage && (
+        <div className="config-alert config-alert-success">
+          <span>✅</span>
+          <span>{successMessage}</span>
         </div>
       )}
 
@@ -530,8 +271,8 @@ export const FamilyTab: React.FC = () => {
       <div className="config-card">
         <div className="config-card-header">
           <div>
-            <h3>Membres actifs</h3>
-            <p>Cette liste est la source unique pour les enfants (dashboard) et les rotations.</p>
+            <h3>👨‍👩‍👧 Membres de la famille</h3>
+            <p>Gérez les membres, leurs avatars et leurs rôles</p>
           </div>
         </div>
 
@@ -540,83 +281,147 @@ export const FamilyTab: React.FC = () => {
         ) : sortedChildren.length === 0 ? (
           <div className="config-placeholder">Aucun membre configuré</div>
         ) : (
-          <div className="child-grid">
-            {sortedChildren.map((child) => (
-              <div key={child.id} className="child-tile">
-                <div className="child-tile-header">
-                  <span className="chip">Avatar</span>
-                  <button
-                    className="ghost-button"
-                    onClick={() => handleDeleteChild(child.id)}
-                    disabled={saving}
-                  >
-                    Supprimer
-                  </button>
-                </div>
-
-                <div className="icon-options-inline">
-                  {ICON_OPTIONS.map((icon) => (
-                    <button
-                      key={icon.value}
-                      className={`icon-choice ${child.icon === icon.value ? 'active' : ''}`}
-                      onClick={() => updateLocalChild(child.id, { icon: icon.value })}
+          <div className="family-members-grid">
+            {sortedChildren.map((child) => {
+              const childColor = DEFAULT_COLORS[child.icon] || '#64748b';
+              
+              return (
+                <div key={child.id} className="family-member-card">
+                  {/* Avatar section */}
+                  <div className="member-avatar-section">
+                    <div 
+                      className="member-avatar"
+                      style={{ '--child-color': childColor } as React.CSSProperties}
                     >
-                      <span className="icon-emoji">{icon.emoji}</span>
-                      <span>{icon.label}</span>
-                    </button>
-                  ))}
+                      {child.avatar_url ? (
+                        <img 
+                          src={getAvatarUrl(child.avatar_url) || ''} 
+                          alt={child.name}
+                          className="avatar-image"
+                        />
+                      ) : (
+                        <div className="avatar-placeholder">
+                          <span className="avatar-icon">{ICON_OPTIONS.find(i => i.value === child.icon)?.emoji}</span>
+                        </div>
+                      )}
+                      {uploadingId === child.id && (
+                        <div className="avatar-uploading">
+                          <div className="spinner" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="avatar-actions">
+                      <input
+                        ref={(el) => (fileInputRefs.current[child.id] = el)}
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleAvatarUpload(child.id, file);
+                        }}
+                        style={{ display: 'none' }}
+                      />
+                      <button
+                        className="avatar-btn avatar-btn-upload"
+                        onClick={() => fileInputRefs.current[child.id]?.click()}
+                        disabled={uploadingId === child.id}
+                        type="button"
+                      >
+                        📸 {child.avatar_url ? 'Changer' : 'Ajouter'} photo
+                      </button>
+                      {child.avatar_url && (
+                        <button
+                          className="avatar-btn avatar-btn-delete"
+                          onClick={() => handleDeleteAvatar(child.id)}
+                          disabled={uploadingId === child.id}
+                          type="button"
+                        >
+                          ✕ Supprimer
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Infos section */}
+                  <div className="member-info-section">
+                    <Input
+                      label="Prénom"
+                      value={child.name}
+                      onChange={(e) => updateLocalChild(child.id, { name: e.target.value })}
+                      placeholder="Prénom"
+                    />
+
+                    <label className="input-label">Icône de fallback</label>
+                    <div className="icon-options-compact">
+                      {ICON_OPTIONS.map((icon) => (
+                        <button
+                          key={icon.value}
+                          className={`icon-btn ${child.icon === icon.value ? 'active' : ''}`}
+                          onClick={() => updateLocalChild(child.id, { icon: icon.value })}
+                          type="button"
+                          title={icon.label}
+                        >
+                          {icon.emoji}
+                        </button>
+                      ))}
+                    </div>
+
+                    <label className="input-label">Rôle</label>
+                    <div className="role-toggle">
+                      {(
+                        [
+                          { value: 'child', label: 'Enfant' },
+                          { value: 'adult', label: 'Adulte' },
+                        ] as { value: FamilyRole; label: string }[]
+                      ).map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          className={`role-btn ${child.role === option.value ? 'active' : ''}`}
+                          onClick={() => updateLocalChild(child.id, { role: option.value })}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="member-actions">
+                      <Button
+                        onClick={() => handleUpdateChild(child)}
+                        isLoading={saving}
+                        disabled={saving || !child.name.trim()}
+                        size="small"
+                      >
+                        Sauvegarder
+                      </Button>
+                      <button
+                        className="delete-member-btn"
+                        onClick={() => handleDeleteChild(child.id)}
+                        disabled={saving}
+                        type="button"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  </div>
                 </div>
-
-                <Input
-                  label="Prénom"
-                  value={child.name}
-                  onChange={(e) => updateLocalChild(child.id, { name: e.target.value })}
-                  placeholder="Prénom"
-                />
-
-                <label className="input-label">Rôle</label>
-                <div className="role-switcher">
-                  {(
-                    [
-                      { value: 'child', label: 'Enfant' },
-                      { value: 'adult', label: 'Adulte' },
-                    ] as { value: FamilyRole; label: string }[]
-                  ).map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      className={`ghost-button ${child.role === option.value ? 'active' : ''}`}
-                      onClick={() => updateLocalChild(child.id, { role: option.value })}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-
-                <Button
-                  fullWidth
-                  size="small"
-                  onClick={() => handleUpdateChild(child)}
-                  isLoading={saving}
-                  disabled={saving || !child.name.trim()}
-                >
-                  Mettre à jour
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* Ajouter un membre */}
+      {/* Ajouter membre */}
       <div className="config-card">
         <div className="config-card-header">
           <div>
-            <h3>Ajouter un membre</h3>
-            <p>Limite actuelle : 4 membres au total.</p>
+            <h3>➕ Ajouter un membre</h3>
+            <p>Maximum 4 membres au total</p>
           </div>
         </div>
-        <div className="child-inline-form">
+
+        <div className="add-member-form">
           <Input
             label="Prénom"
             placeholder="Ex: Léa"
@@ -624,21 +429,23 @@ export const FamilyTab: React.FC = () => {
             onChange={(e) => setNewChild({ ...newChild, name: e.target.value })}
           />
 
-          <div className="icon-options-inline">
+          <label className="input-label">Icône</label>
+          <div className="icon-options-compact">
             {ICON_OPTIONS.map((icon) => (
               <button
                 key={icon.value}
-                className={`icon-choice ${newChild.icon === icon.value ? 'active' : ''}`}
+                className={`icon-btn ${newChild.icon === icon.value ? 'active' : ''}`}
                 onClick={() => setNewChild({ ...newChild, icon: icon.value })}
+                type="button"
               >
                 <span className="icon-emoji">{icon.emoji}</span>
-                <span>{icon.label}</span>
+                <span className="icon-label">{icon.label}</span>
               </button>
             ))}
           </div>
 
           <label className="input-label">Rôle</label>
-          <div className="role-switcher">
+          <div className="role-toggle">
             {(
               [
                 { value: 'child', label: 'Enfant' },
@@ -648,7 +455,7 @@ export const FamilyTab: React.FC = () => {
               <button
                 key={option.value}
                 type="button"
-                className={`ghost-button ${newChild.role === option.value ? 'active' : ''}`}
+                className={`role-btn ${newChild.role === option.value ? 'active' : ''}`}
                 onClick={() => setNewChild({ ...newChild, role: option.value })}
               >
                 {option.label}
@@ -662,7 +469,7 @@ export const FamilyTab: React.FC = () => {
             disabled={saving || !newChild.name.trim() || children.length >= 4}
             fullWidth
           >
-            Ajouter
+            Ajouter le membre
           </Button>
         </div>
       </div>

@@ -20,6 +20,7 @@ export interface Child {
   firstName: string;
   icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
   role?: 'child' | 'adult';
+  avatarUrl?: string;
   createdAt: string;
 }
 

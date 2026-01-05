@@ -10,6 +10,7 @@ interface FamilyMemberRow {
   icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
   created_at: string;
   role?: FamilyRole | null;
+  avatar_url: string | null; // <- important: nullable
 }
 
 const mapRowToChild = (row: FamilyMemberRow): Child => ({
@@ -18,6 +19,7 @@ const mapRowToChild = (row: FamilyMemberRow): Child => ({
   firstName: row.first_name,
   icon: row.icon,
   role: row.role ?? 'child',
+  avatarUrl: row.avatar_url ?? undefined, // <- FIX
   createdAt: row.created_at,
 });
 
@@ -45,50 +47,39 @@ export const createChild = async (
   userId: string,
   firstName: string,
   icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar',
-  role: FamilyRole = 'child'
+  role: FamilyRole = 'child',
+  avatarUrl?: string
 ): Promise<Child> => {
-  const useFamily = await canUseFamilyTable();
-
-  if (useFamily) {
-    const { data, error } = await supabase
-      .from('family_members')
-      .insert({
-        user_id: userId,
-        first_name: firstName,
-        icon,
-        role,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    return mapRowToChild(data as FamilyMemberRow);
-  }
-
   const { data, error } = await supabase
-    .from('children')
+    .from('family_members')
     .insert({
       user_id: userId,
       first_name: firstName,
       icon,
+      role,
+      avatar_url: avatarUrl ?? null,
     })
-    .select()
+    .select('*')
     .single();
 
   if (error) throw error;
 
-  await supabase.from('child_progress').insert({
-    child_id: data.id,
-    total_points: 0,
-    current_level: 1,
-    money_balance: 0,
-    badges_earned: [],
-    total_tasks_completed: 0,
-  });
+  // Progress uniquement pour les enfants, si c’est ton intention
+  if (role === 'child') {
+    const { error: pErr } = await supabase.from('child_progress').insert({
+      child_id: data.id,
+      total_points: 0,
+      current_level: 1,
+      money_balance: 0,
+      badges_earned: [],
+      total_tasks_completed: 0,
+    });
+    if (pErr) throw pErr;
+  }
 
   return mapRowToChild(data as FamilyMemberRow);
 };
+
 
 // Récupérer tous les enfants d'un utilisateur
 export const getChildren = async (userId: string): Promise<Child[]> => {
@@ -107,7 +98,7 @@ export const getChildren = async (userId: string): Promise<Child[]> => {
   }
 
   const { data, error } = await supabase
-    .from('children')
+    .from('family_members')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: true });
@@ -173,7 +164,7 @@ export const deleteChild = async (childId: string): Promise<void> => {
 
   const { error } = useFamily
     ? await supabase.from('family_members').delete().eq('id', childId)
-    : await supabase.from('children').delete().eq('id', childId);
+    : await supabase.from('family_members').delete().eq('id', childId);
 
   if (error) throw error;
 };
@@ -192,7 +183,7 @@ export const updateChild = async (
 
   const { error } = useFamily
     ? await supabase.from('family_members').update(dbUpdates).eq('id', childId)
-    : await supabase.from('children').update(dbUpdates).eq('id', childId);
+    : await supabase.from('family_members').update(dbUpdates).eq('id', childId);
   if (error) throw error;
 };
 

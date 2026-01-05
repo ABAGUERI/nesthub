@@ -1,372 +1,268 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
-import { useClientConfig } from '@/shared/hooks/useClientConfig';
-import { getCurrentRotation, generateCurrentWeekRotation, isResetDay, getDayName } from '../services/rotation.service';
-import { RotationWeek } from '@/shared/types/kitchen.types';
+import { supabase } from '@/shared/utils/supabase';
+import './RotationPanel.css';
+
+interface Child {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  avatar_url?: string;
+}
+
+interface RotationTask {
+  id: string;
+  name: string;
+  icon: string;
+  category: string;
+}
+
+interface Assignment {
+  child_id: string;
+  task_id: string;
+  assignment_id: string;
+}
+
+interface TaskWithCompletion {
+  task: RotationTask;
+  completed_today: boolean;
+  assignment_id: string;
+}
+
+const DEFAULT_COLORS: Record<string, string> = {
+  'bee': '#22d3ee',
+  'ladybug': '#10b981',
+  'butterfly': '#a855f7',
+  'caterpillar': '#fb923c'
+};
 
 export const RotationPanel: React.FC = () => {
   const { user } = useAuth();
-  const { config } = useClientConfig();
-  const [rotation, setRotation] = useState<RotationWeek | null>(null);
+  const [children, setChildren] = useState<Child[]>([]);
+  const [assignments, setAssignments] = useState<Map<string, TaskWithCompletion[]>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [rotating, setRotating] = useState(false);
-  const [generating, setGenerating] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-  const [feedbackType, setFeedbackType] = useState<'success' | 'error'>('success');
-
-  // Jour de réinitialisation (défaut : Lundi = 1)
-  const resetDay = config?.rotationResetDay ?? 1;
-  const canRotateToday = isResetDay(resetDay);
-  const resetDayName = getDayName(resetDay);
-
-  // Calcul des tentatives
-  const attemptsUsed = rotation?.attemptsUsed || 0;
-  const MAX_ATTEMPTS = 3;
-  const attemptsRemaining = MAX_ATTEMPTS - attemptsUsed;
-  const canRotate = canRotateToday && attemptsRemaining > 0;
-
-  // État de verrouillage
-  const isLocked = !canRotateToday;
-  const nextRotationDay = resetDayName;
-
-  // Extraire les membres de famille depuis les assignments
-  const familyMembers = useMemo(() => {
-    if (!rotation?.assignments || rotation.assignments.length === 0) return [];
-
-    const membersMap = new Map<string, { id: string; name: string; avatarUrl?: string; icon?: string }>();
-    
-    rotation.assignments.forEach(assignment => {
-      if (!membersMap.has(assignment.assigneeMemberId)) {
-        membersMap.set(assignment.assigneeMemberId, {
-          id: assignment.assigneeMemberId,
-          name: assignment.assigneeName,
-          avatarUrl: assignment.assigneeAvatarUrl,
-          icon: assignment.assigneeName.charAt(0).toUpperCase()
-        });
-      }
-    });
-
-    return Array.from(membersMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [rotation]);
 
   useEffect(() => {
-    loadRotation();
+    loadData();
   }, [user]);
 
-  // Effacer le message de feedback après 5 secondes
-  useEffect(() => {
-    if (feedbackMessage) {
-      const timeout = setTimeout(() => setFeedbackMessage(null), 5000);
-      return () => clearTimeout(timeout);
-    }
-  }, [feedbackMessage]);
-
-  const loadRotation = async () => {
+  const loadData = async () => {
     if (!user) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
     try {
-      const data = await getCurrentRotation(user.id);
-      setRotation(data);
+      // 1. Charger les enfants
+      const { data: childrenData, error: childrenError } = await supabase
+        .from('family_members')
+        .select('id, first_name, icon, avatar_url ')
+        .eq('user_id', user.id)
+        .eq('role', 'child')
+        .order('created_at', { ascending: true });
+
+      if (childrenError) throw childrenError;
+
+      const childrenWithColors = (childrenData || []).map(child => ({
+        id: child.id,
+        name: child.first_name,
+        icon: child.icon,
+        avatar_url: child.avatar_url,
+        color: DEFAULT_COLORS[child.icon] || '#64748b'
+      }));
+
+      setChildren(childrenWithColors);
+
+      // 2. Charger rotation actuelle (semaine en cours)
+      const { data: rotationData, error: rotationError } = await supabase
+        .from('rotation_assignments')
+        .select(`
+          id,
+          child_id,
+          task_id,
+          rotation_tasks (
+            id,
+            name,
+            icon,
+            category
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('sort_order', { ascending: true });
+
+      if (rotationError) throw rotationError;
+
+      // 3. Charger complétions du jour
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayISO = today.toISOString();
+
+      const { data: completionsData } = await supabase
+        .from('rotation_completions')
+        .select('child_id, task_id')
+        .eq('user_id', user.id)
+        .gte('completed_at', todayISO);
+
+      const completionSet = new Set(
+        (completionsData || []).map(c => `${c.child_id}-${c.task_id}`)
+      );
+
+      // 4. Organiser par enfant
+      const assignmentsByChild = new Map<string, TaskWithCompletion[]>();
+
+      (rotationData || []).forEach((assignment: any) => {
+        if (!assignment.rotation_tasks) return;
+
+        const childId = assignment.child_id;
+        const task: RotationTask = {
+          id: assignment.rotation_tasks.id,
+          name: assignment.rotation_tasks.name,
+          icon: assignment.rotation_tasks.icon || '📋',
+          category: assignment.rotation_tasks.category || 'household'
+        };
+
+        const taskWithCompletion: TaskWithCompletion = {
+          task,
+          completed_today: completionSet.has(`${childId}-${task.id}`),
+          assignment_id: assignment.id
+        };
+
+        if (!assignmentsByChild.has(childId)) {
+          assignmentsByChild.set(childId, []);
+        }
+        assignmentsByChild.get(childId)!.push(taskWithCompletion);
+      });
+
+      setAssignments(assignmentsByChild);
     } catch (err) {
-      console.error('Rotation load error:', err);
+      console.error('Error loading rotation data:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRotate = async () => {
-    if (!user || rotating || !canRotate) return;
-    
-    setRotating(true);
-    setFeedbackMessage(null);
-    
-    // Animation de roue qui ralentit : 2 secondes
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+  const toggleTask = async (childId: string, task: RotationTask, currentlyCompleted: boolean) => {
+    if (!user) return;
+
+    // Optimistic update
+    setAssignments(prev => {
+      const newMap = new Map(prev);
+      const childTasks = newMap.get(childId) || [];
+      const updatedTasks = childTasks.map(t =>
+        t.task.id === task.id
+          ? { ...t, completed_today: !currentlyCompleted }
+          : t
+      );
+      newMap.set(childId, updatedTasks);
+      return newMap;
+    });
+
     try {
-      setGenerating(true);
-      console.log('Starting rotation generation...');
-      
-      const result = await generateCurrentWeekRotation(user.id);
-      
-      console.log('Rotation result:', result);
-      
-      if (result.success) {
-        // Attendre un peu pour que la DB se mette à jour
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Forcer le rechargement
-        await loadRotation();
-        
-        console.log('Rotation reloaded');
-        
-        setFeedbackMessage(result.message || 'Nouvelle rotation générée !');
-        setFeedbackType('success');
+      if (!currentlyCompleted) {
+        // Marquer comme complété
+        await supabase.from('rotation_completions').insert({
+          user_id: user.id,
+          child_id: childId,
+          task_id: task.id,
+          completed_at: new Date().toISOString()
+        });
       } else {
-        setFeedbackMessage(result.message || 'Impossible de générer une nouvelle rotation');
-        setFeedbackType('error');
+        // Décocher (supprimer complétion du jour)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayISO = today.toISOString();
+
+        await supabase
+          .from('rotation_completions')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('child_id', childId)
+          .eq('task_id', task.id)
+          .gte('completed_at', todayISO);
       }
     } catch (err) {
-      console.error('Rotation failed:', err);
-      setFeedbackMessage('Erreur lors de la génération de la rotation');
-      setFeedbackType('error');
-    } finally {
-      setRotating(false);
-      setGenerating(false);
+      console.error('Error toggling task:', err);
+      // Rollback optimistic update
+      setAssignments(prev => {
+        const newMap = new Map(prev);
+        const childTasks = newMap.get(childId) || [];
+        const updatedTasks = childTasks.map(t =>
+          t.task.id === task.id
+            ? { ...t, completed_today: currentlyCompleted }
+            : t
+        );
+        newMap.set(childId, updatedTasks);
+        return newMap;
+      });
     }
   };
 
-  const formatWeek = (isoDate: string): string => {
-    const date = new Date(isoDate);
-    return `${date.getDate()}/${date.getMonth() + 1}`;
-  };
-
-  // Tableau : tâches uniques × membres - 1 assignation par tâche maximum
-  const taskTable = useMemo(() => {
-    if (!rotation?.assignments || rotation.assignments.length === 0) return null;
-
-    // Extraire tâches uniques (dédupliquer par nom de rôle)
-    const uniqueTasks = Array.from(
-      new Set(rotation.assignments.map(a => a.role))
-    ).sort();
-
-    // Extraire tous les membres uniques
-    const membersMap = new Map<string, { name: string; avatarUrl?: string }>();
-    rotation.assignments.forEach(assignment => {
-      if (!membersMap.has(assignment.assigneeMemberId)) {
-        membersMap.set(assignment.assigneeMemberId, {
-          name: assignment.assigneeName,
-          avatarUrl: assignment.assigneeAvatarUrl
-        });
-      }
-    });
-
-    const members = Array.from(membersMap.entries())
-      .map(([id, info]) => ({ id, ...info }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    // Créer la matrice d'assignation : Map<taskName, memberId>
-    // ⚠️ IMPORTANT : 1 tâche = 1 membre SEULEMENT (première assignation trouvée)
-    const assignmentMatrix = new Map<string, string>();
-    
-    rotation.assignments.forEach(assignment => {
-      // Si cette tâche n'a pas encore d'assignation, on la garde
-      if (!assignmentMatrix.has(assignment.role)) {
-        assignmentMatrix.set(assignment.role, assignment.assigneeMemberId);
-      }
-      // Sinon on ignore (c'est un doublon dans la base de données)
-    });
-
-    return { uniqueTasks, members, assignmentMatrix };
-  }, [rotation]);
+  if (loading) {
+    return (
+      <div className="rotation-panel-columns">
+        <div className="rotation-loading">Chargement...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="kitchen-card-enhanced">
-      <div className="card-header">
-        <div>
-          <h2 className="card-title">Rotation des tâches</h2>
-          <p className="card-subtitle">
-            {rotation ? `Semaine du ${formatWeek(rotation.weekStart)}` : 'Chargement...'}
-          </p>
-        </div>
-        <button 
-          className="ghost-btn" 
-          onClick={loadRotation} 
-          disabled={loading}
-          type="button"
-        >
-          {loading ? '⏳' : '🔄'}
-        </button>
-      </div>
+    <div className="rotation-panel-columns">
+      {children.map(child => {
+        const childTasks = assignments.get(child.id) || [];
 
-      {/* Roue compacte avec animation réaliste */}
-      <div className="rotation-wheel-compact">
-        {/* Message verrouillage si applicable */}
-        {isLocked && (
-          <div className="rotation-locked-message">
-            <span className="lock-icon">🔒</span>
-            <span>Disponible {nextRotationDay}</span>
-          </div>
-        )}
-
-        {/* Indicateur tentatives */}
-        {!isLocked && (
-          <div className={`attempts-indicator ${attemptsUsed >= 3 ? 'exhausted' : ''}`}>
-            <span className="attempts-label">Tentatives:</span>
-            <div className="attempts-dots">
-              <span className={`attempt-dot ${attemptsUsed >= 1 ? 'used' : 'available'}`}>●</span>
-              <span className={`attempt-dot ${attemptsUsed >= 2 ? 'used' : 'available'}`}>●</span>
-              <span className={`attempt-dot ${attemptsUsed >= 3 ? 'used' : 'available'}`}>●</span>
-            </div>
-            <span className="attempts-count">({attemptsRemaining}/3)</span>
-          </div>
-        )}
-
-        {/* Cercle de rotation avec MEMBRES + TÂCHES */}
-        <div className="wheel-circle">
-          {/* Membres de la famille (rotation douce 20s) */}
-          {familyMembers.map((member, index) => (
-            <div
-              key={member.id}
-              className="wheel-icon"
-              style={{
-                '--icon-index': index,
-                '--total-icons': familyMembers.length,
+        return (
+          <div key={child.id} className="rotation-column">
+            <div 
+              className="rotation-column-header"
+              style={{ 
+                '--child-color': child.color 
               } as React.CSSProperties}
             >
-              <div 
-                className="icon-wrapper"
-                style={{
-                  background: member.avatarUrl 
-                    ? `url(${member.avatarUrl}) center/cover`
-                    : 'linear-gradient(135deg, #8b5cf6, #a855f7)'
-                }}
-              >
-                {!member.avatarUrl && (member.icon || member.name.charAt(0))}
-              </div>
-            </div>
-          ))}
-          
-          {/* Icônes TÂCHES avec animation cardiaque (rotation 3s + pulse) */}
-          <div className="task-icons-circle">
-            <div className="task-icon-wrapper" title="Douche">
-              🚿
-            </div>
-            <div className="task-icon-wrapper" title="Cuisine">
-              🍳
-            </div>
-            <div className="task-icon-wrapper" title="Animaux">
-              🐾
-            </div>
-          </div>
-        </div>
-
-        {/* Bouton rotation */}
-        {!isLocked && (
-          <button
-            className="rotate-button-compact"
-            onClick={handleRotate}
-            disabled={attemptsUsed >= 3 || rotating}
-            type="button"
-          >
-            <span style={{ animation: rotating ? 'spin 1s linear infinite' : 'none' }}>
-              ⟳
-            </span>
-            {attemptsUsed >= 3 ? (
-              <>🔒 3 tentatives utilisées</>
-            ) : (
-              <>Nouvelle rotation</>
-            )}
-          </button>
-        )}
-
-        {/* Message feedback */}
-        {feedbackMessage && (
-          <div className={`rotation-feedback ${feedbackType}`}>
-            {feedbackMessage}
-          </div>
-        )}
-      </div>
-
-      {/* Tableau des tâches officielles */}
-      <div className="rotation-tasks-table-container">
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '20px 0' }}>
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="skeleton-line" style={{ height: '48px', borderRadius: '10px' }}></div>
-            ))}
-          </div>
-        ) : taskTable ? (
-          <>
-            <div style={{ 
-              fontSize: '13px', 
-              color: '#94a3b8', 
-              fontWeight: '700', 
-              marginBottom: '12px',
-              padding: '0 4px'
-            }}>
-              Tâches officielles — {taskTable.uniqueTasks.length} tâches
-            </div>
-            
-            <div className="task-table" style={{
-              gridTemplateColumns: `2fr repeat(${taskTable.members.length}, 1fr)`
-            }}>
-              {/* En-tête du tableau */}
-              <div className="table-header" style={{
-                gridTemplateColumns: `2fr repeat(${taskTable.members.length}, 1fr)`
-              }}>
-                <div className="header-cell task-name-header">Tâche</div>
-                {taskTable.members.map(member => (
-                  <div key={member.id} className="header-cell member-header">
-                    {member.avatarUrl ? (
-                      <img 
-                        src={member.avatarUrl} 
-                        alt={member.name}
-                        className="header-avatar"
-                        title={member.name}
-                      />
-                    ) : (
-                      <div className="header-avatar-placeholder" title={member.name}>
-                        {member.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <span className="header-name">{member.name}</span>
+              <div className="rotation-avatar">
+                {child.avatar_url ? (
+                  <img 
+                    src={child.avatar_url} 
+                    alt={child.name}
+                    className="rotation-avatar-img"
+                  />
+                ) : (
+                  <div className="rotation-avatar-placeholder">
+                    {child.name.charAt(0)}
                   </div>
-                ))}
+                )}
               </div>
+              <div className="rotation-name">{child.name}</div>
+            </div>
 
-              {/* Lignes du tableau */}
-              <div className="table-body">
-                {taskTable.uniqueTasks.map((task, taskIndex) => (
-                  <div key={taskIndex} className="table-row" style={{
-                    gridTemplateColumns: `2fr repeat(${taskTable.members.length}, 1fr)`
-                  }}>
-                    <div className="table-cell task-name-cell">
-                      {task}
+            <div className="rotation-tasks-list">
+              {childTasks.length === 0 ? (
+                <div className="rotation-empty">
+                  Aucune tâche assignée
+                </div>
+              ) : (
+                childTasks.map(({ task, completed_today }) => (
+                  <button
+                    key={task.id}
+                    className={`rotation-task-card ${completed_today ? 'completed' : ''}`}
+                    onClick={() => toggleTask(child.id, task, completed_today)}
+                    type="button"
+                    style={{ 
+                      '--child-color': child.color 
+                    } as React.CSSProperties}
+                  >
+                    <div className="task-checkbox">
+                      {completed_today && <span className="task-check">✓</span>}
                     </div>
-                    {taskTable.members.map(member => {
-                      const assignedMemberId = taskTable.assignmentMatrix.get(task);
-                      const isAssigned = assignedMemberId === member.id;
-                      return (
-                        <div key={member.id} className="table-cell member-cell">
-                          {isAssigned ? (
-                            <div className="assignment-badge">✓</div>
-                          ) : (
-                            <div className="empty-badge">—</div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            flex: 1,
-            color: '#94a3b8',
-            textAlign: 'center',
-            padding: '40px 20px'
-          }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>📋</div>
-            <div style={{ fontSize: '14px', fontWeight: '700', marginBottom: '8px' }}>
-              Aucune rotation configurée
-            </div>
-            <div style={{ fontSize: '12px' }}>
-              Cliquez sur "Nouvelle rotation" pour commencer
+                    <div className="task-icon">{task.icon}</div>
+                    <div className="task-name">{task.name}</div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
-        )}
-      </div>
+        );
+      })}
     </div>
   );
 };

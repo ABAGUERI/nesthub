@@ -76,13 +76,14 @@ const refreshTokenIfNeeded = async (userId: string): Promise<string> => {
     const newExpiresAt = new Date(Date.now() + (tokens.expires_in || 3600) * 1000);
 
     const { error: updateError } = await supabase
-      .from('google_connections')
-      .update({
-        access_token: tokens.access_token,
-        expires_at: newExpiresAt.toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', userId);
+    .from('google_connections')
+    .update({
+      access_token: tokens.access_token,
+      expires_at: newExpiresAt.toISOString(),
+      token_expires_at: newExpiresAt.toISOString(),  // ← AJOUTER
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId);
 
     if (updateError) {
       console.error('Failed to save refreshed token:', updateError);

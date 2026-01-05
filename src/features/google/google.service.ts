@@ -75,7 +75,6 @@ export const saveGoogleConnection = async (
 ) => {
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
-  // Utiliser upsert avec onConflict pour gérer les doublons
   const { error } = await supabase
     .from('google_connections')
     .upsert(
@@ -85,10 +84,11 @@ export const saveGoogleConnection = async (
         access_token: accessToken,
         refresh_token: refreshToken,
         token_expires_at: expiresAt.toISOString(),
+        expires_at: expiresAt.toISOString(),  // ← AJOUTER CETTE LIGNE
         updated_at: new Date().toISOString(),
       },
       {
-        onConflict: 'user_id', // Spécifier la colonne de conflit
+        onConflict: 'user_id',
       }
     );
 
@@ -158,13 +158,14 @@ export const ensureValidToken = async (userId: string): Promise<string | null> =
       const newExpiresAt = new Date(Date.now() + expiresIn * 1000);
       
       const { error: updateError } = await supabase
-        .from('google_connections')
-        .update({
-          access_token: accessToken,
-          token_expires_at: newExpiresAt.toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId);
+      .from('google_connections')
+      .update({
+        access_token: accessToken,
+        token_expires_at: newExpiresAt.toISOString(),
+        expires_at: newExpiresAt.toISOString(),  // ← AJOUTER CETTE LIGNE
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
 
       if (updateError) throw updateError;
 
