@@ -40,8 +40,6 @@ const getProgress = (timer: Timer): number => {
 
 export const TimerCard: React.FC = () => {
   const [timers, setTimers] = useState<Timer[]>([]);
-  const [customMinutes, setCustomMinutes] = useState<string>('');
-  const [customLabel, setCustomLabel] = useState<string>('');
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -117,15 +115,6 @@ export const TimerCard: React.FC = () => {
     addTimer(seconds, label);
   };
 
-  const addCustomTimer = () => {
-    const minutes = parseInt(customMinutes, 10);
-    if (isNaN(minutes) || minutes <= 0) return;
-
-    addTimer(minutes * 60, customLabel.trim() || `${minutes} min`);
-    setCustomLabel('');
-    setCustomMinutes('');
-  };
-
   const togglePause = (id: string) => {
     setTimers(prev => prev.map(timer => {
       if (timer.id !== id) return timer;
@@ -161,7 +150,7 @@ export const TimerCard: React.FC = () => {
 
         <div className="timer-controls">
           <div className="timer-quick-buttons">
-            {[{ seconds: 45, label: '45 sec' }, { seconds: 60, label: '1 min' }, { seconds: 300, label: '5 min' }].map((preset) => (
+            {[{ seconds: 45, label: '45 sec' }, { seconds: 60, label: '1 min' }, { seconds: 300, label: '5 min' }, { seconds: 600, label: '10 min' }].map((preset) => (
               <button
                 key={preset.label}
                 className="timer-quick-btn"
@@ -219,32 +208,6 @@ export const TimerCard: React.FC = () => {
             </div>
 
             <div className="timer-analog-list">
-              <div className="timer-custom-row overlay-row">
-                <input
-                  className="timer-custom-input"
-                  placeholder="Nom du minuteur"
-                  value={customLabel}
-                  onChange={(e) => setCustomLabel(e.target.value)}
-                  maxLength={30}
-                />
-                <input
-                  className="timer-custom-input"
-                  placeholder="Minutes"
-                  value={customMinutes}
-                  onChange={(e) => setCustomMinutes(e.target.value)}
-                  type="number"
-                  min={1}
-                />
-                <button
-                  className="timer-add-btn"
-                  onClick={addCustomTimer}
-                  type="button"
-                  disabled={!customMinutes}
-                >
-                  +
-                </button>
-              </div>
-
               {ringingTimers.length > 0 && (
                 <div className="timer-ringing">
                   {ringingTimers.map(timer => (
