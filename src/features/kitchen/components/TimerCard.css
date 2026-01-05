@@ -12,6 +12,7 @@
   border-radius: 16px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
   font-family: 'Caveat', cursive;
+  min-height: 220px;
 }
 
 .timer-card-header {
@@ -121,6 +122,44 @@
 .timer-add-btn:not(:disabled):hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 20px rgba(34, 211, 238, 0.35);
+}
+
+.timer-floating-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.timer-summary-text {
+  color: rgba(248, 250, 252, 0.75);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.timer-overlay-btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  background: rgba(34, 211, 238, 0.12);
+  color: #e0f2fe;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.timer-overlay-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.timer-overlay-btn:not(:disabled):hover {
+  box-shadow: 0 8px 18px rgba(34, 211, 238, 0.25);
+  transform: translateY(-1px);
 }
 
 .timer-analog-list {
@@ -282,6 +321,64 @@
 
 .timer-mini-btn.danger:hover {
   box-shadow: 0 8px 18px rgba(239, 68, 68, 0.25);
+}
+
+.timer-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  padding: 20px;
+  z-index: 1300;
+}
+
+.timer-overlay-card {
+  width: min(980px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: linear-gradient(135deg, #0f172a 0%, #0b1324 100%);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+
+.timer-overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.timer-overlay-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #e0f2fe;
+}
+
+.timer-overlay-subtitle {
+  color: rgba(248, 250, 252, 0.65);
+  font-weight: 600;
+}
+
+.timer-overlay-close {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e0f2fe;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.timer-overlay-close:hover {
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow: 0 8px 18px rgba(34, 211, 238, 0.25);
 }
 
 @media (max-width: 640px) {

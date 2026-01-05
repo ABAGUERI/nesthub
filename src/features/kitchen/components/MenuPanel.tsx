@@ -185,6 +185,10 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
     return today.getTime() === dayDate.getTime();
   };
 
+  const MEAL_EMOJI_OPTIONS = [
+    '🍕', '🍔', '🍝', '🥪', '🍣', '🥞', '🍗', '🥘', '🍲', '🥟', '🍤', '🍛', '🥯', '🌮', '🌯', '🍖', '🥩', '🍜', '🍱', '🍙', '🍚'
+  ];
+
   return (
     <div className="menu-panel">
       {/* Header V2 - Titre + Boutons + Navigation sur 1 ligne */}
@@ -328,15 +332,30 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
                         <label className="emoji-input-label" htmlFor={`emoji-${index}`}>
                           Emoji
                         </label>
-                        <input
-                          id={`emoji-${index}`}
-                          className="emoji-input"
-                          value={meal.emoji}
-                          onChange={(e) => updateMealField(index, { emoji: e.target.value })}
-                          placeholder="🍽️"
-                          maxLength={4}
-                          style={{ width: '100%' }}
-                        />
+                        <div className="emoji-selector">
+                          <input
+                            id={`emoji-${index}`}
+                            className="emoji-input"
+                            value={meal.emoji}
+                            onChange={(e) => updateMealField(index, { emoji: e.target.value })}
+                            placeholder="🍽️"
+                            maxLength={4}
+                            style={{ width: '100%' }}
+                          />
+                          <div className="emoji-options" role="list">
+                            {MEAL_EMOJI_OPTIONS.map((option) => (
+                              <button
+                                key={option}
+                                type="button"
+                                className={`emoji-option ${meal.emoji === option ? 'selected' : ''}`}
+                                onClick={() => updateMealField(index, { emoji: option })}
+                                aria-label={`Choisir ${option}`}
+                              >
+                                {option}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                       <div className="meal-label-group">
                         <label className="emoji-input-label" htmlFor={`meal-${index}`}>

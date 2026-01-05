@@ -163,7 +163,7 @@
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: 12px;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 4px;
 }
 
@@ -291,7 +291,7 @@
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
   padding: 4px 0;
-  overflow-y: auto;
+  overflow: hidden;
   justify-items: center;
 }
 
@@ -325,8 +325,8 @@
 .meal-title-compact {
   width: 100%;
   min-width: 0;
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 900;
   color: rgba(248, 250, 252, 0.98);
   line-height: 1.35;
   overflow: hidden;
@@ -447,6 +447,40 @@
   grid-template-columns: 90px 1fr;
   gap: 12px;
   flex: 1;
+}
+
+.emoji-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emoji-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 6px;
+}
+
+.emoji-option {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.15s ease;
+}
+
+.emoji-option:hover {
+  border-color: rgba(34, 211, 238, 0.35);
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.emoji-option.selected {
+  border-color: rgba(34, 211, 238, 0.55);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.12);
 }
 
 .emoji-input-group {
