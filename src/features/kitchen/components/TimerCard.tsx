@@ -1,26 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Timer } from '../types/timer.types';
-import './TimerCard.css'; 
+import './TimerCard.css';
 
 const STORAGE_KEY = 'hub_kitchen_timers';
 
-
-// Son d'alarme
 const playAlarm = () => {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
-    
+
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
-    
+
     oscillator.frequency.value = 800;
     oscillator.type = 'sine';
-    
+
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-    
+
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.5);
   } catch (err) {
@@ -28,18 +27,22 @@ const playAlarm = () => {
   }
 };
 
-// Format MM:SS
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
+const getProgress = (timer: Timer): number => {
+  if (timer.durationSeconds === 0) return 0;
+  return Math.min(1, Math.max(0, (timer.durationSeconds - timer.remainingSeconds) / timer.durationSeconds));
+};
+
 export const TimerCard: React.FC = () => {
   const [timers, setTimers] = useState<Timer[]>([]);
+  const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Charger timers
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
@@ -51,7 +54,6 @@ export const TimerCard: React.FC = () => {
     }
   }, []);
 
-  // Sauvegarder timers
   useEffect(() => {
     if (timers.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(timers));
@@ -60,7 +62,6 @@ export const TimerCard: React.FC = () => {
     }
   }, [timers]);
 
-  // Update loop
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       setTimers(prev => {
@@ -94,31 +95,36 @@ export const TimerCard: React.FC = () => {
     };
   }, []);
 
-  const addQuickTimer = (minutes: number) => {
+  const addTimer = (seconds: number, label: string) => {
+    const duration = Math.max(1, seconds);
     const newTimer: Timer = {
       id: Date.now().toString(),
-      label: `${minutes} min`,
-      durationSeconds: minutes * 60,
-      remainingSeconds: minutes * 60,
+      label,
+      durationSeconds: duration,
+      remainingSeconds: duration,
       startTime: Date.now(),
       isPaused: false,
       isRinging: false,
     };
+
     setTimers(prev => [...prev, newTimer]);
+    setShowOverlay(true);
+  };
+
+  const handleQuickTimer = (seconds: number, label: string) => {
+    addTimer(seconds, label);
   };
 
   const togglePause = (id: string) => {
     setTimers(prev => prev.map(timer => {
       if (timer.id !== id) return timer;
-      
+
       if (timer.isPaused) {
-        // Reprendre : recalculer startTime
         const newStartTime = Date.now() - (timer.durationSeconds - timer.remainingSeconds) * 1000;
         return { ...timer, isPaused: false, startTime: newStartTime };
-      } else {
-        // Pause
-        return { ...timer, isPaused: true };
       }
+
+      return { ...timer, isPaused: true };
     }));
   };
 
@@ -126,95 +132,134 @@ export const TimerCard: React.FC = () => {
     setTimers(prev => prev.filter(t => t.id !== id));
   };
 
-  const activeTimers = timers.filter(t => !t.isRinging);
   const ringingTimers = timers.filter(t => t.isRinging);
+  const activeTimers = timers.filter(t => !t.isRinging);
 
   return (
-    <div className="timer-card-compact">
-      {/* Header */}
-      <div className="timer-card-header">
-        <div className="timer-card-icon">⏱️</div>
-        <div className="timer-card-title">Minuteurs</div>
-      </div>
+    <>
+      <div className="timer-card-container">
+        <div className="timer-card-header">
+          <div className="timer-card-icon">⏲️</div>
+          <div>
+            <div className="timer-card-title">Minuteurs</div>
+            <div className="timer-card-subtitle">
+              {timers.length > 0 ? `${timers.length} actif${timers.length > 1 ? 's' : ''}` : 'Aucun minuteur'}
+            </div>
+          </div>
+        </div>
 
-      {/* Quick timers */}
-      <div className="timer-quick-buttons">
-        <button 
-          className="timer-quick-btn"
-          onClick={() => addQuickTimer(5)}
-          type="button"
-        >
-          5
-        </button>
-        <button 
-          className="timer-quick-btn"
-          onClick={() => addQuickTimer(10)}
-          type="button"
-        >
-          10
-        </button>
-        <button 
-          className="timer-quick-btn"
-          onClick={() => addQuickTimer(15)}
-          type="button"
-        >
-          15
-        </button>
-      </div>
-
-      {/* Timers actifs */}
-      <div className="timer-list-compact">
-        {ringingTimers.length > 0 && (
-          <div className="timer-ringing-section">
-            {ringingTimers.map(timer => (
-              <div key={timer.id} className="timer-item-mini ringing">
-                <div className="timer-mini-emoji">🔔</div>
-                <div className="timer-mini-label">{timer.label}</div>
-                <button
-                  className="timer-mini-btn stop"
-                  onClick={() => stopTimer(timer.id)}
-                  type="button"
-                  title="Arrêter"
-                >
-                  ✕
-                </button>
-              </div>
+        <div className="timer-controls">
+          <div className="timer-quick-buttons">
+            {[{ seconds: 45, label: '45 sec' }, { seconds: 60, label: '1 min' }, { seconds: 300, label: '5 min' }, { seconds: 600, label: '10 min' }].map((preset) => (
+              <button
+                key={preset.label}
+                className="timer-quick-btn"
+                onClick={() => handleQuickTimer(preset.seconds, preset.label)}
+                type="button"
+              >
+                {preset.label}
+              </button>
             ))}
           </div>
-        )}
 
-        {activeTimers.length > 0 ? (
-          activeTimers.map(timer => (
-            <div key={timer.id} className="timer-item-mini">
-              <div className="timer-mini-time">
-                {formatTime(timer.remainingSeconds)}
-              </div>
-              <div className="timer-mini-actions">
-                <button
-                  className="timer-mini-btn"
-                  onClick={() => togglePause(timer.id)}
-                  type="button"
-                  title={timer.isPaused ? 'Reprendre' : 'Pause'}
-                >
-                  {timer.isPaused ? '▶' : '⏸'}
-                </button>
-                <button
-                  className="timer-mini-btn"
-                  onClick={() => stopTimer(timer.id)}
-                  type="button"
-                  title="Supprimer"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="timer-empty-compact">
-            Aucun minuteur
+          <button
+            className="timer-overlay-btn subtle"
+            type="button"
+            onClick={() => setShowOverlay(true)}
+          >
+            Voir les minuteurs
+          </button>
+        </div>
+
+        <div className="timer-floating-summary">
+          <div className="timer-summary-text">
+            {timers.length === 0 && 'Aucun minuteur actif'}
+            {timers.length > 0 && `${activeTimers.length} en cours · ${ringingTimers.length} terminé${ringingTimers.length > 1 ? 's' : ringingTimers.length === 1 ? '' : 's'}`}
           </div>
-        )}
+          <button
+            type="button"
+            className="timer-overlay-btn"
+            onClick={() => setShowOverlay(true)}
+            disabled={timers.length === 0}
+          >
+            Ouvrir
+          </button>
+        </div>
       </div>
-    </div>
+
+      {showOverlay && createPortal(
+        <div className="timer-overlay" role="dialog" aria-label="Minuteurs en cours">
+          <div className="timer-overlay-card" onClick={(e) => e.stopPropagation()}>
+            <div className="timer-overlay-header">
+              <div>
+                <div className="timer-overlay-title">Minuteurs analogiques</div>
+                <div className="timer-overlay-subtitle">Vue flottante sans masquer le menu</div>
+              </div>
+              <button type="button" className="timer-overlay-close" onClick={() => setShowOverlay(false)} aria-label="Fermer">
+                ✕
+              </button>
+            </div>
+
+            <div className="timer-analog-list">
+              {ringingTimers.length > 0 && (
+                <div className="timer-ringing">
+                  {ringingTimers.map(timer => (
+                    <div key={timer.id} className="timer-ringing-card">
+                      <div className="timer-ringing-icon">🔔</div>
+                      <div className="timer-ringing-label">{timer.label}</div>
+                      <button className="timer-stop-btn" onClick={() => stopTimer(timer.id)} type="button">
+                        Arrêter
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeTimers.length === 0 && ringingTimers.length === 0 && (
+                <div className="timer-empty">Aucun minuteur actif</div>
+              )}
+
+              {activeTimers.map((timer) => {
+                const progress = getProgress(timer);
+                const angle = progress * 360;
+                const needleRotation = angle - 90;
+
+                return (
+                  <div key={timer.id} className={`analog-card ${timer.isPaused ? 'paused' : ''}`}>
+                    <div className="analog-face" style={{ background: `conic-gradient(#22d3ee ${angle}deg, rgba(255, 255, 255, 0.08) ${angle}deg 360deg)` }}>
+                      <div className="analog-center">
+                        <div className="analog-time">{formatTime(timer.remainingSeconds)}</div>
+                        <div className="analog-label">{timer.label}</div>
+                      </div>
+                      <div className="analog-needle" style={{ transform: `rotate(${needleRotation}deg)` }} />
+                    </div>
+
+                    <div className="analog-actions">
+                      <button
+                        className="timer-mini-btn"
+                        onClick={() => togglePause(timer.id)}
+                        type="button"
+                        title={timer.isPaused ? 'Reprendre' : 'Pause'}
+                      >
+                        {timer.isPaused ? '▶' : '⏸'}
+                      </button>
+                      <button
+                        className="timer-mini-btn danger"
+                        onClick={() => stopTimer(timer.id)}
+                        type="button"
+                        title="Supprimer"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
   );
 };

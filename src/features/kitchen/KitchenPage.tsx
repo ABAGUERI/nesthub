@@ -35,13 +35,13 @@ export const KitchenPage: React.FC = () => {
           {/* Contenu de la colonne gauche selon le panel actif */}
           <div className="kitchen-main-content">
             {activePanel === 'menu' && (
-              <MenuPanel 
+              <MenuPanel
                 onShowAIMenu={() => setActivePanel('ai-menu')}
                 onShowGrocery={() => setActivePanel('grocery')}
               />
             )}
-            {activePanel === 'ai-menu' && <AIMenuPanel />}
-            {activePanel === 'grocery' && <GroceryPanel />}
+            {activePanel === 'ai-menu' && <AIMenuPanel onBackToMenu={() => setActivePanel('menu')} />}
+            {activePanel === 'grocery' && <GroceryPanel onBackToMenu={() => setActivePanel('menu')} />}
           </div>
         </div>
 
