@@ -113,20 +113,7 @@ export const TimerCard: React.FC = () => {
     setShowOverlay(true);
   };
 
-  const addQuickTimer = (minutes: number) => {
-    addTimer(minutes, `${minutes} min`);
-  };
-
-  const addCustomTimer = () => {
-    const minutes = parseInt(customMinutes, 10);
-    if (isNaN(minutes) || minutes <= 0) return;
-
-    addTimer(minutes, customLabel.trim() || `${minutes} min`);
-    setCustomLabel('');
-    setCustomMinutes('');
-  };
-
-  const addQuickTimer = (minutes: number) => {
+  const handleQuickTimer = (minutes: number) => {
     addTimer(minutes, `${minutes} min`);
   };
 
@@ -178,7 +165,7 @@ export const TimerCard: React.FC = () => {
               <button
                 key={minutes}
                 className="timer-quick-btn"
-                onClick={() => addQuickTimer(minutes)}
+                onClick={() => handleQuickTimer(minutes)}
                 type="button"
               >
                 {minutes} min
