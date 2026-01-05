@@ -126,6 +126,19 @@ export const TimerCard: React.FC = () => {
     setCustomMinutes('');
   };
 
+  const addQuickTimer = (minutes: number) => {
+    addTimer(minutes, `${minutes} min`);
+  };
+
+  const addCustomTimer = () => {
+    const minutes = parseInt(customMinutes, 10);
+    if (isNaN(minutes) || minutes <= 0) return;
+
+    addTimer(minutes, customLabel.trim() || `${minutes} min`);
+    setCustomLabel('');
+    setCustomMinutes('');
+  };
+
   const togglePause = (id: string) => {
     setTimers(prev => prev.map(timer => {
       if (timer.id !== id) return timer;
