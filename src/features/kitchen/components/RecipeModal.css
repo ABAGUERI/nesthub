@@ -32,8 +32,8 @@
   border-radius: 16px;
   max-width: 600px;
   width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -50,23 +50,6 @@
 }
 
 /* Scrollbar */
-.recipe-modal-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.recipe-modal-content::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-}
-
-.recipe-modal-content::-webkit-scrollbar-thumb {
-  background: rgba(34, 211, 238, 0.3);
-  border-radius: 4px;
-}
-
-.recipe-modal-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(34, 211, 238, 0.5);
-}
 
 /* Header */
 .recipe-modal-header {

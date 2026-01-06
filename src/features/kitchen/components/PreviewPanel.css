@@ -9,7 +9,7 @@
   background: rgba(34, 211, 238, 0.05);
   border: 2px solid rgba(34, 211, 238, 0.3);
   border-radius: 12px;
-  max-height: 85vh;
+  max-height: none;
 }
 
 /* Header COMPACT */
@@ -31,23 +31,8 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 8px;
-  overflow-y: auto;
-  max-height: calc(85vh - 160px);
+  overflow: visible;
   padding: 4px;
-}
-
-.preview-grid-compact::-webkit-scrollbar {
-  width: 6px;
-}
-
-.preview-grid-compact::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-
-.preview-grid-compact::-webkit-scrollbar-thumb {
-  background: rgba(34, 211, 238, 0.3);
-  border-radius: 3px;
 }
 
 /* Day card COMPACT */
