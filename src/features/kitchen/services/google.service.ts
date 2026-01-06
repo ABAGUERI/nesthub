@@ -7,6 +7,7 @@ export interface GoogleTaskItem {
   title: string;
   status: GoogleTaskStatus;
   completed?: string;
+  updated?: string;
 }
 
 export interface GoogleConnection {
@@ -124,6 +125,7 @@ export const getTasksWithAuth = async (
       title: item.title,
       status: item.status,
       completed: item.completed,
+      updated: item.updated,
     }));
   } catch (err) {
     console.error('Get tasks error:', err);
@@ -155,7 +157,7 @@ export const createTaskWithAuth = async (
     if (!response.ok) throw new Error('Failed to create task');
 
     const data = await response.json();
-    return { id: data.id, title: data.title, status: data.status, completed: data.completed };
+    return { id: data.id, title: data.title, status: data.status, completed: data.completed, updated: data.updated };
   } catch (err) {
     console.error('Create task error:', err);
     throw err;
@@ -190,7 +192,7 @@ export const updateTaskStatusWithAuth = async (
     if (!response.ok) throw new Error('Failed to update task');
 
     const data = await response.json();
-    return { id: data.id, title: data.title, status: data.status, completed: data.completed };
+    return { id: data.id, title: data.title, status: data.status, completed: data.completed, updated: data.updated };
   } catch (err) {
     console.error('Update task error:', err);
     throw err;

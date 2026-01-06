@@ -322,16 +322,9 @@ export const DailyTasksWidget: React.FC = () => {
                   className={`task-row ${isCompleted ? 'completed' : ''} ${getCategoryTone(task.category)}`}
                   onClick={() => !isCompleted && completeTask(task)}
                 >
-                  <div className="task-checkbox">
-                    {isCompleted && <span className="checkmark">✓</span>}
-                  </div>
                   <div className="task-icon">{task.icon}</div>
-                  <div className="task-info">
-                    <div className="task-name">{task.name}</div>
-                    <div className="task-reward">
-                      <span className="reward-chip">+{task.points} pts ⭐</span>
-                    </div>
-                  </div>
+                  <div className="task-name">{task.name}</div>
+                  {isCompleted && <div className="task-status">Terminé</div>}
                 </div>
               );
             })}

@@ -1,6 +1,6 @@
 import './components/FamilyRotationTabs.css';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { AppHeader } from '@/shared/components/AppHeader';
 import { TabNavigation } from './components/TabNavigation';
 import { FamilyTab } from './components/tabs/FamilyTab';
 import { RotationTab } from './components/tabs/RotationTab';
@@ -21,10 +21,13 @@ const TABS: Array<{ id: TabId; label: string; description: string; icon: string 
 
 export const ConfigPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('family');
-  const navigate = useNavigate();
 
   return (
     <div className="config-page">
+      <AppHeader
+        title="Paramètres"
+        description="Affinez votre hub familial, les rotations et vos intégrations en quelques clics."
+      />
       <div className="config-hero">
         <div className="config-hero-text">
           <p className="config-kicker">Paramètres & personnalisation</p>
@@ -33,9 +36,6 @@ export const ConfigPage: React.FC = () => {
             Gérez votre famille, vos rotations de tâches, votre compte Google et vos récompenses en quelques clics.
           </p>
         </div>
-        <button className="back-dashboard" onClick={() => navigate('/dashboard')}>
-          ← Retour au dashboard
-        </button>
         <div className="config-hero-badge">
           <div className="badge-dot" />
           <div>
