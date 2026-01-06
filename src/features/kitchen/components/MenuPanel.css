@@ -344,7 +344,7 @@
   line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
   font-family: 'Caveat', cursive;
 }
 
