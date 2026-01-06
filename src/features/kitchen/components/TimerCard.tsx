@@ -160,6 +160,13 @@ export const TimerCard: React.FC = () => {
                 {preset.label}
               </button>
             ))}
+            <button
+              className="timer-quick-btn highlight"
+              onClick={() => setShowOverlay(true)}
+              type="button"
+            >
+              Personnalisé
+            </button>
           </div>
 
           <button
