@@ -134,25 +134,10 @@
 /* Content */
 .grocery-back-content {
   flex: 1;
-  overflow-y: auto;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.grocery-back-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.grocery-back-content::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-
-.grocery-back-content::-webkit-scrollbar-thumb {
-  background: rgba(34, 211, 238, 0.3);
-  border-radius: 3px;
 }
 
 /* Category */

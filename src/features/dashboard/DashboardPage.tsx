@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { DashboardHeader } from './components/DashboardHeader';
+import { AppHeader } from '@/shared/components/AppHeader';
 import { ChildrenWidget } from './components/ChildrenWidget';
 import { DailyTasksWidget } from './components/DailyTasksWidget';
 import { CalendarWidget } from './components/CalendarWidget';
@@ -111,51 +111,53 @@ export const DashboardPage: React.FC = () => {
   return (
     <ChildSelectionProvider>
       <div className="dashboard-container carousel-mode">
-        <DashboardHeader />
+        <AppHeader title="Tableau de bord" description="Vue globale des missions familiales, agendas et finances." />
 
-        <div
-          className="dashboard-carousel"
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-        >
+        <div className="dashboard-body">
           <div
-            ref={trackRef}
-            className="dashboard-carousel-track"
-            style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+            className="dashboard-carousel"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
           >
-            {screens.map((screen) => (
-              <section key={screen.id} className="dashboard-screen">
-                {screen.content}
-              </section>
-            ))}
-          </div>
-          <button
-            className="screen-arrow left"
-            onClick={prev}
-            disabled={activeIndex === 0}
-            aria-label="Écran précédent"
-          >
-            ‹
-          </button>
-          <button
-            className="screen-arrow right"
-            onClick={next}
-            disabled={activeIndex === screens.length - 1}
-            aria-label="Écran suivant"
-          >
-            ›
-          </button>
-          <div className="screen-dots">
-            {screens.map((screen, index) => (
-              <button
-                key={screen.id}
-                className={`screen-dot ${index === activeIndex ? 'active' : ''}`}
-                onClick={() => goTo(index)}
-                aria-label={`Aller à l'écran ${index + 1}`}
-              />
-            ))}
+            <div
+              ref={trackRef}
+              className="dashboard-carousel-track"
+              style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+            >
+              {screens.map((screen) => (
+                <section key={screen.id} className="dashboard-screen">
+                  {screen.content}
+                </section>
+              ))}
+            </div>
+            <button
+              className="screen-arrow left"
+              onClick={prev}
+              disabled={activeIndex === 0}
+              aria-label="Écran précédent"
+            >
+              ‹
+            </button>
+            <button
+              className="screen-arrow right"
+              onClick={next}
+              disabled={activeIndex === screens.length - 1}
+              aria-label="Écran suivant"
+            >
+              ›
+            </button>
+            <div className="screen-dots">
+              {screens.map((screen, index) => (
+                <button
+                  key={screen.id}
+                  className={`screen-dot ${index === activeIndex ? 'active' : ''}`}
+                  onClick={() => goTo(index)}
+                  aria-label={`Aller à l'écran ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>

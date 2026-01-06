@@ -10,8 +10,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 100%;
-  overflow: hidden;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
@@ -28,6 +26,14 @@
   padding-bottom: 16px;
   border-bottom: 2px solid rgba(34, 211, 238, 0.15);
   flex-shrink: 0;
+}
+
+.grocery-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .card-title {
@@ -57,6 +63,25 @@
   background: rgba(34, 211, 238, 0.1);
   border-radius: 8px;
   font-family: 'Caveat', cursive;
+}
+
+.panel-back-btn {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: rgba(248, 250, 252, 0.9);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  backdrop-filter: blur(8px);
+}
+
+.panel-back-btn:hover {
+  border-color: rgba(34, 211, 238, 0.35);
+  color: #e0f2fe;
+  box-shadow: 0 8px 16px rgba(34, 211, 238, 0.18);
 }
 
 /* Input section - Fixed at top */
@@ -155,9 +180,6 @@
 
 /* List section - Scrollable */
 .grocery-list-fixed {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;

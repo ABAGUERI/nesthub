@@ -33,6 +33,7 @@ export interface GroceryTask {
   title: string;
   status: GoogleTaskStatus;
   completed?: string;
+  updated?: string;
 }
 
 export interface WeekDay {

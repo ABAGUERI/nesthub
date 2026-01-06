@@ -31,7 +31,7 @@
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .card-front {
@@ -104,21 +104,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow-y: auto;
-}
-
-.meals-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.meals-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-
-.meals-list::-webkit-scrollbar-thumb {
-  background: rgba(34, 211, 238, 0.3);
-  border-radius: 3px;
 }
 
 .meal-item {
@@ -195,21 +180,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow-y: auto;
-}
-
-.recipes-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.recipes-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-
-.recipes-list::-webkit-scrollbar-thumb {
-  background: rgba(34, 211, 238, 0.3);
-  border-radius: 3px;
 }
 
 .recipe-preview {

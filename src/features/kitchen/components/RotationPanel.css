@@ -6,9 +6,12 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  height: 100%;
-  overflow-y: auto;
   padding: 4px;
+  width: 100%;
+}
+
+.rotation-panel-columns > * {
+  min-width: 0;
 }
 
 /* Loading state */
@@ -35,6 +38,7 @@
   padding: 16px;
   transition: all 0.3s ease;
   min-height: 200px;
+  min-width: 0;
 }
 
 .rotation-column:hover {
@@ -113,27 +117,7 @@
   flex-direction: column;
   gap: 8px;
   flex: 1;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-/* Custom scrollbar */
-.rotation-tasks-list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.rotation-tasks-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 2px;
-}
-
-.rotation-tasks-list::-webkit-scrollbar-thumb {
-  background: var(--child-color, rgba(255, 255, 255, 0.2));
-  border-radius: 2px;
-}
-
-.rotation-tasks-list::-webkit-scrollbar-thumb:hover {
-  background: var(--child-color, rgba(255, 255, 255, 0.3));
+  overflow: visible;
 }
 
 /* Empty state */
