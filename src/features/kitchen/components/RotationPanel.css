@@ -6,8 +6,6 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  height: 100%;
-  overflow-y: auto;
   padding: 4px;
 }
 
@@ -35,6 +33,7 @@
   padding: 16px;
   transition: all 0.3s ease;
   min-height: 200px;
+  min-width: 0;
 }
 
 .rotation-column:hover {

@@ -5,14 +5,17 @@
 .ai-menu-panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
   padding: 20px;
-  overflow-y: auto;
 }
 
 /* Header */
 .ai-menu-header {
   margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .ai-menu-title {
@@ -34,6 +37,25 @@
   color: #94a3b8;
   font-weight: 600;
   margin: 0;
+}
+
+.panel-back-btn {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: rgba(248, 250, 252, 0.9);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  backdrop-filter: blur(8px);
+}
+
+.panel-back-btn:hover {
+  border-color: rgba(34, 211, 238, 0.35);
+  color: #e0f2fe;
+  box-shadow: 0 8px 16px rgba(34, 211, 238, 0.18);
 }
 
 /* Content area */
