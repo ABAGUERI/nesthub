@@ -3,20 +3,21 @@
 .timer-card-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  gap: clamp(10px, 1vw, 16px);
+  padding: clamp(12px, 1.4vw, 18px);
   background: linear-gradient(145deg, rgba(10, 17, 35, 0.8), rgba(12, 22, 45, 0.75));
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 18px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
   font-family: 'Caveat', cursive;
-  min-height: 220px;
+  min-height: clamp(180px, 22vh, 240px);
+  min-width: 0;
 }
 
 .timer-card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(8px, 1vw, 12px);
 }
 
 .timer-card-icon {
@@ -31,7 +32,7 @@
 }
 
 .timer-card-title {
-  font-size: 24px;
+  font-size: clamp(18px, 1.8vw, 24px);
   font-weight: 800;
   color: #e0f2fe;
   margin: 0;
@@ -39,7 +40,7 @@
 }
 
 .timer-card-subtitle {
-  font-size: 14px;
+  font-size: clamp(12px, 1vw, 14px);
   color: rgba(248, 250, 252, 0.7);
   margin-top: 2px;
 }
@@ -47,23 +48,23 @@
 .timer-controls {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(8px, 0.8vw, 12px);
 }
 
 .timer-quick-buttons {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: clamp(8px, 1vw, 12px);
 }
 
 .timer-quick-btn {
-  padding: 12px 14px;
+  padding: clamp(10px, 1vw, 12px) clamp(12px, 1vw, 14px);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   color: #e0f2fe;
   font-weight: 800;
-  font-size: 16px;
+  font-size: clamp(14px, 1.4vw, 16px);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -78,21 +79,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: clamp(8px, 1vw, 12px);
+  padding: clamp(8px, 1vw, 12px) clamp(10px, 1vw, 14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
+  min-width: 0;
 }
 
 .timer-summary-text {
   color: rgba(248, 250, 252, 0.75);
   font-weight: 700;
-  font-size: 15px;
+  font-size: clamp(13px, 1.2vw, 15px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .timer-overlay-btn {
-  padding: 10px 14px;
+  padding: clamp(8px, 1vw, 12px) clamp(12px, 1vw, 16px);
   border-radius: 10px;
   border: 1px solid rgba(34, 211, 238, 0.35);
   background: rgba(34, 211, 238, 0.12);
@@ -197,7 +202,7 @@
 
 .analog-face {
   position: relative;
-  width: 160px;
+  width: clamp(140px, 12vw, 170px);
   aspect-ratio: 1;
   border-radius: 50%;
   padding: 12px;

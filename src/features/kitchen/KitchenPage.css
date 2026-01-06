@@ -22,12 +22,12 @@ html, body, #root {
 .kitchen-page {
   height: 100vh;
   width: 100%;
-  padding: 10px 14px 14px;
+  padding: clamp(10px, 1.6vw, 18px);
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
   color: rgba(248, 250, 252, 0.95);
-  gap: 10px;
+  gap: clamp(8px, 1vw, 14px);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   overflow: hidden;
 }
@@ -40,11 +40,11 @@ html, body, #root {
 
 .kitchen-grid-2col {
   display: grid;
-  grid-template-columns: 3fr 1fr;  /* 75% / 25% */
-  gap: 12px;
+  grid-template-columns: minmax(640px, 1fr) minmax(380px, 520px);
+  gap: clamp(12px, 1.2vw, 20px);
   flex: 1;
   min-height: 0;
-  height: 100%;
+  height: calc(100vh - var(--app-header-height) - clamp(26px, 3vh, 42px));
 }
 
 /* Colonne principale (gauche) - SANS kitchen-icon-bar */
@@ -52,6 +52,7 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
   height: 100%;
 }
 
@@ -60,7 +61,9 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 
@@ -85,22 +88,22 @@ html, body, #root {
 /* Desktop large (1400px+) */
 @media (min-width: 1400px) {
   .kitchen-grid-2col {
-    grid-template-columns: 3.5fr 1fr;  /* 77.7% / 22.3% */
+    grid-template-columns: minmax(700px, 1fr) minmax(400px, 540px);
   }
 }
 
 /* Tablette paysage (900px - 1399px) */
 @media (max-width: 1399px) {
   .kitchen-grid-2col {
-    grid-template-columns: 2.5fr 1fr;  /* 71% / 29% */
+    grid-template-columns: minmax(560px, 1fr) minmax(360px, 480px);
   }
 }
 
 /* Tablette portrait (720px - 899px) */
 @media (max-width: 899px) {
   .kitchen-grid-2col {
-    grid-template-columns: 2fr 1fr;  /* 66% / 33% */
-    gap: 16px;
+    grid-template-columns: minmax(520px, 1fr) minmax(320px, 420px);
+    gap: clamp(12px, 2vw, 18px);
   }
 }
 
