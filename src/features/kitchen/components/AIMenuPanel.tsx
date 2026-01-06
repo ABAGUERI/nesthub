@@ -26,7 +26,12 @@ const getWeekStart = (): string => {
 
 // Noms de jours
 const DAY_NAMES = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-export const AIMenuPanel: React.FC = () => {
+
+interface AIMenuPanelProps {
+  onBackToMenu?: () => void;
+}
+
+export const AIMenuPanel: React.FC<AIMenuPanelProps> = ({ onBackToMenu }) => {
   const { user } = useAuth();
   const [state, setState] = useState<PanelState>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -177,13 +182,20 @@ export const AIMenuPanel: React.FC = () => {
     <div className="ai-menu-panel">
       {/* Header */}
       <div className="ai-menu-header">
-        <h2 className="ai-menu-title">
-          <span className="ai-icon">🤖</span>
-          Menu IA
-        </h2>
-        <p className="ai-menu-subtitle">
-          Génération automatique menu + épicerie
-        </p>
+        <div>
+          <h2 className="ai-menu-title">
+            <span className="ai-icon">🤖</span>
+            Menu IA
+          </h2>
+          <p className="ai-menu-subtitle">
+            Génération automatique menu + épicerie
+          </p>
+        </div>
+        {onBackToMenu && (
+          <button type="button" className="panel-back-btn" onClick={onBackToMenu}>
+            ← Menu de la semaine
+          </button>
+        )}
       </div>
 
       {/* Content */}
