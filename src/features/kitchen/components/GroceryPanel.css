@@ -10,8 +10,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 100%;
-  overflow: hidden;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
@@ -182,9 +180,6 @@
 
 /* List section - Scrollable */
 .grocery-list-fixed {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
