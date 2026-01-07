@@ -281,6 +281,13 @@
   gap: 8px;
 }
 
+.icon-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
 .icon-choice {
   display: flex;
   align-items: center;
@@ -292,6 +299,12 @@
   color: #e2e8f0;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.icon-choice.compact {
+  padding: 8px;
+  min-width: 44px;
+  justify-content: center;
 }
 
 .icon-choice.active {
