@@ -192,11 +192,6 @@
  * RESPONSIVE
  * ===================================================== */
 @media (max-width: 900px) {
-  .tasks-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(3, minmax(0, 1fr)); /* toujours 6 visibles */
-  }
-
   .task-icon {
     font-size: 32px;
   }
@@ -207,11 +202,6 @@
 }
 
 @media (max-width: 640px) {
-  .tasks-list {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(6, minmax(0, 1fr)); /* 6 visibles */
-  }
-
   .task-row {
     padding: 10px 10px;
   }
