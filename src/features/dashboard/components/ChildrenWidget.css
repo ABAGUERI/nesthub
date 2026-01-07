@@ -202,6 +202,11 @@
   pointer-events: none;
 }
 
+.donut-avatar-large {
+  width: clamp(150px, 26vw, 210px);
+  height: clamp(150px, 26vw, 210px);
+}
+
 .child-name-large {
   font-size: clamp(18px, 2.5vw, 24px);
   font-weight: 800;
