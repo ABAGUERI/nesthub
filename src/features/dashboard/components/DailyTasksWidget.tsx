@@ -237,26 +237,6 @@ export const DailyTasksWidget: React.FC = () => {
     }
   };
 
-  const getChildColor = (icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar'): string => {
-    const colors = {
-      bee: '#fbbf24',
-      ladybug: '#f87171',
-      butterfly: '#a78bfa',
-      caterpillar: '#34d399',
-    };
-    return colors[icon] || '#fbbf24';
-  };
-
-  const getChildIcon = (icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar'): string => {
-    const icons = {
-      bee: '🐝',
-      ladybug: '🐞',
-      butterfly: '🦋',
-      caterpillar: '🐛',
-    };
-    return icons[icon] || '🐝';
-  };
-
   if (loading) {
     return (
       <div className="widget">
@@ -309,16 +289,6 @@ export const DailyTasksWidget: React.FC = () => {
         <span className="refresh-btn" onClick={loadData}>
           🔄
         </span>
-      </div>
-
-      {/* Header avec nom de l'enfant actif */}
-      <div className="tasks-header">
-        <div className="tasks-child-name">
-          <span style={{ color: getChildColor(activeChild.icon) }}>
-            {getChildIcon(activeChild.icon)}
-          </span>
-          <span>{activeChild.firstName}</span>
-        </div>
       </div>
 
       <div className="widget-scroll">
