@@ -355,11 +355,6 @@ export const ChildrenWidget: React.FC = () => {
         </div>
       </div>
 
-      <div className="child-subtitle">
-        <ChildAvatar child={selectedChild} size="small" className="child-subtitle-avatar" />
-        <span className="child-subtitle-name">{selectedChild.firstName}</span>
-      </div>
-
       {children.length > 1 && (
         <div className="child-switcher">
           {children.map((child, index) => (
@@ -414,19 +409,8 @@ export const ChildrenWidget: React.FC = () => {
 
                   {/* Label au centre (avatar/icône) */}
                   <div className="donut-label-large">
-                    <ChildAvatar child={selectedChild} size="large" className="donut-avatar-large" />
+                    <ChildAvatar child={selectedChild} size="medium" className="donut-avatar-large" />
                   </div>
-                </div>
-
-                {/* Points accumulés */}
-                <div className="donut-money-large">
-                  <div
-                    className="points-balance"
-                    style={{ color: getChildColor(selectedChild.icon) }}
-                  >
-                    {selectedChild.totalPoints} pts
-                  </div>
-                  <div className="points-target">/ {targetPoints} pts</div>
                 </div>
 
                 {/* Nom de l'enfant */}
