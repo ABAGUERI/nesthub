@@ -24,12 +24,8 @@ export const DashboardPage: React.FC = () => {
         id: 'kids',
         content: (
           <div className="screen-grid kids-screen">
-            <div className="screen-card">
-              <ChildrenWidget />
-            </div>
-            <div className="screen-card">
-              <DailyTasksWidget />
-            </div>
+            <ChildrenWidget />
+            <DailyTasksWidget />
           </div>
         ),
       },
