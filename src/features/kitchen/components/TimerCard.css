@@ -1,355 +1,314 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap');
+/* =====================================================
+ * TimerCard.css — COMPACT (no scroll) + Overlay hardened
+ * Objectif: tenir dans une tuile type "jour"
+ * ===================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
 
 .timer-card-container {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(10px, 1vw, 16px);
-  padding: clamp(12px, 1.4vw, 18px);
-  background: linear-gradient(145deg, rgba(10, 17, 35, 0.8), rgba(12, 22, 45, 0.75));
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 18px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
-  font-family: 'Caveat', cursive;
-  min-height: clamp(180px, 22vh, 240px);
+  /* Permet les container queries */
+  container-type: size;
+  container-name: timerCard;
+
+  height: 100%;
+  min-height: 0;
   min-width: 0;
+
+  display: grid;
+  grid-template-rows: auto auto auto; /* header / controls / footer */
+  gap: 10px;
+
+  padding: 12px;
+
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  overflow: hidden;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: rgba(248, 250, 252, 0.95);
 }
+
+.timer-card-container *,
+.timer-card-container button {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.1;
+  box-sizing: border-box;
+}
+
+/* ================= HEADER ================= */
 
 .timer-card-header {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 1vw, 12px);
+  gap: 10px;
+  min-width: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .timer-card-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(34, 211, 238, 0.06));
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
   display: grid;
   place-items: center;
-  font-size: 24px;
-  box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.35);
+  border-radius: 12px;
+  background: rgba(34, 211, 238, 0.08);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  font-size: 16px;
 }
 
 .timer-card-title {
-  font-size: clamp(18px, 1.8vw, 24px);
-  font-weight: 800;
-  color: #e0f2fe;
+  font-family: 'Caveat', cursive;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
   margin: 0;
-  letter-spacing: 0.05em;
 }
 
 .timer-card-subtitle {
-  font-size: clamp(12px, 1vw, 14px);
-  color: rgba(248, 250, 252, 0.7);
-  margin-top: 2px;
-}
-
-.timer-controls {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(8px, 0.8vw, 12px);
-}
-
-.timer-quick-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(8px, 1vw, 12px);
-}
-
-.timer-quick-btn {
-  padding: clamp(10px, 1vw, 12px) clamp(12px, 1vw, 14px);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  color: #e0f2fe;
-  font-weight: 800;
-  font-size: clamp(14px, 1.4vw, 16px);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.timer-quick-btn:hover {
-  background: rgba(34, 211, 238, 0.12);
-  border-color: rgba(34, 211, 238, 0.35);
-  box-shadow: 0 10px 24px rgba(34, 211, 238, 0.2);
-}
-
-.timer-floating-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: clamp(8px, 1vw, 12px);
-  padding: clamp(8px, 1vw, 12px) clamp(10px, 1vw, 14px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  min-width: 0;
-}
-
-.timer-summary-text {
-  color: rgba(248, 250, 252, 0.75);
+  font-size: 12px;
   font-weight: 700;
-  font-size: clamp(13px, 1.2vw, 15px);
+  line-height: 1.15;
+  color: rgba(248, 250, 252, 0.65);
+  margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.timer-overlay-btn {
-  padding: clamp(8px, 1vw, 12px) clamp(12px, 1vw, 16px);
-  border-radius: 10px;
-  border: 1px solid rgba(34, 211, 238, 0.35);
-  background: rgba(34, 211, 238, 0.12);
-  color: #e0f2fe;
-  font-weight: 800;
+/* ================= CONTROLS ================= */
+
+.timer-controls {
+  display: grid;
+  gap: 10px;
+  /* Important: pas de scroll interne */
+  overflow: hidden;
+}
+
+.timer-quick-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* 4 presets = 2x2 + Personnalisé pleine largeur */
+.timer-quick-btn {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+
+  height: 54px;
+  min-height: 54px;
+  padding: 8px 10px;
+
+  display: grid;
+  place-items: center;
+
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.05;
+  color: rgba(248, 250, 252, 0.95);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.timer-overlay-btn.subtle {
-  justify-self: start;
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.06);
-  color: rgba(248, 250, 252, 0.85);
-}
-
-.timer-overlay-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.timer-overlay-btn:not(:disabled):hover {
-  box-shadow: 0 8px 18px rgba(34, 211, 238, 0.25);
+.timer-quick-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(34, 211, 238, 0.22);
   transform: translateY(-1px);
 }
 
-.timer-analog-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+.timer-quick-btn:active {
+  transform: translateY(0);
 }
 
-.timer-empty {
+.timer-quick-btn.highlight {
   grid-column: 1 / -1;
-  text-align: center;
-  color: rgba(248, 250, 252, 0.6);
-  padding: 12px;
-  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(34, 211, 238, 0.10);
+  border-color: rgba(34, 211, 238, 0.25);
+  color: #22d3ee;
+}
+
+.timer-overlay-btn {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 12px;
+
   border-radius: 12px;
-  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  color: rgba(248, 250, 252, 0.88);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.timer-ringing {
-  grid-column: 1 / -1;
-  display: grid;
-  gap: 10px;
+.timer-overlay-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(34, 211, 238, 0.20);
 }
 
-.timer-ringing-card {
+.timer-overlay-btn.subtle {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(248, 250, 252, 0.72);
+}
+
+.timer-overlay-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ================= FOOTER ================= */
+
+.timer-floating-summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 12px;
-}
-
-.timer-ringing-icon {
-  font-size: 24px;
-}
-
-.timer-ringing-label {
-  flex: 1;
-  margin: 0 12px;
-  font-weight: 800;
-  color: #ecfeff;
-  font-size: 16px;
-}
-
-.timer-stop-btn {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fecdd3;
-  border-radius: 10px;
-  padding: 8px 10px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.timer-stop-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
-}
-
-.analog-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
-.analog-card.paused {
-  opacity: 0.85;
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
-.analog-face {
-  position: relative;
-  width: clamp(140px, 12vw, 170px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  padding: 12px;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 0 30px rgba(34, 211, 238, 0.1),
-    0 12px 25px rgba(0, 0, 0, 0.35);
-}
-
-.analog-center {
-  width: 72%;
-  height: 72%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(11, 23, 39, 0.8) 0%, rgba(6, 12, 21, 0.8) 100%);
-  display: grid;
-  place-items: center;
-  text-align: center;
-  gap: 6px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  color: #e0f2fe;
-}
-
-.analog-time {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-
-.analog-label {
-  font-size: 14px;
-  color: rgba(248, 250, 252, 0.75);
-  padding: 0 6px;
-  word-break: break-word;
-}
-
-.analog-needle {
-  position: absolute;
-  width: 2px;
-  height: 44%;
-  background: linear-gradient(180deg, #22d3ee 0%, rgba(34, 211, 238, 0.4) 100%);
-  top: 6%;
-  left: 50%;
-  transform-origin: 50% 90%;
-  border-radius: 999px;
-  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.3));
-  transition: transform 0.1s linear;
-}
-
-.analog-actions {
-  display: flex;
   gap: 10px;
+
+  min-width: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.timer-mini-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.04);
-  color: #e0f2fe;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.timer-summary-text {
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: rgba(248, 250, 252, 0.60);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.timer-mini-btn:hover {
-  border-color: rgba(34, 211, 238, 0.4);
-  box-shadow: 0 8px 18px rgba(34, 211, 238, 0.25);
+.timer-floating-summary .timer-overlay-btn {
+  width: auto;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+
+  background: rgba(34, 211, 238, 0.10);
+  border-color: rgba(34, 211, 238, 0.22);
+  color: rgba(248, 250, 252, 0.95);
 }
 
-.timer-mini-btn.danger {
-  border-color: rgba(239, 68, 68, 0.35);
-  color: #fecdd3;
+/* =====================================================
+ * MODE ULTRA-COMPACT (quand la tuile est petite)
+ * -> réduit toutes les hauteurs/paddings, sans scroll
+ * ===================================================== */
+
+@container timerCard (max-height: 320px) {
+  .timer-card-container { gap: 8px; padding: 10px; }
+
+  .timer-card-icon { width: 34px; height: 34px; font-size: 15px; }
+  .timer-card-title { font-size: 24px; }
+  .timer-card-subtitle { font-size: 11px; }
+
+  .timer-quick-btn {
+    height: 44px;
+    min-height: 44px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+
+  .timer-overlay-btn {
+    height: 32px;
+    min-height: 32px;
+    font-size: 11px;
+    border-radius: 10px;
+  }
+
+  .timer-floating-summary { padding-top: 8px; }
+  .timer-summary-text { font-size: 10px; }
+  .timer-floating-summary .timer-overlay-btn {
+    height: 30px;
+    min-height: 30px;
+    padding: 0 10px;
+  }
 }
 
-.timer-mini-btn.danger:hover {
-  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.25);
+/* Fallback si container queries non supportées */
+@media (max-height: 760px) {
+  .timer-quick-btn { height: 44px; min-height: 44px; font-size: 14px; }
+  .timer-overlay-btn { height: 32px; min-height: 32px; font-size: 11px; }
 }
+
+/* =====================================================
+ * OVERLAY (popup) — IMPORTANT pour qu’il soit visible
+ * ===================================================== */
 
 .timer-overlay {
   position: fixed;
   inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0) 40%, rgba(15, 23, 42, 0.35) 100%);
+  z-index: 5000; /* CRITIQUE: au-dessus de tout */
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
   padding: 16px;
-  z-index: 1300;
-  pointer-events: none;
 }
 
 .timer-overlay-card {
-  pointer-events: auto;
-  width: min(440px, 92vw);
-  max-height: none;
-  overflow: visible;
-  background: rgba(4, 6, 13, 0.72);
-  backdrop-filter: blur(10px);
+  width: min(820px, 92vw);
+  max-height: 86vh;
+  overflow: auto;
+
+  background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+  border: 1px solid rgba(34, 211, 238, 0.25);
   border-radius: 18px;
-  padding: 16px;
-  border: 1px solid rgba(34, 211, 238, 0.35);
-  box-shadow:
-    0 18px 46px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  padding: 14px;
 }
 
+/* Exemple de header overlay si tu veux */
 .timer-overlay-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  align-items: center;
+  padding: 8px 6px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .timer-overlay-title {
-  font-size: 20px;
-  font-weight: 800;
-  color: #e0f2fe;
+  font-family: 'Caveat', cursive;
+  font-size: 26px;
+  font-weight: 700;
 }
 
 .timer-overlay-subtitle {
-  color: rgba(248, 250, 252, 0.7);
-  font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
+  color: rgba(248, 250, 252, 0.65);
+  margin-top: 2px;
 }
 
 .timer-overlay-close {
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
   background: rgba(255, 255, 255, 0.05);
-  color: #e0f2fe;
-  border-radius: 10px;
-  width: 34px;
-  height: 34px;
+  color: rgba(248, 250, 252, 0.9);
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.timer-overlay-close:hover {
-  border-color: rgba(34, 211, 238, 0.45);
-  box-shadow: 0 8px 18px rgba(34, 211, 238, 0.25);
-}
-
-@media (max-width: 640px) {
-  .analog-face {
-    width: 140px;
-  }
 }

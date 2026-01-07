@@ -1,30 +1,29 @@
 /* =====================================================
  * KITCHEN PAGE - VERSION 2.0
- * Sans toolbar standalone - Boutons intégrés au menu
+ * Objectif: colonne gauche qui contraint la hauteur du MenuPanel
  * ===================================================== */
 
 /* Reset */
-* { 
-  box-sizing: border-box; 
-  margin: 0; 
-  padding: 0; 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
 body,
 #root {
+  height: 100%;
   min-height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden; /* IMPORTANT: évite scroll global parasite */
 }
-
 
 /* =====================================================
  * PAGE WRAPPER
  * ===================================================== */
 
 .kitchen-page {
-  min-height: 100vh;
+  height: 100vh;
   width: 100%;
   padding: clamp(10px, 1.6vw, 18px);
   display: flex;
@@ -33,33 +32,45 @@ body,
   color: rgba(248, 250, 252, 0.95);
   gap: clamp(8px, 1vw, 14px);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  overflow: hidden;
 }
 
-
 /* =====================================================
- * LAYOUT 2 COLONNES - RATIO 3:1 (75% / 25%)
- * SANS TOOLBAR - Menu et Rotation même hauteur
+ * GRID 2 COLONNES
  * ===================================================== */
 
 .kitchen-grid-2col {
+  flex: 1;
+  min-height: 0;
+
   display: grid;
   grid-template-columns: minmax(640px, 1fr) minmax(380px, 520px);
   gap: clamp(12px, 1.2vw, 20px);
   width: 100%;
-  min-height: 0;
-  align-items: start;
+  align-items: stretch; /* IMPORTANT: stretch = même hauteur de ligne */
 }
 
 .kitchen-grid-2col > * {
   min-width: 0;
+  min-height: 0;
 }
 
-/* Colonne principale (gauche) - SANS kitchen-icon-bar */
+/* Colonne principale (gauche) */
 .kitchen-col-main {
   display: flex;
   flex-direction: column;
   min-height: 0;
   min-width: 0;
+  overflow: hidden;
+}
+
+/* Zone qui contient le MenuPanel => doit être contrainte */
+.kitchen-main-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Colonne sidebar (droite) */
@@ -68,54 +79,38 @@ body,
   flex-direction: column;
   min-height: 0;
   min-width: 0;
+  overflow: hidden;
 }
-
-
-/* =====================================================
- * CONTENU PRINCIPAL - Pleine hauteur
- * ===================================================== */
-
-.kitchen-main-content {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(10px, 1vw, 14px);
-}
-
 
 /* =====================================================
  * RESPONSIVE
  * ===================================================== */
 
-/* Desktop large (1400px+) */
 @media (min-width: 1400px) {
   .kitchen-grid-2col {
     grid-template-columns: minmax(700px, 1fr) minmax(400px, 540px);
   }
 }
 
-/* Tablette paysage (900px - 1399px) */
 @media (max-width: 1399px) {
   .kitchen-grid-2col {
     grid-template-columns: minmax(560px, 1fr) minmax(360px, 480px);
   }
 }
 
-/* Tablette portrait (720px - 899px) */
 @media (max-width: 899px) {
-  .kitchen-grid-2col {
-    grid-template-columns: minmax(520px, 1fr) minmax(320px, 420px);
-    gap: clamp(12px, 2vw, 18px);
-  }
-}
-
-/* Mobile (< 720px) - Stack vertical */
-@media (max-width: 719px) {
-  .kitchen-grid-2col {
-    grid-template-columns: 1fr;
-    gap: 10px;
+  html, body, #root {
+    overflow: auto;
   }
 
   .kitchen-page {
-    padding: 12px 14px;
+    overflow: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .kitchen-grid-2col {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 }

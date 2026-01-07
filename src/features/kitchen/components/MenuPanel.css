@@ -1,63 +1,66 @@
 /* =====================================================
- * MENU PANEL - VERSION ARDOISE RESTAURANT
- * Police manuscrite Caveat + Boutons intégrés
+ * MENU PANEL - VERSION ARDOISE RESTAURANT (FINAL)
+ * Compatible avec KitchenPage.css (hauteur contrainte)
+ * Objectif: 2 rangées visibles + repas lisibles + AUCUNE carte grise interne
+ * + Centrage quand 1 seul repas
  * ===================================================== */
 
-/* Import Google Font - Caveat (manuscrite élégante) */
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap');
 
 .menu-panel {
   display: flex;
   flex-direction: column;
-  gap: clamp(12px, 1.2vw, 18px);
-  font-family: 'Caveat', cursive;  /* Police manuscrite partout */
+  gap: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* <-- change */
+  height: 100%;
+  min-height: 0;
+}
+.menu-title,
+.meal-title-compact {
+  font-family: 'Caveat', cursive;
+}
+.day-name-text {
+  font-family: 'Caveat', cursive;
 }
 
 
-/* =====================================================
- * HEADER - Titre + Boutons + Navigation
- * 1 seule ligne pour tout
- * ===================================================== */
+/* =========================
+ * HEADER
+ * ========================= */
 
 .menu-header-with-period {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: clamp(10px, 1.2vw, 16px);
-  padding: clamp(10px, 1.2vw, 14px) 0 clamp(8px, 1vw, 12px);
+  gap: 12px;
+  padding: 10px 0 10px;
   border-bottom: 2px solid rgba(34, 211, 238, 0.15);
   flex-shrink: 0;
   flex-wrap: wrap;
 }
 
-/* Zone gauche : Titre + Boutons */
 .menu-header-left {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 1vw, 14px);
+  gap: 12px;
   flex: 1;
   min-width: 0;
 }
 
-/* Titre */
 .menu-title {
   font-size: clamp(20px, 2vw, 26px);
   font-weight: 700;
   color: #22d3ee;
   margin: 0;
-  letter-spacing: 0.02em;
-  line-height: 1.15;
-  font-family: 'Caveat', cursive;
-  flex-shrink: 0;
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Boutons Menu IA et Épicerie - Petits et discrets */
 .menu-action-btns {
   display: flex;
-  gap: clamp(6px, 0.8vw, 10px);
+  gap: 10px;
   flex-shrink: 0;
 }
 
@@ -66,15 +69,15 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 36px;
-  min-width: 36px;
-  padding: 6px clamp(8px, 1vw, 12px);
+  min-height: 34px;
+  min-width: 34px;
+  padding: 6px 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: clamp(15px, 1.6vw, 18px);
+  font-size: 18px;
   color: rgba(248, 250, 252, 0.7);
   backdrop-filter: blur(8px);
 }
@@ -94,10 +97,9 @@
 }
 
 .menu-action-btn-label {
-  font-size: clamp(12px, 1vw, 13px);
+  font-size: 13px;
   font-weight: 700;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  letter-spacing: 0;
   white-space: nowrap;
 }
 
@@ -105,17 +107,14 @@
 .week-period-navigation {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 1vw, 12px);
+  gap: 12px;
   flex-shrink: 0;
 }
 
 .week-period-text {
-  font-size: clamp(15px, 1.4vw, 18px);
+  font-size: 18px;
   font-weight: 600;
   color: rgba(248, 250, 252, 0.7);
-  min-width: 0;
-  text-align: center;
-  font-family: 'Caveat', cursive;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -127,8 +126,8 @@
 }
 
 .week-arrow-btn {
-  min-width: 40px;
-  min-height: 40px;
+  min-width: 38px;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -136,7 +135,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   color: rgba(248, 250, 252, 0.7);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -146,113 +145,68 @@
 
 .week-arrow-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.15);
   color: rgba(248, 250, 252, 0.95);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.week-arrow-btn:active {
-  transform: translateY(0);
-}
-
-
-/* =====================================================
- * GRILLE DES JOURS (7 + 1 minuteurs = 8)
- * ===================================================== */
+/* =========================
+ * GRILLE DES JOURS (desktop)
+ * ========================= */
 
 .menu-days-grid {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  grid-auto-rows: minmax(200px, 1fr);
-  gap: clamp(10px, 1vw, 14px);
-  padding: clamp(4px, 0.8vw, 10px);
+
+  /* 8 items => 4 colonnes / 2 rangées */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+  padding: 12px;
+
+  overflow: hidden;
+  align-content: stretch;
 }
 
-/* Scrollbar */
-.menu-days-grid::-webkit-scrollbar {
-  width: 6px;
-}
-
-.menu-days-grid::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 3px;
-}
-
-.menu-days-grid::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.menu-days-grid::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-
-/* =====================================================
- * CARTE JOUR - Style ardoise
- * ===================================================== */
+/* =========================
+ * CARTE JOUR (structure stable)
+ * ========================= */
 
 .menu-day-card {
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1vw, 12px);
-  padding: clamp(12px, 1.2vw, 16px);
+
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+
+  padding: 12px;
+  gap: 10px;
+
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
+
   cursor: pointer;
   transition: all 0.15s ease;
-  min-height: clamp(180px, 24vh, 230px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  min-width: 0;
 }
 
 .menu-day-card:hover {
   background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
-.menu-day-card:active {
-  transform: translateY(-1px);
-}
-
-/* Jour aujourd'hui */
 .menu-day-card.today {
   background: rgba(34, 211, 238, 0.05);
   border: 1px solid rgba(34, 211, 238, 0.3);
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(34, 211, 238, 0.1) inset;
 }
 
-.menu-day-card.today:hover {
-  border-color: rgba(34, 211, 238, 0.4);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.2),
-    0 0 20px rgba(34, 211, 238, 0.15);
-}
-
-/* Animation pulse */
-@keyframes pulseToday {
-  0%, 100% {
-    border-color: rgba(34, 211, 238, 0.3);
-  }
-  50% {
-    border-color: rgba(34, 211, 238, 0.45);
-  }
-}
-
-.menu-day-card.today {
-  animation: pulseToday 3s ease-in-out infinite;
-}
-
-
-/* =====================================================
- * HEADER JOUR - Manuscrit
- * ===================================================== */
+/* =========================
+ * HEADER JOUR
+ * ========================= */
 
 .day-header-compact {
   display: flex;
@@ -260,16 +214,16 @@
   align-items: center;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .day-name-text {
-  font-size: clamp(13px, 1.1vw, 16px);
+  font-size: 15px;
   font-weight: 700;
   color: rgba(248, 250, 252, 0.75);
-  letter-spacing: 0.02em;
   text-transform: uppercase;
-  font-family: 'Caveat', cursive;
-  line-height: 1.2;
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -280,97 +234,128 @@
 }
 
 .day-number-text {
-  font-size: clamp(18px, 1.8vw, 24px);
+  font-size: 22px;
   font-weight: 700;
   color: rgba(248, 250, 252, 0.85);
-  line-height: 1.15;
-  font-family: 'Caveat', cursive;
+  line-height: 1;
 }
 
-
-/* =====================================================
- * LISTE REPAS - Manuscrit
- * ===================================================== */
+/* =========================
+ * ZONE REPAS
+ * - 2 repas: empilés, lisibles, sans carte interne
+ * - 1 repas: centré verticalement
+ * ========================= */
 
 .day-meals {
   flex: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: clamp(8px, 1vw, 12px);
-  padding: 4px 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  gap: 10px;
   overflow: hidden;
-  justify-items: center;
 }
 
-/* Item repas */
+/* 1 seul repas => centrage vertical + léger "air" */
+.day-meals:has(.meal-item-compact:only-child) {
+  justify-content: center;
+}
+
+/* Séparation subtile quand 2 repas (sans carte grise) */
+.day-meals .meal-item-compact + .meal-item-compact {
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  padding-top: 10px;
+}
+
+/* =========================
+ * REPAS (SANS CARTE GRISE)
+ * ========================= */
+
 .meal-item-compact {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(8px, 0.8vw, 12px);
-  padding: clamp(10px, 1vw, 14px) clamp(8px, 1vw, 12px);
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 14px;
-  transition: background 0.15s ease;
-  min-height: clamp(120px, 16vh, 160px);
-  width: 100%;
-  text-align: center;
-  min-width: 0;
-}
 
-.meal-item-compact:hover {
-  background: rgba(255, 255, 255, 0.08);
+  padding: 6px 8px;
+  gap: 6px;
+
+  overflow: hidden;
 }
 
 .meal-icon {
-  font-size: clamp(28px, 2.2vw, 36px);
+  font-size: 28px;
   line-height: 1;
   flex-shrink: 0;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
 
+/* Titre: zone garantie + clamp 2 lignes */
 .meal-title-compact {
   width: 100%;
-  min-width: 0;
-  font-size: clamp(18px, 1.8vw, 22px);
+  padding: 0 6px;
+  text-align: center;
+
+  font-size: 18px;
   font-weight: 900;
-  color: rgba(248, 250, 252, 0.98);
-  line-height: 1.25;
+  line-height: 1.1;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: normal;
-  font-family: 'Caveat', cursive;
+
+  min-height: calc(2 * 1.1em);
 }
 
+.meal-title-compact * {
+  overflow: hidden;
+}
 
-/* =====================================================
- * BOUTON AJOUTER - Manuscrit
- * ===================================================== */
+/* =========================
+ * BOUTON AJOUTER (toujours visible)
+ * ========================= */
 
 .add-meal-btn-compact {
   width: 100%;
-  min-height: 44px;
-  padding: clamp(9px, 1vw, 12px) clamp(10px, 1.2vw, 14px);
+  flex-shrink: 0;
+
+  min-height: 38px;
+  padding: 8px 12px;
   margin-top: auto;
+
   background: rgba(34, 211, 238, 0.05);
   border: 1.5px dashed rgba(34, 211, 238, 0.25);
   border-radius: 10px;
   color: #22d3ee;
-  font-size: clamp(14px, 1.4vw, 16px);
+
+  font-size: 16px;
   font-weight: 700;
+  font-family: 'Caveat', cursive;
+
   cursor: pointer;
   transition: all 0.15s ease;
+
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-family: 'Caveat', cursive;
 }
 
 .add-meal-btn-compact::before {
   content: '+';
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -379,25 +364,16 @@
   background: rgba(34, 211, 238, 0.1);
   border-color: rgba(34, 211, 238, 0.4);
   border-style: solid;
-  transform: scale(1.02);
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.2);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.18);
 }
 
-.add-meal-btn-compact:active {
-  transform: scale(0.98);
-}
-
-
-/* =====================================================
- * MODAL - Manuscrit
- * ===================================================== */
+/* =========================
+ * MODAL
+ * ========================= */
 
 .modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(8px);
   display: flex;
@@ -414,8 +390,6 @@
   padding: 28px;
   max-width: 500px;
   width: 100%;
-  max-height: none;
-  overflow: visible;
   box-shadow:
     0 24px 64px rgba(0, 0, 0, 0.6),
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
@@ -430,322 +404,42 @@
   font-family: 'Caveat', cursive;
 }
 
-/* Éditeur */
-.meal-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.meal-editor-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.meal-emoji {
-  font-size: 24px;
-  line-height: 1;
-  flex-shrink: 0;
-  margin-top: 8px;
-}
-
-.meal-editor-fields {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: 12px;
-  flex: 1;
-}
-
-.emoji-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.emoji-select {
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  color: rgba(248, 250, 252, 0.95);
-  font-size: 16px;
-  font-weight: 800;
-  appearance: none;
-  background-image:
-    linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(34, 211, 238, 0.08)),
-    radial-gradient(circle at 95% 50%, rgba(255, 255, 255, 0.2), transparent 40%);
-  background-blend-mode: soft-light, normal;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-
-.emoji-select:focus {
-  outline: none;
-  border-color: rgba(34, 211, 238, 0.4);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
-}
-
-.emoji-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
-  gap: 6px;
-}
-
-.emoji-option {
-  display: grid;
-  place-items: center;
-  padding: 8px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  cursor: pointer;
-  font-size: 18px;
-  transition: all 0.15s ease;
-}
-
-.emoji-option:hover {
-  border-color: rgba(34, 211, 238, 0.35);
-  background: rgba(34, 211, 238, 0.08);
-}
-
-.emoji-option.selected {
-  border-color: rgba(34, 211, 238, 0.55);
-  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.12);
-}
-
-.emoji-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.emoji-input-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(248, 250, 252, 0.7);
-  letter-spacing: 0.03em;
-}
-
-.emoji-input {
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: rgba(248, 250, 252, 0.95);
-  font-size: 18px;
-  font-weight: 700;
-  text-align: center;
-  font-family: 'Caveat', cursive;
-}
-
-.emoji-input:focus {
-  outline: none;
-  border-color: rgba(34, 211, 238, 0.4);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
-}
-
-.meal-label-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.grocery-input-enhanced {
-  flex: 1;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: rgba(248, 250, 252, 0.95);
-  font-size: 16px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  font-family: 'Caveat', cursive;
-}
-
-.grocery-input-enhanced:focus {
-  outline: none;
-  border-color: rgba(34, 211, 238, 0.4);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
-}
-
-.char-counter {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(248, 250, 252, 0.5);
-  margin-top: 4px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.char-counter.warning {
-  color: #fbbf24;
-}
-
-.char-counter.error {
-  color: #ef4444;
-}
-
-/* Actions modal */
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.ghost-btn {
-  padding: 12px 24px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  color: rgba(203, 213, 225, 1);
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 48px;
-  font-family: 'Caveat', cursive;
-}
-
-.ghost-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(34, 211, 238, 0.3);
-  color: rgba(248, 250, 252, 1);
-}
-
-.ghost-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.ghost-btn-compact {
-  padding: 8px 12px;
-  min-height: auto;
-}
-
-.primary-btn {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
-  border: none;
-  border-radius: 10px;
-  color: #0f0f0f;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 48px;
-  font-family: 'Caveat', cursive;
-}
-
-.primary-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4);
-}
-
-.primary-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-
-/* =====================================================
+/* =========================
  * RESPONSIVE
- * ===================================================== */
+ * ========================= */
 
-/* Desktop large (1400px+) */
-@media (min-width: 1400px) {
+@media (max-width: 1023px) {
   .menu-days-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: clamp(190px, 24vh, 260px);
+    overflow: auto;
   }
-  
-  .menu-title {
-    font-size: 32px;
+
+  .day-meals {
+    overflow: visible;
   }
 }
 
-/* Desktop standard (1024px - 1399px) */
-@media (min-width: 1024px) and (max-width: 1399px) {
+@media (max-width: 767px) {
   .menu-days-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Tablette paysage (768px - 1023px) */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .menu-days-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-  
-  .menu-title {
-    font-size: 24px;
-  }
-  
-  .menu-header-with-period {
-    flex-wrap: wrap;
-  }
-}
-
-/* Tablette portrait (640px - 767px) */
-@media (min-width: 640px) and (max-width: 767px) {
-  .menu-days-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-  
-  .menu-header-with-period {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .week-period-navigation {
-    width: 100%;
-    justify-content: space-between;
-  }
-}
-
-/* Mobile (< 640px) */
 @media (max-width: 639px) {
   .menu-days-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
   }
-  
-  .menu-title {
-    font-size: 24px;
-  }
-  
+
   .menu-header-with-period {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
-    padding: 12px 0;
   }
-  
-  .menu-header-left {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-  }
-  
-  .menu-action-btns {
-    width: 100%;
-    justify-content: flex-start;
-  }
-  
+
   .week-period-navigation {
     width: 100%;
     justify-content: space-between;
-  }
-  
-  .modal-card {
-    padding: 20px;
   }
 }
