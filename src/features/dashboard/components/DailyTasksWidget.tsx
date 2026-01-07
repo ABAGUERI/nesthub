@@ -80,7 +80,7 @@ export const DailyTasksWidget: React.FC = () => {
             name: t.name,
             points: t.points,
             category: t.category,
-            icon: getCategoryIcon(t.category),
+            icon: t.icon || getCategoryIcon(t.category),
           }))
         );
       } else {
@@ -146,6 +146,7 @@ export const DailyTasksWidget: React.FC = () => {
           name: t.name,
           points: t.points,
           category: t.category,
+          icon: t.icon,
         }))
       )
       .select();
@@ -157,7 +158,7 @@ export const DailyTasksWidget: React.FC = () => {
           name: t.name,
           points: t.points,
           category: t.category,
-          icon: getCategoryIcon(t.category),
+          icon: t.icon || getCategoryIcon(t.category),
         }))
       );
     }
