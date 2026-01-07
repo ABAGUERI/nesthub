@@ -33,6 +33,8 @@ export const DailyTasksWidget: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pageIndex, setPageIndex] = useState(0);
+  const tasksPerPage = 6;
 
   useEffect(() => {
     loadData();
@@ -44,6 +46,10 @@ export const DailyTasksWidget: React.FC = () => {
       loadCompletedTasks();
     }
   }, [selectedChildIndex, children]);
+
+  useEffect(() => {
+    setPageIndex(0);
+  }, [selectedChildIndex, tasks.length]);
 
   const loadData = async () => {
     if (!user) return;
@@ -289,6 +295,12 @@ export const DailyTasksWidget: React.FC = () => {
     ...task,
     points: Number.isFinite(task.points) ? task.points : Number(task.points) || 0,
   }));
+  const totalPages = Math.max(1, Math.ceil(safeTasks.length / tasksPerPage));
+  const paginatedTasks = safeTasks.slice(
+    pageIndex * tasksPerPage,
+    pageIndex * tasksPerPage + tasksPerPage
+  );
+  const showPagination = safeTasks.length > tasksPerPage;
 
   return (
     <div className="widget daily-tasks-widget">
@@ -314,7 +326,7 @@ export const DailyTasksWidget: React.FC = () => {
           <div className="empty-message">Aucune tâche disponible</div>
         ) : (
           <div className="tasks-list">
-            {safeTasks.map((task) => {
+            {paginatedTasks.map((task) => {
               const isCompleted = isTaskCompleted(task.id, activeChild.id);
               return (
                 <div
@@ -331,6 +343,29 @@ export const DailyTasksWidget: React.FC = () => {
           </div>
         )}
       </div>
+      {showPagination && (
+        <div className="tasks-navigation">
+          <button
+            className="tasks-nav-btn"
+            onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
+            disabled={pageIndex === 0}
+            aria-label="Tâches précédentes"
+          >
+            ‹
+          </button>
+          <div className="tasks-nav-indicator">
+            Page {pageIndex + 1} / {totalPages}
+          </div>
+          <button
+            className="tasks-nav-btn"
+            onClick={() => setPageIndex((prev) => Math.min(prev + 1, totalPages - 1))}
+            disabled={pageIndex >= totalPages - 1}
+            aria-label="Tâches suivantes"
+          >
+            ›
+          </button>
+        </div>
+      )}
     </div>
   );
 };
