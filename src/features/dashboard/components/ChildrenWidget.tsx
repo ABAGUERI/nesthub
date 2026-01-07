@@ -355,11 +355,6 @@ export const ChildrenWidget: React.FC = () => {
         </div>
       </div>
 
-      <div className="child-subtitle">
-        <ChildAvatar child={selectedChild} size="small" className="child-subtitle-avatar" />
-        <span className="child-subtitle-name">{selectedChild.firstName}</span>
-      </div>
-
       {children.length > 1 && (
         <div className="child-switcher">
           {children.map((child, index) => (
