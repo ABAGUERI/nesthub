@@ -202,11 +202,11 @@ export const RewardsTab: React.FC = () => {
                 />
 
                 <label className="input-label">Emoji</label>
-                <div className="icon-options-inline">
+                <div className="icon-scroll">
                   {TASK_ICON_OPTIONS.map((icon) => (
                     <button
                       key={`${task.id}-${icon}`}
-                      className={`icon-choice ${task.icon === icon ? 'active' : ''}`}
+                      className={`icon-choice compact ${task.icon === icon ? 'active' : ''}`}
                       onClick={() => updateLocalTask(task.id, { icon })}
                       type="button"
                     >
@@ -261,11 +261,11 @@ export const RewardsTab: React.FC = () => {
             onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
           />
           <label className="input-label">Emoji</label>
-          <div className="icon-options-inline">
+          <div className="icon-scroll">
             {TASK_ICON_OPTIONS.map((icon) => (
               <button
                 key={`new-${icon}`}
-                className={`icon-choice ${newTask.icon === icon ? 'active' : ''}`}
+                className={`icon-choice compact ${newTask.icon === icon ? 'active' : ''}`}
                 onClick={() => setNewTask({ ...newTask, icon })}
                 type="button"
               >
