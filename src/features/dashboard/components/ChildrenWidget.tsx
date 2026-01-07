@@ -409,19 +409,8 @@ export const ChildrenWidget: React.FC = () => {
 
                   {/* Label au centre (avatar/icône) */}
                   <div className="donut-label-large">
-                    <ChildAvatar child={selectedChild} size="large" className="donut-avatar-large" />
+                    <ChildAvatar child={selectedChild} size="medium" className="donut-avatar-large" />
                   </div>
-                </div>
-
-                {/* Points accumulés */}
-                <div className="donut-money-large">
-                  <div
-                    className="points-balance"
-                    style={{ color: getChildColor(selectedChild.icon) }}
-                  >
-                    {selectedChild.totalPoints} pts
-                  </div>
-                  <div className="points-target">/ {targetPoints} pts</div>
                 </div>
 
                 {/* Nom de l'enfant */}

@@ -202,27 +202,6 @@
   pointer-events: none;
 }
 
-.donut-money-large {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(2px, 0.5vw, 6px);
-  margin-top: clamp(-12px, -1.5vw, -18px);
-}
-
-.donut-value-large {
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0.4px;
-}
-
-.points-balance {
-  font-size: clamp(14px, 1.8vw, 20px);
-  color: #a5b4fc;
-  font-weight: 700;
-}
-
 .child-name-large {
   font-size: clamp(18px, 2.5vw, 24px);
   font-weight: 800;
