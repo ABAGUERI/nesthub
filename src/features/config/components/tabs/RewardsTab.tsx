@@ -10,7 +10,19 @@ interface RewardTask {
   points: number;
   moneyValue: number;
   category: string;
+  icon: string;
 }
+
+const TASK_ICON_OPTIONS = [
+  '🏠', '🧹', '🛏️', '🧺', '🧼', '🍽️', '🧽', '🗑️', '🧯', '🧴',
+  '📚', '✏️', '📖', '🧠', '🔢', '🧪', '🖍️', '📝',
+  '🪥', '🚿', '🛁', '🧼', '👕', '🧢', '🎒',
+  '🥪', '🍎', '🥛', '⏰', '🧩', '📦',
+  '🐶', '🐱', '🐾', '🌱',
+  '⚽', '🏃', '🚴', '🏀', '🏊', '🤸', '🧘',
+  '😊', '🤝', '🗣️', '🕊️', '⭐', '🎯',
+  '🎮', '🍿', '🎁', '🏆', '🌟', '✨', '🦷',
+];
 
 export const RewardsTab: React.FC = () => {
   const { user } = useAuth();
@@ -23,6 +35,7 @@ export const RewardsTab: React.FC = () => {
     name: '',
     points: 10,
     moneyValue: 0.5,
+    icon: '⭐',
   });
 
   useEffect(() => {
@@ -47,6 +60,7 @@ export const RewardsTab: React.FC = () => {
         points: task.points,
         moneyValue: task.money_value,
         category: task.category || 'special',
+        icon: task.icon || '⭐',
       }));
       setTasks(formatted);
     } catch (err: any) {
@@ -72,6 +86,7 @@ export const RewardsTab: React.FC = () => {
           points: newTask.points,
           money_value: newTask.moneyValue,
           category: 'special',
+          icon: newTask.icon,
         })
         .select()
         .single();
@@ -86,10 +101,11 @@ export const RewardsTab: React.FC = () => {
             points: data.points,
             moneyValue: data.money_value,
             category: data.category,
+            icon: data.icon || newTask.icon,
           },
         ]);
       }
-      setNewTask({ name: '', points: 10, moneyValue: 0.5 });
+      setNewTask({ name: '', points: 10, moneyValue: 0.5, icon: '⭐' });
     } catch (err: any) {
       setError(err.message || 'Impossible d’ajouter la tâche');
     } finally {
@@ -108,6 +124,7 @@ export const RewardsTab: React.FC = () => {
           points: task.points,
           money_value: task.moneyValue,
           category: task.category,
+          icon: task.icon,
         })
         .eq('id', task.id);
 
@@ -184,6 +201,20 @@ export const RewardsTab: React.FC = () => {
                   onChange={(e) => updateLocalTask(task.id, { name: e.target.value })}
                 />
 
+                <label className="input-label">Emoji</label>
+                <div className="icon-options-inline">
+                  {TASK_ICON_OPTIONS.map((icon) => (
+                    <button
+                      key={`${task.id}-${icon}`}
+                      className={`icon-choice ${task.icon === icon ? 'active' : ''}`}
+                      onClick={() => updateLocalTask(task.id, { icon })}
+                      type="button"
+                    >
+                      <span className="icon-emoji">{icon}</span>
+                    </button>
+                  ))}
+                </div>
+
                 <div className="task-inline">
                   <Input
                     label="Points"
@@ -229,6 +260,19 @@ export const RewardsTab: React.FC = () => {
             value={newTask.name}
             onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
           />
+          <label className="input-label">Emoji</label>
+          <div className="icon-options-inline">
+            {TASK_ICON_OPTIONS.map((icon) => (
+              <button
+                key={`new-${icon}`}
+                className={`icon-choice ${newTask.icon === icon ? 'active' : ''}`}
+                onClick={() => setNewTask({ ...newTask, icon })}
+                type="button"
+              >
+                <span className="icon-emoji">{icon}</span>
+              </button>
+            ))}
+          </div>
           <div className="task-inline">
             <Input
               label="Points"
