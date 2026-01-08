@@ -299,15 +299,22 @@ export const DailyTasksWidget: React.FC = () => {
           <div className="tasks-list">
             {paginatedTasks.map((task) => {
               const isCompleted = isTaskCompleted(task.id, activeChild.id);
+              const pointsLabel = `${task.points > 0 ? '+' : ''}${task.points} pts`;
               return (
                 <div
                   key={task.id}
                   className={`task-row ${isCompleted ? 'completed' : ''} ${getCategoryTone(task.category)}`}
                   onClick={() => !isCompleted && completeTask(task)}
                 >
-                  <div className="task-icon">{task.icon}</div>
+                  <div className="task-card-header">
+                    <div className="task-icon">{task.icon}</div>
+                    {isCompleted && <div className="task-check">✓</div>}
+                  </div>
                   <div className="task-name">{task.name}</div>
-                  {isCompleted && <div className="task-status">Terminé</div>}
+                  <div className="task-helper">
+                    {isCompleted ? 'Validé' : 'Appuie pour valider'}
+                  </div>
+                  <div className={`task-points ${isCompleted ? 'earned' : ''}`}>{pointsLabel}</div>
                 </div>
               );
             })}
