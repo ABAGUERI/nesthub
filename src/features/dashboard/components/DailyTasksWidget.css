@@ -42,9 +42,9 @@
 .daily-tasks-widget .tasks-list {
   /* grille fixe 3 colonnes x 2 lignes */
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1fr)); /* 2 lignes fixes */
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 14px;
   padding: 2px;
 
   /* IMPORTANT: la grille doit occuper l'espace dispo, sans dépasser */
@@ -58,20 +58,24 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
 
-  gap: 8px;
-  padding: 14px 12px 12px;
+  gap: 6px;
+  padding: 16px 14px 14px;
 
-  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.07), rgba(15, 23, 42, 0.65) 60%);
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  border-radius: 18px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.12), transparent 45%),
+    linear-gradient(165deg, rgba(30, 27, 75, 0.55), rgba(15, 23, 42, 0.8));
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 22px;
 
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 
   /* Shadow plus soft pour éviter l'effet "trop lourd" dans une grille dense */
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05), 0 10px 24px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    inset 0 0 0 1px rgba(148, 163, 184, 0.05),
+    0 14px 30px rgba(0, 0, 0, 0.4);
 
   text-align: center;
 
@@ -90,18 +94,44 @@
 }
 
 .daily-tasks-widget .task-row.completed {
-  opacity: 0.5;
+  opacity: 0.7;
   cursor: default;
   background: rgba(15, 23, 42, 0.45);
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.35);
 }
 
 /* === TASK ICON === */
+.daily-tasks-widget .task-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+  min-height: 34px;
+}
+
 .daily-tasks-widget .task-icon {
-  font-size: 32px;
+  font-size: 34px;
   flex-shrink: 0;
   line-height: 1;
   margin-top: 4px;
+}
+
+.daily-tasks-widget .task-check {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  color: #bbf7d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 8px 16px rgba(16, 185, 129, 0.2);
 }
 
 /* === TASK INFO === */
@@ -122,11 +152,22 @@
   padding: 0 6px;
 }
 
-.daily-tasks-widget .task-status {
+.daily-tasks-widget .task-helper {
   font-size: 12px;
-  color: #22c55e;
-  font-weight: 700;
+  color: rgba(148, 163, 184, 0.9);
+  font-weight: 600;
   line-height: 1;
+}
+
+.daily-tasks-widget .task-points {
+  font-size: 15px;
+  font-weight: 800;
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.daily-tasks-widget .task-points.earned {
+  color: #86efac;
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
 }
 
 /* =====================================================
@@ -182,16 +223,21 @@
 /* =====================================================
  * Couleurs (bord gauche)
  * ===================================================== */
-.daily-tasks-widget .tone-blue   { border-color: rgba(56, 189, 248, 0.8); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.2), 0 12px 28px rgba(0, 0, 0, 0.4); }
-.daily-tasks-widget .tone-violet { border-color: rgba(168, 85, 247, 0.8); box-shadow: inset 0 0 0 1px rgba(168, 85, 247, 0.2), 0 12px 28px rgba(0, 0, 0, 0.4); }
-.daily-tasks-widget .tone-green  { border-color: rgba(34, 197, 94, 0.8); box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.2), 0 12px 28px rgba(0, 0, 0, 0.4); }
-.daily-tasks-widget .tone-orange { border-color: rgba(251, 146, 60, 0.8); box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.2), 0 12px 28px rgba(0, 0, 0, 0.4); }
-.daily-tasks-widget .tone-cyan   { border-color: rgba(34, 211, 238, 0.8); box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.2), 0 12px 28px rgba(0, 0, 0, 0.4); }
+.daily-tasks-widget .tone-blue   { border-color: rgba(96, 165, 250, 0.75); box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.2), 0 16px 34px rgba(0, 0, 0, 0.45); }
+.daily-tasks-widget .tone-violet { border-color: rgba(168, 85, 247, 0.75); box-shadow: inset 0 0 0 1px rgba(168, 85, 247, 0.2), 0 16px 34px rgba(0, 0, 0, 0.45); }
+.daily-tasks-widget .tone-green  { border-color: rgba(34, 197, 94, 0.75); box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.2), 0 16px 34px rgba(0, 0, 0, 0.45); }
+.daily-tasks-widget .tone-orange { border-color: rgba(251, 146, 60, 0.75); box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.2), 0 16px 34px rgba(0, 0, 0, 0.45); }
+.daily-tasks-widget .tone-cyan   { border-color: rgba(34, 211, 238, 0.75); box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.2), 0 16px 34px rgba(0, 0, 0, 0.45); }
 
 /* =====================================================
  * RESPONSIVE
  * ===================================================== */
 @media (max-width: 900px) {
+  .daily-tasks-widget .tasks-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+  }
+
   .daily-tasks-widget .task-icon {
     font-size: 32px;
   }
