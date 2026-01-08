@@ -1,7 +1,7 @@
 /* =====================================================
  * DailyTasksWidget.css (UPDATED)
  * Objectifs:
- * - 3 colonnes x 2 lignes (6 tâches visibles)
+ * - 2 colonnes x 3 lignes (6 tâches visibles)
  * - pas de scroll interne pour la grille (pagination via flèches)
  * - widget stable dans un screen-card (pas de "carte arrière" inutile)
  * ===================================================== */
@@ -35,17 +35,17 @@
 
 /* === TASKS HEADER === */
 /* =====================================================
- * TASKS GRID (3 x 2)
+ * TASKS GRID (2 x 3)
  * ===================================================== */
 
 /* === TASKS LIST === */
 .daily-tasks-widget .tasks-list {
-  /* grille fixe 3 colonnes x 2 lignes */
+  /* grille fixe 2 colonnes x 3 lignes */
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1fr)); /* 2 lignes fixes */
-  gap: 10px;
-  padding: 2px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 4px;
 
   /* IMPORTANT: la grille doit occuper l'espace dispo, sans dépasser */
   flex: 1;
@@ -58,20 +58,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
 
   gap: 8px;
-  padding: 14px 12px 12px;
+  padding: 16px 14px 14px;
 
   background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.07), rgba(15, 23, 42, 0.65) 60%);
   border: 1px solid rgba(148, 163, 184, 0.4);
-  border-radius: 18px;
+  border-radius: 20px;
 
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 
   /* Shadow plus soft pour éviter l'effet "trop lourd" dans une grille dense */
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05), 0 10px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08), 0 12px 26px rgba(0, 0, 0, 0.4);
 
   text-align: center;
 
@@ -97,11 +97,32 @@
 }
 
 /* === TASK ICON === */
+.daily-tasks-widget .task-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
 .daily-tasks-widget .task-icon {
-  font-size: 32px;
+  font-size: 34px;
   flex-shrink: 0;
   line-height: 1;
   margin-top: 4px;
+}
+
+.daily-tasks-widget .task-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid rgba(34, 197, 94, 0.5);
 }
 
 /* === TASK INFO === */
@@ -122,11 +143,28 @@
   padding: 0 6px;
 }
 
-.daily-tasks-widget .task-status {
+.daily-tasks-widget .task-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+}
+
+.daily-tasks-widget .task-hint {
   font-size: 12px;
-  color: #22c55e;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.daily-tasks-widget .task-points {
+  font-size: 15px;
   font-weight: 700;
-  line-height: 1;
+  color: #e2e8f0;
+}
+
+.daily-tasks-widget .task-points.completed {
+  color: #86efac;
+  font-weight: 800;
 }
 
 /* =====================================================

@@ -1,10 +1,11 @@
 /* === CHILDREN WIDGET CAROUSEL === */
 .children-widget {
-  flex: 0.5 !important;
-  padding: clamp(12px, 1.5vw, 18px) clamp(14px, 2vw, 22px) !important;
+  flex: 1;
+  padding: clamp(16px, 2vw, 22px) clamp(18px, 2.4vw, 26px) !important;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(79, 70, 229, 0.25), rgba(34, 197, 235, 0.12));
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.3));
+  border: 1px solid rgba(148, 163, 184, 0.2);
   min-height: 0;
   height: 100%;
 }
@@ -15,7 +16,7 @@
   gap: clamp(4px, 0.5vw, 8px);
   padding: clamp(6px, 1vw, 12px) clamp(8px, 1.5vw, 16px);
   border-radius: clamp(10px, 1.5vw, 16px);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(148, 163, 184, 0.14);
   font-weight: 800;
   letter-spacing: 0.4px;
   color: #fefefe;
@@ -30,38 +31,67 @@
   color: #cbd5e1;
 }
 
-.child-switcher {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(120px, 30vw), 1fr));
-  gap: clamp(6px, 1vw, 12px);
-  margin-bottom: clamp(4px, 0.8vw, 8px);
+.children-date {
+  font-size: clamp(12px, 1.3vw, 15px);
+  color: rgba(226, 232, 240, 0.7);
+  text-align: right;
+  margin-bottom: clamp(6px, 1vw, 10px);
 }
 
-.switcher-pill {
+.children-layout {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) 1fr;
+  gap: clamp(12px, 2vw, 20px);
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+}
+
+.children-list {
   display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.2vw, 12px);
+}
+
+.children-list-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: clamp(4px, 0.8vw, 8px);
-  padding: clamp(6px, 1vw, 10px) clamp(8px, 1.2vw, 14px);
-  border-radius: clamp(8px, 1.2vw, 14px);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: clamp(6px, 0.8vw, 10px);
+  padding: clamp(8px, 1vw, 12px);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   color: #e2e8f0;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.switcher-pill.active {
-  border-color: rgba(16, 185, 129, 0.6);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.18);
+.children-list-item .list-check {
+  opacity: 0;
+  color: rgba(45, 212, 191, 0.9);
+  font-weight: 700;
 }
 
-.pill-icon {
-  font-size: clamp(14px, 1.8vw, 20px);
+.children-list-item.active {
+  border-color: rgba(34, 211, 238, 0.7);
+  box-shadow: 0 12px 24px rgba(34, 211, 238, 0.15);
+  background: rgba(34, 211, 238, 0.12);
+}
+
+.children-list-item.active .list-check {
+  opacity: 1;
 }
 
 .pill-name {
   font-weight: 700;
   font-size: clamp(12px, 1.2vw, 15px);
+}
+
+.children-hero {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* === CAROUSEL CONTAINER === */
@@ -100,7 +130,7 @@
   position: relative;
   animation: fadeInScale 0.3s ease;
   width: 100%;
-  max-width: 800px;
+  max-width: 520px;
 }
 
 @keyframes fadeInScale {
@@ -174,8 +204,8 @@
 
 .donut-stack {
   position: relative;
-  width: min(52vw, 260px);
-  max-width: 280px;
+  width: min(44vw, 260px);
+  max-width: 260px;
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
@@ -272,7 +302,7 @@
   align-items: center;
   gap: clamp(12px, 2vw, 18px);
   padding: clamp(8px, 1.2vw, 14px) clamp(12px, 2vw, 20px);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(15, 23, 42, 0.6);
   border-radius: clamp(10px, 1.5vw, 16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -318,8 +348,8 @@
 .carousel-arrow {
   width: clamp(36px, 5vw, 52px);
   height: clamp(36px, 5vw, 52px);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 50%;
   color: #e2e8f0;
   font-size: clamp(24px, 3vw, 36px);
@@ -335,8 +365,8 @@
 }
 
 .carousel-arrow:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(34, 211, 238, 0.15);
+  border-color: rgba(34, 211, 238, 0.4);
   transform: scale(1.1);
 }
 
@@ -482,9 +512,9 @@
   .children-widget {
     padding: 16px !important;
   }
-  
-  .child-switcher {
-    grid-template-columns: repeat(auto-fit, minmax(min(100px, 40vw), 1fr));
+
+  .children-layout {
+    grid-template-columns: 1fr;
   }
   
   .carousel-arrow {
