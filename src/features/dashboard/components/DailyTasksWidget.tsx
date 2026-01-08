@@ -34,6 +34,8 @@ export const DailyTasksWidget: React.FC = () => {
   const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
+
+  // 3 colonnes x 2 lignes
   const tasksPerPage = 6;
 
   useEffect(() => {
@@ -187,29 +189,25 @@ export const DailyTasksWidget: React.FC = () => {
   };
 
   const isTaskCompleted = (taskId: string, childId: string): boolean => {
-    return completedTasks.some(
-      (ct) => ct.taskId === taskId && ct.childId === childId
-    );
+    return completedTasks.some((ct) => ct.taskId === taskId && ct.childId === childId);
   };
 
   const completeTask = async (task: Task) => {
     if (children.length === 0) return;
-    
+
     const activeChild = children[selectedChildIndex];
     if (!activeChild) return;
 
     try {
       // Créer la tâche complétée
-      const { error: completedError } = await supabase
-        .from('completed_tasks')
-        .insert({
-          id: crypto.randomUUID(),
-          child_id: activeChild.id,
-          task_id: task.id,
-          task_name: task.name,
-          points_earned: task.points,
-          completed_at: new Date().toISOString(),
-        });
+      const { error: completedError } = await supabase.from('completed_tasks').insert({
+        id: crypto.randomUUID(),
+        child_id: activeChild.id,
+        task_id: task.id,
+        task_name: task.name,
+        points_earned: task.points,
+        completed_at: new Date().toISOString(),
+      });
 
       if (completedError) throw completedError;
 
@@ -231,7 +229,6 @@ export const DailyTasksWidget: React.FC = () => {
 
       if (updateError) throw updateError;
 
-      // Recharger les données
       await loadCompletedTasks();
     } catch (error) {
       console.error('Error completing task:', error);
@@ -276,11 +273,9 @@ export const DailyTasksWidget: React.FC = () => {
     ...task,
     points: Number.isFinite(task.points) ? task.points : Number(task.points) || 0,
   }));
+
   const totalPages = Math.max(1, Math.ceil(safeTasks.length / tasksPerPage));
-  const paginatedTasks = safeTasks.slice(
-    pageIndex * tasksPerPage,
-    pageIndex * tasksPerPage + tasksPerPage
-  );
+  const paginatedTasks = safeTasks.slice(pageIndex * tasksPerPage, pageIndex * tasksPerPage + tasksPerPage);
   const showPagination = safeTasks.length > tasksPerPage;
 
   return (
@@ -299,34 +294,22 @@ export const DailyTasksWidget: React.FC = () => {
           <div className="tasks-list">
             {paginatedTasks.map((task) => {
               const isCompleted = isTaskCompleted(task.id, activeChild.id);
-              const pointsLabel = `${task.points > 0 ? '+' : ''}${task.points} pts`;
               return (
                 <div
                   key={task.id}
                   className={`task-row ${isCompleted ? 'completed' : ''} ${getCategoryTone(task.category)}`}
                   onClick={() => !isCompleted && completeTask(task)}
                 >
-                  <div className="task-top">
-                    <div className="task-icon">{task.icon}</div>
-                    {isCompleted && <div className="task-check">✓</div>}
-                  </div>
+                  <div className="task-icon">{task.icon}</div>
                   <div className="task-name">{task.name}</div>
-                  <div className="task-meta">
-                    {isCompleted ? (
-                      <span className="task-points completed">+{task.points} pts</span>
-                    ) : (
-                      <>
-                        <span className="task-hint">Appuie pour valider</span>
-                        <span className="task-points">{task.points} pts</span>
-                      </>
-                    )}
-                  </div>
+                  {isCompleted && <div className="task-status">Terminé</div>}
                 </div>
               );
             })}
           </div>
         )}
       </div>
+
       {showPagination && (
         <div className="tasks-navigation">
           <button

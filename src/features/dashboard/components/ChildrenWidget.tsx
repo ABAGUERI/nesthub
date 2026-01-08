@@ -3,10 +3,9 @@ import { Chart, ArcElement, DoughnutController } from 'chart.js';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import { useChildSelection } from '../contexts/ChildSelectionContext';
-import { supabase } from '@/shared/utils/supabase'; // Ajuste le chemin selon ta config
+import { supabase } from '@/shared/utils/supabase';
 import './ChildrenWidget.css';
 
-// Enregistrer les éléments Chart.js
 Chart.register(ArcElement, DoughnutController);
 
 type ChildIcon = 'bee' | 'ladybug' | 'butterfly' | 'caterpillar' | string;
@@ -20,7 +19,6 @@ const CHILD_ICONS: Record<string, string> = {
   unicorn: '🦄',
   dinosaur: '🦖',
   robot: '🤖',
-  // Valeur par défaut
   default: '👤',
 };
 
@@ -56,8 +54,7 @@ export const ChildrenWidget: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const chartRef = useRef<Chart | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  
-  // Swipe support
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -90,7 +87,6 @@ export const ChildrenWidget: React.FC = () => {
     if (!user) return;
 
     try {
-      // 1. Récupérer les enfants depuis family_members
       const { data: childrenData, error: childrenError } = await supabase
         .from('family_members')
         .select('id, first_name, icon, avatar_url')
@@ -100,20 +96,17 @@ export const ChildrenWidget: React.FC = () => {
 
       if (childrenError) throw childrenError;
 
-      // 2. Pour chaque enfant, récupérer sa progression
       const childrenWithProgress = await Promise.all(
         childrenData.map(async (child) => {
           try {
-            // Récupérer la progression de l'enfant
             const { data: progressData } = await supabase
-              .from('child_progress') // À ajuster selon ta table
+              .from('child_progress')
               .select('total_points, current_level, target_points, screen_time_used')
               .eq('child_id', child.id)
               .maybeSingle();
 
-            // Récupérer les paramètres d'écran
             const { data: settingsData } = await supabase
-              .from('screen_time_settings') // À ajuster selon ta table
+              .from('screen_time_settings')
               .select('daily_limit_minutes')
               .eq('child_id', child.id)
               .maybeSingle();
@@ -131,7 +124,6 @@ export const ChildrenWidget: React.FC = () => {
             };
           } catch (error) {
             console.error(`Error loading progress for child ${child.id}:`, error);
-            // Retourner un enfant avec des valeurs par défaut
             return {
               id: child.id,
               firstName: child.first_name,
@@ -156,7 +148,6 @@ export const ChildrenWidget: React.FC = () => {
   };
 
   const createDonutChart = (child: Child, canvas: HTMLCanvasElement) => {
-    // Détruire l'ancien chart s'il existe
     if (chartRef.current) {
       chartRef.current.destroy();
       chartRef.current = null;
@@ -174,7 +165,7 @@ export const ChildrenWidget: React.FC = () => {
         datasets: [
           {
             data: [percentage, 100 - percentage],
-            backgroundColor: [color, 'rgba(255, 255, 255, 0.05)'],
+            backgroundColor: [color, 'rgba(255, 255, 255, 0.08)'],
             borderWidth: 0,
             circumference: 360,
             rotation: -90,
@@ -184,7 +175,7 @@ export const ChildrenWidget: React.FC = () => {
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        cutout: '75%',
+        cutout: '78%',
         plugins: {
           legend: { display: false },
           tooltip: { enabled: false },
@@ -193,23 +184,16 @@ export const ChildrenWidget: React.FC = () => {
     });
   };
 
-  const getChildIcon = (icon: string): string => {
-    return CHILD_ICONS[icon] || CHILD_ICONS.default;
-  };
-
-  const getChildColor = (icon: string): string => {
-    return CHILD_COLORS[icon] || CHILD_COLORS.default;
-  };
+  const getChildIcon = (icon: string): string => CHILD_ICONS[icon] || CHILD_ICONS.default;
+  const getChildColor = (icon: string): string => CHILD_COLORS[icon] || CHILD_COLORS.default;
 
   const getPercentage = (child: Child): number => {
     if (!child || !Number.isFinite(child.totalPoints) || !Number.isFinite(child.targetPoints) || child.targetPoints <= 0) {
       return 0;
     }
-
     return Math.min((child.totalPoints / child.targetPoints) * 100, 100);
   };
 
-  // Composant Avatar réutilisable
   const ChildAvatar: React.FC<{
     child: Child;
     size?: 'small' | 'medium' | 'large';
@@ -228,7 +212,6 @@ export const ChildrenWidget: React.FC = () => {
           alt={`Avatar de ${child.firstName}`}
           className={`child-avatar ${sizeClasses[size]} ${className}`}
           onError={(e) => {
-            // Fallback vers l'icône si l'image ne charge pas
             e.currentTarget.style.display = 'none';
             const fallback = e.currentTarget.nextElementSibling as HTMLElement;
             if (fallback) fallback.style.display = 'flex';
@@ -237,7 +220,6 @@ export const ChildrenWidget: React.FC = () => {
       );
     }
 
-    // Fallback sur l'icône emoji
     return (
       <div
         className={`child-avatar-fallback ${sizeClasses[size]} ${className}`}
@@ -248,7 +230,6 @@ export const ChildrenWidget: React.FC = () => {
     );
   };
 
-  // Navigation handlers
   const nextChild = () => {
     if (selectedChildIndex < children.length - 1) {
       setSelectedChildIndex(selectedChildIndex + 1);
@@ -265,7 +246,6 @@ export const ChildrenWidget: React.FC = () => {
     setSelectedChildIndex(index);
   };
 
-  // Swipe handlers
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     setTouchStart(e.clientX);
     setIsDragging(true);
@@ -273,8 +253,6 @@ export const ChildrenWidget: React.FC = () => {
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging || touchStart === null) return;
-    
-    // Visual feedback pendant le drag
     const diff = e.clientX - touchStart;
     if (Math.abs(diff) > 10) {
       (e.currentTarget as HTMLDivElement).style.cursor = 'grabbing';
@@ -288,16 +266,11 @@ export const ChildrenWidget: React.FC = () => {
     }
 
     const diff = e.clientX - touchStart;
-    const threshold = 50; // Seuil minimum pour swipe
+    const threshold = 50;
 
     if (Math.abs(diff) > threshold) {
-      if (diff > 0) {
-        // Swipe right → enfant précédent
-        prevChild();
-      } else {
-        // Swipe left → enfant suivant
-        nextChild();
-      }
+      if (diff > 0) prevChild();
+      else nextChild();
     }
 
     setTouchStart(null);
@@ -335,20 +308,15 @@ export const ChildrenWidget: React.FC = () => {
   const percentage = getPercentage(selectedChild);
   const hasReachedGoal = percentage >= 100;
   const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
+
   const heartsTotal = 5;
-  const minutesPerHeart = Math.max(1, 
-    selectedChild.dailyLimitMinutes || 
-    config?.screenTimeDefaultAllowance || 
-    20
+  const minutesPerHeart = Math.max(
+    1,
+    selectedChild.dailyLimitMinutes || config?.screenTimeDefaultAllowance || 20
   );
   const totalMinutes = heartsTotal * minutesPerHeart;
   const usedMinutes = Math.min(totalMinutes, Math.round(selectedChild?.screenTimeUsed || 0));
   const heartsUsed = Math.min(heartsTotal, Math.ceil(usedMinutes / minutesPerHeart));
-  const todayLabel = new Intl.DateTimeFormat('fr-FR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-  }).format(new Date());
 
   return (
     <div className="widget children-widget">
@@ -360,142 +328,103 @@ export const ChildrenWidget: React.FC = () => {
         </div>
       </div>
 
-      <div className="children-date">Aujourd&apos;hui - {todayLabel}</div>
-
-      <div className="children-layout">
+      <div className="carousel-container">
         {children.length > 1 && (
-          <div className="children-list">
+          <div className="child-switcher">
             {children.map((child, index) => (
               <button
                 key={child.id}
-                className={`children-list-item ${index === selectedChildIndex ? 'active' : ''}`}
+                className={`switcher-pill ${index === selectedChildIndex ? 'active' : ''}`}
                 onClick={() => selectChild(index)}
                 aria-label={`Voir ${child.firstName}`}
               >
                 <ChildAvatar child={child} size="small" className="pill-avatar" />
                 <span className="pill-name">{child.firstName}</span>
-                <span className="list-check">✓</span>
               </button>
             ))}
           </div>
         )}
 
-        <div className="children-hero">
-          <div className="carousel-container">
-            {/* Flèche gauche */}
-            <button
-              className="carousel-arrow carousel-arrow-left"
-              onClick={prevChild}
-              disabled={selectedChildIndex === 0}
-              aria-label="Enfant précédent"
-            >
-              ‹
-            </button>
+        <button
+          className="carousel-arrow carousel-arrow-left"
+          onClick={prevChild}
+          disabled={selectedChildIndex === 0}
+          aria-label="Enfant précédent"
+        >
+          ‹
+        </button>
 
-            {/* Enfant principal (avec swipe) */}
-            <div
-              ref={containerRef}
-              className="carousel-content"
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerCancel}
-              style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-            >
-              <div className="child-main" key={selectedChild.id}>
-                {/* Badge "Objectif!" si atteint */}
-                {hasReachedGoal && (
-                  <div className="goal-badge">
-                    <span className="goal-icon">🏆</span>
-                    <span className="goal-text">Objectif!</span>
+        <div
+          ref={containerRef}
+          className="carousel-content"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
+          style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+        >
+          <div className="child-main" key={selectedChild.id}>
+            {hasReachedGoal && (
+              <div className="goal-badge">
+                <span className="goal-icon">🏆</span>
+                <span className="goal-text">Objectif!</span>
+              </div>
+            )}
+
+            <div className="donut-and-hearts">
+              <div className="donut-wrapper">
+                <div className="donut-stack">
+                  <canvas ref={canvasRef} className="donut-chart-large" aria-label="Progression des points" />
+                  <div className="donut-label-large">
+                    <ChildAvatar child={selectedChild} size="large" className="donut-avatar-large" />
                   </div>
-                )}
+                </div>
 
-                <div className="donut-and-hearts">
-                  <div className="donut-wrapper">
-                    <div className="donut-stack">
-                      {/* Canvas pour le donut */}
-                      <canvas ref={canvasRef} className="donut-chart-large" aria-label="Progression des points"></canvas>
+                <div className="child-name-large">{selectedChild.firstName}</div>
+              </div>
 
-                      {/* Label au centre (avatar/icône) */}
-                      <div className="donut-label-large">
-                        <ChildAvatar child={selectedChild} size="medium" className="donut-avatar-large" />
-                      </div>
-                    </div>
-
-                    {/* Nom de l'enfant */}
-                    <div className="child-name-large">{selectedChild.firstName}</div>
-                  </div>
-
-                    <div className="screen-time-hearts">
-                      <div className="hearts-label">Temps d&apos;écran</div>
-                      <div className="hearts-column">
-                        {Array.from({ length: heartsTotal }).map((_, index) => (
-                          <span
-                            key={index}
-                            className={`heart ${index < heartsUsed ? 'used' : ''}`}
-                          >
-                            ❤️
-                          </span>
-                        ))}
-                      </div>
-                      <div className="hearts-meta">
-                        {usedMinutes} / {totalMinutes} min
-                      </div>
-                    </div>
-                  </div>
-
-                {/* Progression objectif */}
-                <div className="progress-track">
-                  <div className="progress-label">
-                    <span>Progression</span>
-                    <span className="progress-value">{percentage.toFixed(0)}%</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div
-                      className="progress-bar-fill"
-                      style={{
-                        width: `${percentage}%`,
-                        backgroundColor: getChildColor(selectedChild.icon),
-                      }}
-                    />
-                  </div>
+              <div className="screen-time-hearts">
+                <div className="hearts-label">Temps d'écran</div>
+                <div className="hearts-column">
+                  {Array.from({ length: heartsTotal }).map((_, index) => (
+                    <span key={index} className={`heart ${index < heartsUsed ? 'used' : ''}`}>
+                      ❤️
+                    </span>
+                  ))}
+                </div>
+                <div className="hearts-meta">
+                  {usedMinutes} / {totalMinutes} min
                 </div>
               </div>
             </div>
 
-            {/* Flèche droite */}
-            <button
-              className="carousel-arrow carousel-arrow-right"
-              onClick={nextChild}
-              disabled={selectedChildIndex === children.length - 1}
-              aria-label="Enfant suivant"
-            >
-              ›
-            </button>
-          </div>
-
-          {children.length > 1 && (
-            <div className="carousel-dots">
-              {children.map((child, index) => (
-                <button
-                  key={child.id}
-                  className={`dot ${index === selectedChildIndex ? 'active' : ''}`}
-                  onClick={() => selectChild(index)}
-                  aria-label={`Aller à ${child.firstName}`}
+            <div className="progress-track">
+              <div className="progress-label">
+                <span>Progression</span>
+                <span className="progress-value">{percentage.toFixed(0)}%</span>
+              </div>
+              <div className="progress-bar">
+                <div
+                  className="progress-bar-fill"
                   style={{
-                    backgroundColor:
-                      index === selectedChildIndex
-                        ? getChildColor(child.icon)
-                        : 'rgba(255, 255, 255, 0.2)',
+                    width: `${percentage}%`,
+                    backgroundColor: getChildColor(selectedChild.icon),
                   }}
                 />
-              ))}
+              </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
 
+        <button
+          className="carousel-arrow carousel-arrow-right"
+          onClick={nextChild}
+          disabled={selectedChildIndex === children.length - 1}
+          aria-label="Enfant suivant"
+        >
+          ›
+        </button>
+      </div>
     </div>
   );
 };

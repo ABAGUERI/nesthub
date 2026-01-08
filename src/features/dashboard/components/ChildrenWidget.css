@@ -1,26 +1,24 @@
 /* === CHILDREN WIDGET CAROUSEL === */
 .children-widget {
-  flex: 1;
-  padding: clamp(16px, 2vw, 22px) clamp(18px, 2.4vw, 26px) !important;
+  flex: 0.5 !important;
+  padding: clamp(16px, 2vw, 24px) clamp(18px, 2.5vw, 32px) !important;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.3));
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(180deg, rgba(79, 70, 229, 0.25), rgba(34, 197, 235, 0.12));
   min-height: 0;
-  height: 100%;
 }
 
+/* === POINTS CHIP === */
 .points-chip {
   display: inline-flex;
   align-items: baseline;
   gap: clamp(4px, 0.5vw, 8px);
   padding: clamp(6px, 1vw, 12px) clamp(8px, 1.5vw, 16px);
   border-radius: clamp(10px, 1.5vw, 16px);
-  background: rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.08);
   font-weight: 800;
   letter-spacing: 0.4px;
   color: #fefefe;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .points-value {
@@ -32,67 +30,40 @@
   color: #cbd5e1;
 }
 
-.children-date {
-  font-size: clamp(12px, 1.3vw, 15px);
-  color: rgba(226, 232, 240, 0.7);
-  text-align: right;
-  margin-bottom: clamp(6px, 1vw, 10px);
-}
-
-.children-layout {
+/* === SWITCHER (PILLS) === */
+.child-switcher {
   display: grid;
-  grid-template-columns: minmax(140px, 180px) 1fr;
-  gap: clamp(12px, 2vw, 20px);
-  align-items: stretch;
-  flex: 1;
-  min-height: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(120px, 30vw), 1fr));
+  gap: clamp(6px, 1vw, 12px);
+  margin-bottom: clamp(4px, 1vw, 12px);
 }
 
-.children-list {
+.switcher-pill {
   display: flex;
-  flex-direction: column;
-  gap: clamp(8px, 1.2vw, 12px);
-}
-
-.children-list-item {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: clamp(6px, 0.8vw, 10px);
-  padding: clamp(8px, 1vw, 12px);
-  border-radius: 14px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: clamp(8px, 1.2vw, 14px) clamp(10px, 1.5vw, 18px);
+  border-radius: clamp(8px, 1.2vw, 14px);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #e2e8f0;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.children-list-item .list-check {
-  opacity: 0;
-  color: rgba(45, 212, 191, 0.9);
-  font-weight: 700;
+.switcher-pill:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
 }
 
-.children-list-item.active {
-  border-color: rgba(34, 211, 238, 0.7);
-  box-shadow: 0 12px 24px rgba(34, 211, 238, 0.15);
-  background: rgba(34, 211, 238, 0.12);
-}
-
-.children-list-item.active .list-check {
-  opacity: 1;
+.switcher-pill.active {
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.18);
 }
 
 .pill-name {
   font-weight: 700;
   font-size: clamp(12px, 1.2vw, 15px);
-}
-
-.children-hero {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
 }
 
 /* === CAROUSEL CONTAINER === */
@@ -101,9 +72,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(6px, 1vw, 12px);
+  gap: clamp(8px, 1.5vw, 16px);
   flex: 1;
-  min-height: 0;
+  min-height: min(54vh, 440px);
   padding: 0 clamp(4px, 1vw, 12px);
 }
 
@@ -127,11 +98,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(6px, 1vw, 12px);
+  gap: clamp(10px, 1.5vw, 18px);
   position: relative;
   animation: fadeInScale 0.3s ease;
   width: 100%;
-  max-width: 520px;
+  max-width: 800px;
 }
 
 @keyframes fadeInScale {
@@ -187,12 +158,13 @@
   letter-spacing: 0.5px;
 }
 
-/* === DONUT LARGE === */
+/* === DONUT + HEARTS === */
 .donut-and-hearts {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(min(280px, 70vw), 1.1fr) auto;
+  gap: clamp(12px, 2.5vw, 24px);
   align-items: center;
-  gap: clamp(8px, 1.5vw, 14px);
+  justify-content: space-between;
   width: 100%;
 }
 
@@ -200,13 +172,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(4px, 0.8vw, 8px);
+  gap: clamp(6px, 1vw, 12px);
 }
 
 .donut-stack {
   position: relative;
-  width: min(44vw, 260px);
-  max-width: 260px;
+  width: min(62vw, 300px);
+  max-width: 320px;
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
@@ -222,37 +194,27 @@
   filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.45));
 }
 
+/* IMPORTANT: le label prend la taille du cutout (78%) */
 .donut-label-large {
   position: absolute;
   top: 50%;
   left: 50%;
+  width: 78%;
+  height: 78%;
   transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   pointer-events: none;
+  border-radius: 50%;
+  overflow: hidden; /* pour couper proprement l'image */
 }
 
+/* IMPORTANT: l’avatar remplit le cercle intérieur */
 .donut-avatar-large {
-  width: clamp(20px, 48vw, 290px);
-  height: clamp(20px, 48vw, 290px);
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-}
-
-/* Taille optimale pour l'avatar dans le donut */
-.donut-label-large .donut-avatar-large,
-.child-avatar.donut-avatar-large {
-  width: clamp(150px, 40vw, 200px) !important;
-  height: clamp(150px, 40vw, 200px) !important;
-  min-width: 150px !important;
-  min-height: 150px !important;
-  max-width: 200px !important;
-  max-height: 200px !important;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
 }
 
 .child-name-large {
@@ -263,12 +225,13 @@
   letter-spacing: 0.5px;
 }
 
+/* === PROGRESS === */
 .progress-track {
   width: 100%;
   max-width: min(90vw, 480px);
   display: flex;
   flex-direction: column;
-  gap: clamp(4px, 0.8vw, 8px);
+  gap: clamp(6px, 1vw, 12px);
 }
 
 .progress-label {
@@ -297,15 +260,17 @@
   transition: width 0.3s ease, background-color 0.3s ease;
 }
 
+/* === SCREEN TIME HEARTS === */
 .screen-time-hearts {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: clamp(12px, 2vw, 18px);
-  padding: clamp(8px, 1.2vw, 14px) clamp(12px, 2vw, 20px);
-  background: rgba(15, 23, 42, 0.6);
+  gap: clamp(8px, 1.2vw, 14px);
+  padding: clamp(10px, 1.5vw, 18px) clamp(10px, 1.5vw, 16px);
+  background: rgba(255, 255, 255, 0.04);
   border-radius: clamp(10px, 1.5vw, 16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: min(120px, 30vw);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
@@ -319,7 +284,7 @@
 
 .hearts-column {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: clamp(4px, 0.8vw, 8px);
   align-items: center;
 }
@@ -347,13 +312,13 @@
 
 /* === CAROUSEL ARROWS === */
 .carousel-arrow {
-  width: clamp(36px, 5vw, 52px);
-  height: clamp(36px, 5vw, 52px);
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  width: clamp(32px, 4.5vw, 46px);
+  height: clamp(32px, 4.5vw, 46px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   color: #e2e8f0;
-  font-size: clamp(24px, 3vw, 36px);
+  font-size: clamp(20px, 2.8vw, 32px);
   font-weight: 300;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -363,16 +328,28 @@
   flex-shrink: 0;
   padding: 0;
   line-height: 1;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.carousel-arrow-left {
+  left: clamp(80px, 15vw, 130px);
+}
+
+.carousel-arrow-right {
+  right: clamp(4px, 1vw, 12px);
 }
 
 .carousel-arrow:hover:not(:disabled) {
-  background: rgba(34, 211, 238, 0.15);
-  border-color: rgba(34, 211, 238, 0.4);
-  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.08);
 }
 
 .carousel-arrow:active:not(:disabled) {
-  transform: scale(0.95);
+  transform: translateY(-50%) scale(0.95);
 }
 
 .carousel-arrow:disabled {
@@ -380,47 +357,7 @@
   cursor: not-allowed;
 }
 
-.carousel-arrow-left {
-  margin-left: clamp(-4px, -0.5vw, -8px);
-}
-
-.carousel-arrow-right {
-  margin-right: clamp(-4px, -0.5vw, -8px);
-}
-
-/* === CAROUSEL DOTS === */
-.carousel-dots {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: clamp(6px, 1vw, 10px);
-  margin-top: clamp(6px, 1.2vw, 12px);
-  padding: clamp(4px, 0.8vw, 8px) 0;
-}
-
-.dot {
-  width: clamp(6px, 1vw, 10px);
-  height: clamp(6px, 1vw, 10px);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 0;
-}
-
-.dot:hover {
-  transform: scale(1.3);
-  opacity: 0.8;
-}
-
-.dot.active {
-  width: clamp(20px, 3vw, 28px);
-  border-radius: 4px;
-  transform: scale(1);
-}
-
-/* === AVATARS RESPONSIVES === */
+/* === AVATARS === */
 .child-avatar {
   border-radius: 50%;
   object-fit: cover;
@@ -428,7 +365,6 @@
   flex-shrink: 0;
 }
 
-/* Taille small - pour sous-titre et pill */
 .child-avatar-small {
   width: clamp(20px, 3vw, 28px);
   height: clamp(20px, 3vw, 28px);
@@ -436,7 +372,6 @@
   min-height: 20px;
 }
 
-/* Taille medium - pour les boutons de switcher */
 .child-avatar-medium {
   width: clamp(32px, 4vw, 44px);
   height: clamp(32px, 4vw, 44px);
@@ -444,17 +379,15 @@
   min-height: 32px;
 }
 
-/* Taille large - pour le centre du donut */
+/* (garde une taille "large" raisonnable hors donut; le donut est overridé par .donut-avatar-large) */
 .child-avatar-large {
-  width: clamp(150px, 40vw, 200px);
-  height: clamp(150px, 40vw, 200px);
-  max-width: 200px;
-  max-height: 200px;
-  min-width: 150px;
-  min-height: 150px;
+  width: clamp(140px, 38vw, 220px);
+  height: clamp(140px, 38vw, 220px);
+  min-width: 140px;
+  min-height: 140px;
 }
 
-/* Icône de fallback dans l'avatar */
+/* Fallback emoji */
 .child-avatar-fallback {
   border-radius: 50%;
   display: flex;
@@ -465,45 +398,21 @@
   flex-shrink: 0;
 }
 
-/* Taille des icônes dans les fallbacks */
-.child-avatar-small .child-avatar-fallback {
-  font-size: clamp(10px, 1.5vw, 14px);
-}
-
-.child-avatar-medium .child-avatar-fallback {
-  font-size: clamp(14px, 2vw, 20px);
-}
-
-.child-avatar-large .child-avatar-fallback {
-  font-size: clamp(64px, 19vw, 92px);
-}
-
-.child-subtitle-avatar {
-  margin-right: clamp(6px, 0.8vw, 10px);
+/* Gestion du fallback d'image */
+.child-avatar + .child-avatar-fallback {
+  display: none;
 }
 
 .pill-avatar {
   margin-right: clamp(4px, 0.6vw, 8px);
 }
 
-/* Gestion du fallback d'image */
-.child-avatar + .child-avatar-fallback {
-  display: none;
-}
-
-/* Icône dans le centre du donut (si pas d'avatar) */
-.donut-icon-large {
-  font-size: clamp(64px, 19vw, 92px);
-  line-height: 1;
-  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.7));
-}
-
-/* === RESPONSIVE BREAKPOINTS === */
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
   .carousel-container {
     min-height: min(70vh, 500px);
   }
-  
+
   .donut-stack {
     width: min(80vw, 300px);
   }
@@ -514,31 +423,18 @@
     padding: 16px !important;
   }
 
-  .children-layout {
-    grid-template-columns: 1fr;
+  .child-switcher {
+    grid-template-columns: repeat(auto-fit, minmax(min(100px, 40vw), 1fr));
   }
-  
+
   .carousel-arrow {
     width: 32px;
     height: 32px;
     font-size: 20px;
   }
-  
-  .carousel-arrow-left {
-    margin-left: -4px;
-  }
-  
-  .carousel-arrow-right {
-    margin-right: -4px;
-  }
-  
+
   .donut-stack {
     width: min(85vw, 260px);
-  }
-  
-  .child-avatar-large {
-    width: clamp(140px, 50vw, 220px);
-    height: clamp(140px, 50vw, 220px);
   }
 }
 
@@ -550,3 +446,9 @@
   color: #64748b;
   font-size: clamp(13px, 1.5vw, 16px);
 }
+/* --- Minimal polish: carte Objectif plus "Apple" (8 lignes) --- */
+.children-widget { border-color: rgba(255,255,255,.12); box-shadow: 0 18px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06); }
+.children-widget .widget-header { border-bottom-color: rgba(255,255,255,.08); }
+.children-widget .progress-bar { height: 14px; background: rgba(255,255,255,.05); }
+.children-widget .progress-bar-fill { box-shadow: 0 0 18px rgba(34,211,238,.18); }
+.children-widget .child-name-large { text-shadow: 0 10px 22px rgba(0,0,0,.35); }
