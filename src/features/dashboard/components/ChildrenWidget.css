@@ -203,8 +203,8 @@
 }
 
 .donut-avatar-large {
-  width: clamp(150px, 26vw, 210px);
-  height: clamp(150px, 26vw, 210px);
+  width: clamp(200px, 48vw, 290px);
+  height: clamp(200px, 48vw, 290px);
 }
 
 .child-name-large {
