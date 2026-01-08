@@ -40,8 +40,8 @@
 .switcher-pill {
   display: flex;
   align-items: center;
-  gap: clamp(4px, 0.8vw, 10px);
-  padding: clamp(8px, 1.2vw, 14px) clamp(10px, 1.5vw, 18px);
+  gap: clamp(4px, 0.8vw, 8px);
+  padding: clamp(6px, 1vw, 10px) clamp(8px, 1.2vw, 14px);
   border-radius: clamp(8px, 1.2vw, 14px);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -158,11 +158,10 @@
 
 /* === DONUT LARGE === */
 .donut-and-hearts {
-  display: grid;
-  grid-template-columns: minmax(min(280px, 70vw), 1.1fr) auto;
-  gap: clamp(10px, 2vw, 18px);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  gap: clamp(8px, 1.5vw, 14px);
   width: 100%;
 }
 
@@ -175,8 +174,8 @@
 
 .donut-stack {
   position: relative;
-  width: min(55vw, 280px);
-  max-width: 300px;
+  width: min(52vw, 260px);
+  max-width: 280px;
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
@@ -214,12 +213,12 @@
 /* Taille optimale pour l'avatar dans le donut */
 .donut-label-large .donut-avatar-large,
 .child-avatar.donut-avatar-large {
-  width: clamp(130px, 36vw, 182px) !important;
-  height: clamp(130px, 36vw, 182px) !important;
-  min-width: 130px !important;
-  min-height: 130px !important;
-  max-width: 182px !important;
-  max-height: 182px !important;
+  width: clamp(150px, 40vw, 200px) !important;
+  height: clamp(150px, 40vw, 200px) !important;
+  min-width: 150px !important;
+  min-height: 150px !important;
+  max-width: 200px !important;
+  max-height: 200px !important;
   border-radius: 50%;
   object-fit: cover;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
@@ -269,14 +268,13 @@
 
 .screen-time-hearts {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: clamp(8px, 1.2vw, 14px);
-  padding: clamp(10px, 1.5vw, 18px) clamp(10px, 1.5vw, 16px);
+  gap: clamp(12px, 2vw, 18px);
+  padding: clamp(8px, 1.2vw, 14px) clamp(12px, 2vw, 20px);
   background: rgba(255, 255, 255, 0.04);
   border-radius: clamp(10px, 1.5vw, 16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  min-width: min(120px, 30vw);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
@@ -290,7 +288,7 @@
 
 .hearts-column {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: clamp(4px, 0.8vw, 8px);
   align-items: center;
 }
@@ -417,12 +415,12 @@
 
 /* Taille large - pour le centre du donut */
 .child-avatar-large {
-  width: clamp(130px, 36vw, 182px);
-  height: clamp(130px, 36vw, 182px);
-  max-width: 182px;
-  max-height: 182px;
-  min-width: 130px;
-  min-height: 130px;
+  width: clamp(150px, 40vw, 200px);
+  height: clamp(150px, 40vw, 200px);
+  max-width: 200px;
+  max-height: 200px;
+  min-width: 150px;
+  min-height: 150px;
 }
 
 /* Icône de fallback dans l'avatar */
@@ -446,7 +444,7 @@
 }
 
 .child-avatar-large .child-avatar-fallback {
-  font-size: clamp(56px, 17vw, 85px);
+  font-size: clamp(64px, 19vw, 92px);
 }
 
 .child-subtitle-avatar {
@@ -464,32 +462,13 @@
 
 /* Icône dans le centre du donut (si pas d'avatar) */
 .donut-icon-large {
-  font-size: clamp(56px, 17vw, 85px);
+  font-size: clamp(64px, 19vw, 92px);
   line-height: 1;
   filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.7));
 }
 
 /* === RESPONSIVE BREAKPOINTS === */
 @media (max-width: 768px) {
-  .donut-and-hearts {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    gap: clamp(20px, 4vw, 32px);
-  }
-  
-  .screen-time-hearts {
-    order: 2;
-    width: 100%;
-    max-width: 300px;
-    flex-direction: row;
-    justify-content: space-around;
-    padding: clamp(12px, 2vw, 16px);
-  }
-  
-  .hearts-column {
-    flex-direction: row;
-  }
-  
   .carousel-container {
     min-height: min(70vh, 500px);
   }
