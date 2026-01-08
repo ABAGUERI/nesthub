@@ -29,33 +29,11 @@
   color: #cbd5e1;
 }
 
-.child-subtitle {
-  display: inline-flex;
-  align-items: center;
-  gap: clamp(6px, 0.8vw, 12px);
-  padding: clamp(6px, 1vw, 12px) clamp(8px, 1.5vw, 16px);
-  margin: clamp(4px, 1vw, 12px) 0 clamp(8px, 1.2vw, 16px);
-  border-radius: clamp(8px, 1.2vw, 14px);
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-  align-self: flex-start;
-}
-
-.child-subtitle-icon {
-  font-size: clamp(16px, 2vw, 22px);
-}
-
-.child-subtitle-name {
-  font-size: clamp(13px, 1.5vw, 17px);
-}
-
 .child-switcher {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(120px, 30vw), 1fr));
   gap: clamp(6px, 1vw, 12px);
-  margin-bottom: clamp(8px, 1.5vw, 20px);
+  margin-bottom: clamp(4px, 1vw, 12px);
 }
 
 .switcher-pill {
@@ -93,7 +71,7 @@
   justify-content: center;
   gap: clamp(8px, 1.5vw, 16px);
   flex: 1;
-  min-height: min(60vh, 500px);
+  min-height: min(54vh, 440px);
   padding: 0 clamp(4px, 1vw, 12px);
 }
 
@@ -181,7 +159,7 @@
 .donut-and-hearts {
   display: grid;
   grid-template-columns: minmax(min(280px, 70vw), 1.1fr) auto;
-  gap: clamp(16px, 3vw, 32px);
+  gap: clamp(12px, 2.5vw, 24px);
   align-items: center;
   justify-content: space-between;
   width: 100%;
@@ -196,8 +174,8 @@
 
 .donut-stack {
   position: relative;
-  width: min(70vw, 340px);
-  max-width: 360px;
+  width: min(62vw, 300px);
+  max-width: 320px;
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
@@ -224,25 +202,9 @@
   pointer-events: none;
 }
 
-.donut-money-large {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(2px, 0.5vw, 6px);
-  margin-top: clamp(-12px, -1.5vw, -18px);
-}
-
-.donut-value-large {
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0.4px;
-}
-
-.points-balance {
-  font-size: clamp(14px, 1.8vw, 20px);
-  color: #a5b4fc;
-  font-weight: 700;
+.donut-avatar-large {
+  width: clamp(200px, 48vw, 290px);
+  height: clamp(200px, 48vw, 290px);
 }
 
 .child-name-large {
