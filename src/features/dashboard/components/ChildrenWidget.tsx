@@ -344,6 +344,11 @@ export const ChildrenWidget: React.FC = () => {
   const totalMinutes = heartsTotal * minutesPerHeart;
   const usedMinutes = Math.min(totalMinutes, Math.round(selectedChild?.screenTimeUsed || 0));
   const heartsUsed = Math.min(heartsTotal, Math.ceil(usedMinutes / minutesPerHeart));
+  const todayLabel = new Intl.DateTimeFormat('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+  }).format(new Date());
 
   return (
     <div className="widget children-widget">
@@ -355,135 +360,142 @@ export const ChildrenWidget: React.FC = () => {
         </div>
       </div>
 
-      {children.length > 1 && (
-        <div className="child-switcher">
-          {children.map((child, index) => (
+      <div className="children-date">Aujourd&apos;hui - {todayLabel}</div>
+
+      <div className="children-layout">
+        {children.length > 1 && (
+          <div className="children-list">
+            {children.map((child, index) => (
+              <button
+                key={child.id}
+                className={`children-list-item ${index === selectedChildIndex ? 'active' : ''}`}
+                onClick={() => selectChild(index)}
+                aria-label={`Voir ${child.firstName}`}
+              >
+                <ChildAvatar child={child} size="small" className="pill-avatar" />
+                <span className="pill-name">{child.firstName}</span>
+                <span className="list-check">✓</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="children-hero">
+          <div className="carousel-container">
+            {/* Flèche gauche */}
             <button
-              key={child.id}
-              className={`switcher-pill ${index === selectedChildIndex ? 'active' : ''}`}
-              onClick={() => selectChild(index)}
-              aria-label={`Voir ${child.firstName}`}
+              className="carousel-arrow carousel-arrow-left"
+              onClick={prevChild}
+              disabled={selectedChildIndex === 0}
+              aria-label="Enfant précédent"
             >
-              <ChildAvatar child={child} size="small" className="pill-avatar" />
-              <span className="pill-name">{child.firstName}</span>
+              ‹
             </button>
-          ))}
-        </div>
-      )}
 
-      <div className="carousel-container">
-        {/* Flèche gauche */}
-        <button
-          className="carousel-arrow carousel-arrow-left"
-          onClick={prevChild}
-          disabled={selectedChildIndex === 0}
-          aria-label="Enfant précédent"
-        >
-          ‹
-        </button>
+            {/* Enfant principal (avec swipe) */}
+            <div
+              ref={containerRef}
+              className="carousel-content"
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerCancel}
+              style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+            >
+              <div className="child-main" key={selectedChild.id}>
+                {/* Badge "Objectif!" si atteint */}
+                {hasReachedGoal && (
+                  <div className="goal-badge">
+                    <span className="goal-icon">🏆</span>
+                    <span className="goal-text">Objectif!</span>
+                  </div>
+                )}
 
-        {/* Enfant principal (avec swipe) */}
-        <div
-          ref={containerRef}
-          className="carousel-content"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerCancel}
-          style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-        >
-          <div className="child-main" key={selectedChild.id}>
-            {/* Badge "Objectif!" si atteint */}
-            {hasReachedGoal && (
-              <div className="goal-badge">
-                <span className="goal-icon">🏆</span>
-                <span className="goal-text">Objectif!</span>
-              </div>
-            )}
+                <div className="donut-and-hearts">
+                  <div className="donut-wrapper">
+                    <div className="donut-stack">
+                      {/* Canvas pour le donut */}
+                      <canvas ref={canvasRef} className="donut-chart-large" aria-label="Progression des points"></canvas>
 
-            <div className="donut-and-hearts">
-              <div className="donut-wrapper">
-                <div className="donut-stack">
-                  {/* Canvas pour le donut */}
-                  <canvas ref={canvasRef} className="donut-chart-large" aria-label="Progression des points"></canvas>
+                      {/* Label au centre (avatar/icône) */}
+                      <div className="donut-label-large">
+                        <ChildAvatar child={selectedChild} size="medium" className="donut-avatar-large" />
+                      </div>
+                    </div>
 
-                  {/* Label au centre (avatar/icône) */}
-                  <div className="donut-label-large">
-                    <ChildAvatar child={selectedChild} size="medium" className="donut-avatar-large" />
+                    {/* Nom de l'enfant */}
+                    <div className="child-name-large">{selectedChild.firstName}</div>
+                  </div>
+
+                    <div className="screen-time-hearts">
+                      <div className="hearts-label">Temps d&apos;écran</div>
+                      <div className="hearts-column">
+                        {Array.from({ length: heartsTotal }).map((_, index) => (
+                          <span
+                            key={index}
+                            className={`heart ${index < heartsUsed ? 'used' : ''}`}
+                          >
+                            ❤️
+                          </span>
+                        ))}
+                      </div>
+                      <div className="hearts-meta">
+                        {usedMinutes} / {totalMinutes} min
+                      </div>
+                    </div>
+                  </div>
+
+                {/* Progression objectif */}
+                <div className="progress-track">
+                  <div className="progress-label">
+                    <span>Progression</span>
+                    <span className="progress-value">{percentage.toFixed(0)}%</span>
+                  </div>
+                  <div className="progress-bar">
+                    <div
+                      className="progress-bar-fill"
+                      style={{
+                        width: `${percentage}%`,
+                        backgroundColor: getChildColor(selectedChild.icon),
+                      }}
+                    />
                   </div>
                 </div>
-
-                {/* Nom de l'enfant */}
-                <div className="child-name-large">{selectedChild.firstName}</div>
-              </div>
-
-                <div className="screen-time-hearts">
-                  <div className="hearts-label">Temps d'écran</div>
-                  <div className="hearts-column">
-                    {Array.from({ length: heartsTotal }).map((_, index) => (
-                      <span
-                        key={index}
-                        className={`heart ${index < heartsUsed ? 'used' : ''}`}
-                      >
-                        ❤️
-                      </span>
-                    ))}
-                  </div>
-                  <div className="hearts-meta">
-                    {usedMinutes} / {totalMinutes} min
-                  </div>
-                </div>
-              </div>
-
-            {/* Progression objectif */}
-            <div className="progress-track">
-              <div className="progress-label">
-                <span>Progression</span>
-                <span className="progress-value">{percentage.toFixed(0)}%</span>
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-bar-fill"
-                  style={{
-                    width: `${percentage}%`,
-                    backgroundColor: getChildColor(selectedChild.icon),
-                  }}
-                />
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Flèche droite */}
-        <button
-          className="carousel-arrow carousel-arrow-right"
-          onClick={nextChild}
-          disabled={selectedChildIndex === children.length - 1}
-          aria-label="Enfant suivant"
-        >
-          ›
-        </button>
+            {/* Flèche droite */}
+            <button
+              className="carousel-arrow carousel-arrow-right"
+              onClick={nextChild}
+              disabled={selectedChildIndex === children.length - 1}
+              aria-label="Enfant suivant"
+            >
+              ›
+            </button>
+          </div>
+
+          {children.length > 1 && (
+            <div className="carousel-dots">
+              {children.map((child, index) => (
+                <button
+                  key={child.id}
+                  className={`dot ${index === selectedChildIndex ? 'active' : ''}`}
+                  onClick={() => selectChild(index)}
+                  aria-label={`Aller à ${child.firstName}`}
+                  style={{
+                    backgroundColor:
+                      index === selectedChildIndex
+                        ? getChildColor(child.icon)
+                        : 'rgba(255, 255, 255, 0.2)',
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Dots indicateurs */}
-      {children.length > 1 && (
-        <div className="carousel-dots">
-          {children.map((child, index) => (
-            <button
-              key={child.id}
-              className={`dot ${index === selectedChildIndex ? 'active' : ''}`}
-              onClick={() => selectChild(index)}
-              aria-label={`Aller à ${child.firstName}`}
-              style={{
-                backgroundColor:
-                  index === selectedChildIndex
-                    ? getChildColor(child.icon)
-                    : 'rgba(255, 255, 255, 0.2)',
-              }}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 };
