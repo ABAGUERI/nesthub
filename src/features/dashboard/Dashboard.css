@@ -89,15 +89,17 @@
 
 /* === WIDGET COMMUN === */
 .widget {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12), transparent 55%),
+    linear-gradient(160deg, rgba(15, 18, 36, 0.9), rgba(8, 12, 26, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
   padding: 20px 22px;
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.42);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease;
 }
 

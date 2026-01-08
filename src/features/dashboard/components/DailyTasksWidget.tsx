@@ -299,6 +299,7 @@ export const DailyTasksWidget: React.FC = () => {
           <div className="tasks-list">
             {paginatedTasks.map((task) => {
               const isCompleted = isTaskCompleted(task.id, activeChild.id);
+              const pointsLabel = `${task.points > 0 ? '+' : ''}${task.points} pts`;
               return (
                 <div
                   key={task.id}
