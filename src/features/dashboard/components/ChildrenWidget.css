@@ -1,7 +1,7 @@
 /* === CHILDREN WIDGET CAROUSEL === */
 .children-widget {
   flex: 0.5 !important;
-  padding: clamp(16px, 2vw, 24px) clamp(18px, 2.5vw, 32px) !important;
+  padding: clamp(12px, 1.6vw, 18px) clamp(14px, 2vw, 24px) !important;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, rgba(79, 70, 229, 0.25), rgba(34, 197, 235, 0.12));
@@ -12,7 +12,7 @@
   display: inline-flex;
   align-items: baseline;
   gap: clamp(4px, 0.5vw, 8px);
-  padding: clamp(6px, 1vw, 12px) clamp(8px, 1.5vw, 16px);
+  padding: clamp(4px, 0.8vw, 10px) clamp(6px, 1.2vw, 14px);
   border-radius: clamp(10px, 1.5vw, 16px);
   background: rgba(255, 255, 255, 0.08);
   font-weight: 800;
@@ -21,11 +21,11 @@
 }
 
 .points-value {
-  font-size: clamp(14px, 1.5vw, 18px);
+  font-size: clamp(13px, 1.3vw, 17px);
 }
 
 .points-target {
-  font-size: clamp(11px, 1.2vw, 15px);
+  font-size: clamp(10px, 1.1vw, 14px);
   color: #cbd5e1;
 }
 
@@ -72,7 +72,7 @@
   gap: clamp(8px, 1.5vw, 16px);
   flex: 1;
   /* Give the dashboard room for the bottom timeline (avoid overlap) */
-  min-height: min(44vh, 360px);
+  min-height: min(36vh, 300px);
   padding: 0 clamp(4px, 1vw, 12px);
 }
 
@@ -96,7 +96,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(8px, 1.2vw, 14px);
+  gap: clamp(6px, 1vw, 12px);
   position: relative;
   animation: fadeInScale 0.3s ease;
   width: 100%;
@@ -117,11 +117,11 @@
 /* === GOAL BADGE === */
 .goal-badge {
   position: absolute;
-  top: -8px;
+  top: -6px;
   right: 50%;
   transform: translateX(50%);
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  padding: clamp(4px, 0.8vw, 8px) clamp(12px, 2vw, 20px);
+  padding: clamp(3px, 0.6vw, 6px) clamp(10px, 1.6vw, 16px);
   border-radius: clamp(16px, 2.5vw, 24px);
   display: flex;
   align-items: center;
@@ -159,8 +159,8 @@
 /* === DONUT LARGE === */
 .donut-and-hearts {
   display: grid;
-  grid-template-columns: minmax(min(280px, 70vw), 1.1fr) auto;
-  gap: clamp(12px, 2.5vw, 24px);
+  grid-template-columns: minmax(min(240px, 66vw), 1.1fr) auto;
+  gap: clamp(10px, 2vw, 20px);
   align-items: center;
   justify-content: space-between;
   width: 100%;
@@ -170,13 +170,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(4px, 0.8vw, 10px);
+  gap: clamp(4px, 0.6vw, 8px);
 }
 
 .donut-stack {
   position: relative;
-  width: min(52vw, 260px);
-  max-width: 280px;
+  width: min(44vw, 220px);
+  max-width: 240px;
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
@@ -204,8 +204,8 @@
 }
 
 .donut-avatar-large {
-  width: clamp(64px, 34vw, 240px);
-  height: clamp(64px, 34vw, 240px);
+  width: clamp(56px, 30vw, 200px);
+  height: clamp(56px, 30vw, 200px);
 }
 
 .child-name-large {
@@ -215,10 +215,10 @@
 
 .progress-track {
   width: 100%;
-  max-width: min(90vw, 480px);
+  max-width: min(86vw, 420px);
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1vw, 12px);
+  gap: clamp(4px, 0.8vw, 10px);
   margin-top: -4px;
 }
 
@@ -226,7 +226,7 @@
   display: flex;
   justify-content: space-between;
   color: #cbd5e1;
-  font-size: clamp(12px, 1.5vw, 16px);
+  font-size: clamp(11px, 1.3vw, 15px);
 }
 
 .progress-value {
@@ -235,7 +235,7 @@
 }
 
 .progress-bar {
-  height: clamp(10px, 1.5vw, 16px);
+  height: clamp(8px, 1.2vw, 14px);
   background: rgba(255, 255, 255, 0.06);
   border-radius: 999px;
   overflow: hidden;
@@ -252,17 +252,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(8px, 1.2vw, 14px);
-  padding: clamp(10px, 1.5vw, 18px) clamp(10px, 1.5vw, 16px);
+  gap: clamp(6px, 1vw, 12px);
+  padding: clamp(8px, 1.2vw, 14px) clamp(8px, 1.2vw, 14px);
   background: rgba(255, 255, 255, 0.04);
   border-radius: clamp(10px, 1.5vw, 16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  min-width: min(120px, 30vw);
+  min-width: min(110px, 28vw);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .hearts-label {
-  font-size: clamp(10px, 1.2vw, 14px);
+  font-size: clamp(9px, 1.1vw, 13px);
   letter-spacing: 0.6px;
   text-transform: uppercase;
   color: #cbd5e1;
@@ -277,7 +277,7 @@
 }
 
 .heart {
-  font-size: clamp(18px, 2.5vw, 24px);
+  font-size: clamp(16px, 2.2vw, 22px);
   opacity: 0.3;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
@@ -292,7 +292,7 @@
 }
 
 .hearts-meta {
-  font-size: clamp(10px, 1.2vw, 14px);
+  font-size: clamp(9px, 1.1vw, 13px);
   color: #e2e8f0;
   font-weight: 700;
 }
@@ -455,7 +455,7 @@
   .donut-and-hearts {
     grid-template-columns: 1fr;
     justify-items: center;
-    gap: clamp(20px, 4vw, 32px);
+    gap: clamp(16px, 3.5vw, 28px);
   }
   
   .screen-time-hearts {
@@ -464,7 +464,7 @@
     max-width: 300px;
     flex-direction: row;
     justify-content: space-around;
-    padding: clamp(12px, 2vw, 16px);
+    padding: clamp(10px, 1.8vw, 14px);
   }
   
   .hearts-column {
@@ -473,11 +473,11 @@
   
   .carousel-container {
     /* Still leave room for the timeline on smaller screens */
-    min-height: min(56vh, 420px);
+    min-height: min(50vh, 380px);
   }
   
   .donut-stack {
-    width: min(80vw, 300px);
+    width: min(74vw, 260px);
   }
 }
 
@@ -505,12 +505,12 @@
   }
   
   .donut-stack {
-    width: min(85vw, 260px);
+    width: min(80vw, 240px);
   }
   
   .child-avatar-large {
-    width: clamp(140px, 50vw, 220px);
-    height: clamp(140px, 50vw, 220px);
+    width: clamp(120px, 46vw, 200px);
+    height: clamp(120px, 46vw, 200px);
   }
 }
 
