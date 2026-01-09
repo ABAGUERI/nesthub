@@ -189,9 +189,39 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
                   setActiveDateKey((prev) => (prev === group.dateKey ? null : group.dateKey));
                 }}
               >
-                {hasMultiple && (
-                  <div className="timeline-dot-badge">
-                    +{group.events.length - 1}
+                <div className="timeline-dot-date">
+                  {formatDateAbove(group.date)}
+                </div>
+                
+                <button
+                  type="button"
+                  className={`timeline-dot ${isNext ? 'next' : ''}`}
+                  aria-label={`${group.events.length} événement${group.events.length > 1 ? 's' : ''} le ${formatLongDate(group.date)}`}
+                  onFocus={() => setHoveredDateKey(group.dateKey)}
+                  onBlur={() => setHoveredDateKey(null)}
+                  onClick={() => {
+                    setActiveDateKey((prev) => (prev === group.dateKey ? null : group.dateKey));
+                  }}
+                >
+                  {hasMultiple && (
+                    <div className="timeline-dot-badge">
+                      +{group.events.length - 1}
+                    </div>
+                  )}
+                </button>
+
+                {(isHovered || isActive) && (
+                  <div className="timeline-tooltip">
+                    {group.events.map((ev, idx) => (
+                      <div key={ev.id} className="timeline-tooltip-event">
+                        <div>{stripChildPrefix(ev.title, childName)}</div>
+                        {idx === 0 && (
+                          <div className="timeline-tooltip-date">
+                            {formatLongDate(group.date)}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </button>
