@@ -34,7 +34,7 @@ type ChildRow = {
 
 const RANGE_DAYS = 28;
 
-const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+// const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
 const matchesSelectedChild = (title: string, childName: string) => {
   // Matching strict comme tu le veux: commence par "Prenom" ou contient "Prenom -"
