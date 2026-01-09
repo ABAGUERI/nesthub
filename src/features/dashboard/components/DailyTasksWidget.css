@@ -14,13 +14,13 @@
 }
 
 .daily-tasks-widget .widget-header {
-  padding-bottom: 16px;
-  margin-bottom: 16px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .daily-tasks-widget .widget-title {
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: 0.2px;
 }
@@ -40,8 +40,8 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  padding: 4px;
+  gap: 12px;
+  padding: 2px;
 
   flex: 1;
   min-height: 0;
@@ -55,12 +55,12 @@
   align-items: center;
   justify-content: flex-start;
 
-  gap: 12px;
-  padding: 22px 18px 18px;
+  gap: 8px;
+  padding: 14px 12px 12px;
 
   background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.07), rgba(15, 23, 42, 0.65) 60%);
   border: 1px solid rgba(148, 163, 184, 0.4);
-  border-radius: 22px;
+  border-radius: 16px;
 
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
@@ -91,15 +91,15 @@
 
 /* Icon */
 .daily-tasks-widget .task-icon {
-  font-size: 38px;
+  font-size: 28px;
   flex-shrink: 0;
   line-height: 1;
-  margin-top: 6px;
+  margin-top: 2px;
 }
 
 /* Nom tâche */
 .daily-tasks-widget .task-name {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   color: #e2e8f0;
   line-height: 1.2;
@@ -115,7 +115,7 @@
 }
 
 .daily-tasks-widget .task-status {
-  font-size: 12px;
+  font-size: 11px;
   color: #22c55e;
   font-weight: 700;
   line-height: 1;
@@ -130,15 +130,15 @@
   justify-content: center;
   gap: 10px;
 
-  margin-top: 10px;
+  margin-top: 8px;
   flex-shrink: 0;
 }
 
 .daily-tasks-widget .tasks-nav-btn {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
 
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
 
@@ -164,7 +164,7 @@
 }
 
 .daily-tasks-widget .tasks-nav-indicator {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   color: rgba(148, 163, 184, 0.9);
   min-width: 70px;
@@ -200,16 +200,16 @@
  * ===================================================== */
 @media (max-width: 900px) {
   .daily-tasks-widget .task-icon {
-    font-size: 32px;
+    font-size: 24px;
   }
 
   .daily-tasks-widget .task-name {
-    font-size: 18px;
+    font-size: 14px;
   }
 }
 
 @media (max-width: 640px) {
   .daily-tasks-widget .task-row {
-    padding: 10px 10px;
+    padding: 8px 8px;
   }
 }
