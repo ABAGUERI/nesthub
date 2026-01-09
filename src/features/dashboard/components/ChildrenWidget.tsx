@@ -42,8 +42,6 @@ interface Child {
   totalPoints: number;
   currentLevel: number;
   targetPoints: number;
-  screenTimeUsed?: number;
-  dailyLimitMinutes?: number;
 }
 
 export const ChildrenWidget: React.FC = () => {
@@ -61,6 +59,29 @@ export const ChildrenWidget: React.FC = () => {
 
   useEffect(() => {
     loadChildren();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('child_progress_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'child_progress',
+        },
+        () => {
+          loadChildren();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const selectedChild = useMemo(() => children[selectedChildIndex], [children, selectedChildIndex]);
@@ -101,13 +122,7 @@ export const ChildrenWidget: React.FC = () => {
           try {
             const { data: progressData } = await supabase
               .from('child_progress')
-              .select('total_points, current_level, target_points, screen_time_used')
-              .eq('child_id', child.id)
-              .maybeSingle();
-
-            const { data: settingsData } = await supabase
-              .from('screen_time_settings')
-              .select('daily_limit_minutes')
+              .select('total_points, current_level, target_points')
               .eq('child_id', child.id)
               .maybeSingle();
 
@@ -119,8 +134,6 @@ export const ChildrenWidget: React.FC = () => {
               totalPoints: progressData?.total_points || 0,
               currentLevel: progressData?.current_level || 1,
               targetPoints: progressData?.target_points || 1000,
-              screenTimeUsed: progressData?.screen_time_used || 0,
-              dailyLimitMinutes: settingsData?.daily_limit_minutes,
             };
           } catch (error) {
             console.error(`Error loading progress for child ${child.id}:`, error);
@@ -132,8 +145,6 @@ export const ChildrenWidget: React.FC = () => {
               totalPoints: 0,
               currentLevel: 1,
               targetPoints: 1000,
-              screenTimeUsed: 0,
-              dailyLimitMinutes: undefined,
             };
           }
         })
@@ -309,14 +320,12 @@ export const ChildrenWidget: React.FC = () => {
   const hasReachedGoal = percentage >= 100;
   const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
 
+  // Temps d'écran temporairement fixé à 0 (à gérer plus tard)
   const heartsTotal = 5;
-  const minutesPerHeart = Math.max(
-    1,
-    selectedChild.dailyLimitMinutes || config?.screenTimeDefaultAllowance || 20
-  );
+  const minutesPerHeart = 20;
   const totalMinutes = heartsTotal * minutesPerHeart;
-  const usedMinutes = Math.min(totalMinutes, Math.round(selectedChild?.screenTimeUsed || 0));
-  const heartsUsed = Math.min(heartsTotal, Math.ceil(usedMinutes / minutesPerHeart));
+  const usedMinutes = 0;
+  const heartsUsed = 0;
 
   return (
     <div className="widget children-widget">

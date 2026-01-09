@@ -241,10 +241,25 @@ export const DailyTasksWidget: React.FC = () => {
   };
 
   const completeTask = async (task: Task) => {
-    const activeChild = children[selectedChildIndex];
-    if (!activeChild) return;
+  const activeChild = children[selectedChildIndex];
+  if (!activeChild) return;
 
-    try {
+  try {
+    // Vérifier si la tâche est déjà complétée
+    const alreadyCompleted = completedTasks.find(
+      (ct) => ct.taskId === task.id && ct.childId === activeChild.id
+    );
+
+    if (alreadyCompleted) {
+      // DÉCOCHER : Supprimer la tâche complétée
+      const { error: deleteError } = await supabase
+        .from('completed_tasks')
+        .delete()
+        .eq('id', alreadyCompleted.id);
+
+      if (deleteError) throw deleteError;
+    } else {
+      // COCHER : Créer la tâche complétée
       const { data: taskData, error: taskError } = await supabase
         .from('available_tasks')
         .select('id, name, points')
@@ -265,7 +280,6 @@ export const DailyTasksWidget: React.FC = () => {
             points: task.points,
           };
 
-      // Créer la tâche complétée
       const { error: completedError } = await supabase.from('completed_tasks').insert({
         id: crypto.randomUUID(),
         child_id: activeChild.id,
@@ -276,15 +290,15 @@ export const DailyTasksWidget: React.FC = () => {
       });
 
       if (completedError) throw completedError;
-
-      // Mettre à jour la progression de l'enfant
-      await syncMonthlyProgress(activeChild.id);
-
-      await loadCompletedTasks();
-    } catch (error) {
-      console.error('Error completing task:', error);
     }
-  };
+
+    // Recalculer la progression dans les deux cas
+    await syncMonthlyProgress(activeChild.id);
+    await loadCompletedTasks();
+  } catch (error) {
+    console.error('Error completing/uncompleting task:', error);
+  }
+};
 
   if (loading) {
     return (
@@ -349,7 +363,7 @@ export const DailyTasksWidget: React.FC = () => {
                 <div
                   key={task.id}
                   className={`task-row ${isCompleted ? 'completed' : ''} ${getCategoryTone(task.category)}`}
-                  onClick={() => !isCompleted && completeTask(task)}
+                  onClick={() => completeTask(task)}
                 >
                   <div className="task-icon">{task.icon}</div>
                   <div className="task-name">{task.name}</div>
