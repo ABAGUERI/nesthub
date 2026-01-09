@@ -59,6 +59,7 @@ const formatLongDate = (d: Date) => {
 
 const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) => {
   const [hoveredDateKey, setHoveredDateKey] = useState<string | null>(null);
+  const [activeDateKey, setActiveDateKey] = useState<string | null>(null);
 
   const { startRange, endRange } = useMemo(() => {
     const start = startOfDay(new Date());
@@ -116,17 +117,21 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
 
     const firstEvent = nextGroup.events[0];
     const cleanTitle = stripChildPrefix(firstEvent.title, childName);
+    const dateText = formatLongDate(nextGroup.date);
     
     if (nextGroup.events.length > 1) {
-      return `${cleanTitle} (+ ${nextGroup.events.length - 1} autre${nextGroup.events.length > 2 ? 's' : ''})`;
+      return `${cleanTitle} — ${dateText} (+ ${nextGroup.events.length - 1} autre${nextGroup.events.length > 2 ? 's' : ''})`;
     }
     
-    return cleanTitle;
+    return `${cleanTitle} — ${dateText}`;
   }, [groupedByDate, nextDateKey, childName]);
 
   if (!groupedByDate || groupedByDate.length === 0) {
     return (
       <div className="timeline-card child-timeline">
+        <div className="timeline-title">
+          Événements à venir pour {childName}
+        </div>
         <div className="timeline-empty">
           Aucun événement sur les 4 prochaines semaines.
         </div>
@@ -136,75 +141,84 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
 
   return (
     <div className="timeline-card child-timeline">
-      {mainEventText && (
-        <div className="timeline-main-event">{mainEventText}</div>
-      )}
+      <div className="timeline-title">
+        Événements à venir pour {childName}
+      </div>
+      <div className="timeline-row">
+        {mainEventText && (
+          <div className="timeline-main-event">{mainEventText}</div>
+        )}
 
-      <div className="timeline-rail-wrap">
-        <div className="timeline-rail" />
-        
-        {/* Aujourd'hui */}
-        <div className="timeline-start">Aujourd&apos;hui</div>
-        <div 
-          className="timeline-dot-container" 
-          style={{ left: '0%' }}
-        >
-          <button
-            type="button"
-            className="timeline-dot start"
-            aria-label="Aujourd'hui"
-          />
-        </div>
+        <div className="timeline-rail-wrap">
+          <div className="timeline-rail" />
+          
+          {/* Aujourd'hui */}
+          <div className="timeline-start">Aujourd&apos;hui</div>
+          <div 
+            className="timeline-dot-container" 
+            style={{ left: '0%' }}
+          >
+            <button
+              type="button"
+              className="timeline-dot start"
+              aria-label="Aujourd'hui"
+            />
+          </div>
 
-        {/* Dots groupés */}
-        {groupedByDate.map((group) => {
-          const isNext = group.dateKey === nextDateKey;
-          const isHovered = hoveredDateKey === group.dateKey;
-          const hasMultiple = group.events.length > 1;
+          {/* Dots groupés */}
+          {groupedByDate.map((group) => {
+            const isNext = group.dateKey === nextDateKey;
+            const isHovered = hoveredDateKey === group.dateKey;
+            const isActive = activeDateKey === group.dateKey;
+            const hasMultiple = group.events.length > 1;
 
-          return (
-            <div
-              key={group.dateKey}
-              className="timeline-dot-container"
-              style={{ left: `${group.position}%` }}
-              onMouseEnter={() => setHoveredDateKey(group.dateKey)}
-              onMouseLeave={() => setHoveredDateKey(null)}
-            >
-              <div className="timeline-dot-date">
-                {formatDateAbove(group.date)}
-              </div>
-              
-              <button
-                type="button"
-                className={`timeline-dot ${isNext ? 'next' : ''}`}
-                aria-label={`${group.events.length} événement${group.events.length > 1 ? 's' : ''} le ${formatLongDate(group.date)}`}
-                onFocus={() => setHoveredDateKey(group.dateKey)}
-                onBlur={() => setHoveredDateKey(null)}
+            return (
+              <div
+                key={group.dateKey}
+                className="timeline-dot-container"
+                style={{ left: `${group.position}%` }}
+                onMouseEnter={() => setHoveredDateKey(group.dateKey)}
+                onMouseLeave={() => setHoveredDateKey(null)}
               >
-                {hasMultiple && (
-                  <div className="timeline-dot-badge">
-                    +{group.events.length - 1}
+                <div className="timeline-dot-date">
+                  {formatDateAbove(group.date)}
+                </div>
+                
+                <button
+                  type="button"
+                  className={`timeline-dot ${isNext ? 'next' : ''}`}
+                  aria-label={`${group.events.length} événement${group.events.length > 1 ? 's' : ''} le ${formatLongDate(group.date)}`}
+                  onFocus={() => setHoveredDateKey(group.dateKey)}
+                  onBlur={() => setHoveredDateKey(null)}
+                  onClick={() => {
+                    setActiveDateKey((prev) => (prev === group.dateKey ? null : group.dateKey));
+                  }}
+                >
+                  {hasMultiple && (
+                    <div className="timeline-dot-badge">
+                      +{group.events.length - 1}
+                    </div>
+                  )}
+                </button>
+
+                {(isHovered || isActive) && (
+                  <div className="timeline-tooltip">
+                    {group.events.map((ev, idx) => (
+                      <div key={ev.id} className="timeline-tooltip-event">
+                        <div>{stripChildPrefix(ev.title, childName)}</div>
+                        {idx === 0 && (
+                          <div className="timeline-tooltip-date">
+                            {formatLongDate(group.date)}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
-              </button>
-
-              {isHovered && (
-                <div className="timeline-tooltip">
-                  {group.events.map((ev, idx) => (
-                    <div key={ev.id} className="timeline-tooltip-event">
-                      <div>{stripChildPrefix(ev.title, childName)}</div>
-                      {idx === 0 && (
-                        <div className="timeline-tooltip-date">
-                          {formatLongDate(group.date)}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
