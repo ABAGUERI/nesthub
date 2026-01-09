@@ -1,190 +1,265 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AppHeader } from '@/shared/components/AppHeader';
+import { useAuth } from '@/shared/hooks/useAuth';
+
 import { ChildrenWidget } from './components/ChildrenWidget';
 import { DailyTasksWidget } from './components/DailyTasksWidget';
+import { CalendarWidget } from './components/CalendarWidget';
+import { GoogleTasksWidget } from './components/GoogleTasksWidget';
+import { FinanceWidget } from './components/FinanceWidget';
+import { StockTicker } from './components/StockTicker';
+import { VehicleWidget } from './components/VehicleWidget';
+
 import { ChildSelectionProvider, useChildSelection } from './contexts/ChildSelectionContext';
 import ChildTimeline, { ChildTimelineEvent } from './components/ChildTimeline';
+
+import { getGoogleConnection, getCalendarEventsWithAuth } from '@/features/google/google.service';
+import { supabase } from '@/shared/utils/supabase';
+
 import './Dashboard.css';
 
-// ⚠️ À BRANCHER sur ta vraie source Google (store / service)
-type RawGoogleEvent = {
-  id?: string;
-  summary?: string;
-  title?: string;
-  start?: any;
-  end?: any;
+type CalendarEvent = {
+  id: string;
+  summary: string;
+  start: { dateTime?: string; date?: string };
+  end?: { dateTime?: string; date?: string };
+  calendarName?: string;
+  calendarId?: string;
 };
 
-async function getEventsForDashboard(): Promise<RawGoogleEvent[]> {
-  return [];
-}
+type ChildRow = {
+  id: string;
+  first_name: string;
+};
 
 const RANGE_DAYS = 28;
 
-function startOfDay(d: Date) {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-function matchesChildName(title: string, childName: string) {
+const matchesSelectedChild = (title: string, childName: string) => {
+  // Matching strict comme tu le veux: commence par "Prenom" ou contient "Prenom -"
   const t = (title || '').trim().toLowerCase();
   const n = (childName || '').trim().toLowerCase();
-  if (!n) return false;
-  return (
-    t.startsWith(n) ||
-    t.includes(`${n} -`) ||
-    t.includes(`${n}-`) ||
-    t.includes(`${n} :`) ||
-    t.includes(`${n}:`)
-  );
-}
+  return t.startsWith(n) || t.includes(`${n} -`);
+};
 
-function normalizeEvents(raw: RawGoogleEvent[]): ChildTimelineEvent[] {
-  return (raw || [])
-    .map((e) => {
-      const title = String(e.title ?? e.summary ?? '').trim();
-      const start = e.start?.dateTime ?? e.start?.date ?? e.start ?? null;
-      const end = e.end?.dateTime ?? e.end?.date ?? e.end ?? undefined;
-      if (!title || !start) return null;
-
-      return {
-        id: String(e.id ?? crypto.randomUUID()),
-        title,
-        start,
-        end,
-      } as ChildTimelineEvent;
-    })
-    .filter(Boolean) as ChildTimelineEvent[];
-}
-
-const KidsScreen: React.FC = () => {
+const DashboardInner: React.FC = () => {
+  const { user } = useAuth();
   const { selectedChildIndex } = useChildSelection();
 
-  // Temporaire tant que Dashboard n’a pas accès aux prénoms depuis Supabase
-  const childNames = ['Sifaw', 'Georges', 'Lucas'];
-  const selectedChildName = childNames[selectedChildIndex] ?? childNames[0];
+  const [screenIndex, setScreenIndex] = useState(0);
+  const screensCount = 4;
 
-  const [rawEvents, setRawEvents] = useState<RawGoogleEvent[]>([]);
-  const [eventsLoading, setEventsLoading] = useState(false);
+  const [children, setChildren] = useState<ChildRow[]>([]);
+  const [childrenError, setChildrenError] = useState<string | null>(null);
+
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [eventsError, setEventsError] = useState<string | null>(null);
+
+  const goPrev = () => setScreenIndex((v) => (v - 1 + screensCount) % screensCount);
+  const goNext = () => setScreenIndex((v) => (v + 1) % screensCount);
 
   useEffect(() => {
-    const load = async () => {
-      setEventsLoading(true);
-      try {
-        const ev = await getEventsForDashboard();
-        setRawEvents(ev);
-      } catch (e) {
-        console.error('Dashboard events load failed:', e);
-        setRawEvents([]);
-      } finally {
-        setEventsLoading(false);
-      }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') goPrev();
+      if (e.key === 'ArrowRight') goNext();
     };
-    load();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filteredChildEvents = useMemo(() => {
-    const normalized = normalizeEvents(rawEvents);
-    const now = startOfDay(new Date());
-    const end = new Date(now);
-    end.setDate(end.getDate() + RANGE_DAYS);
+  // 1) Charger les enfants (pour obtenir le prénom réel de l’enfant sélectionné)
+  useEffect(() => {
+    const loadChildren = async () => {
+      if (!user) return;
+
+      setChildrenError(null);
+
+      try {
+        const { data, error } = await supabase
+          .from('family_members')
+          .select('id, first_name')
+          .eq('user_id', user.id)
+          .eq('role', 'child')
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        setChildren((data as ChildRow[]) || []);
+      } catch (e: any) {
+        console.error('Error loading children:', e);
+        setChildren([]);
+        setChildrenError('Impossible de charger la liste des enfants.');
+      }
+    };
+
+    loadChildren();
+  }, [user]);
+
+  const selectedChildName = useMemo(() => {
+    return children[selectedChildIndex]?.first_name || '';
+  }, [children, selectedChildIndex]);
+
+  // 2) Charger les événements Google (même logique que CalendarWidget)
+  useEffect(() => {
+    loadEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  const loadEvents = async () => {
+    if (!user) return;
+
+    setEventsError(null);
+
+    try {
+      const connection = await getGoogleConnection(user.id);
+      if (!connection || !connection.accessToken) {
+        setEventsError('Connectez ou reconnectez Google pour afficher la timeline.');
+        setEvents([]);
+        return;
+      }
+
+      const calendarIds = [connection.selectedCalendarId || 'primary'];
+
+      const fetchedEvents = await getCalendarEventsWithAuth(
+        user.id,
+        calendarIds.filter(Boolean) as string[],
+        80,
+        RANGE_DAYS
+      );
+
+      const now = new Date();
+      const horizon = new Date(now.getTime() + RANGE_DAYS * 24 * 60 * 60 * 1000);
+
+      const withinRange = fetchedEvents.filter((event: CalendarEvent) => {
+        const date = new Date(event.start.dateTime || event.start.date!);
+        return date >= now && date <= horizon;
+      });
+
+      setEvents(withinRange);
+    } catch (error: any) {
+      console.error('Error loading calendar events (timeline):', error);
+      const isUnauthorized = error?.message === 'unauthorized';
+      setEventsError(
+        isUnauthorized
+          ? 'Session Google expirée : reconnectez-vous dans Paramètres > Google.'
+          : 'Impossible de charger les événements Google'
+      );
+      setEvents([]);
+    }
+  };
+
+  // 3) Timeline = STRICTEMENT l’enfant sélectionné
+  const timelineEvents: ChildTimelineEvent[] = useMemo(() => {
+    if (!selectedChildName) return [];
+
+    const normalized: ChildTimelineEvent[] = (events || []).map((e) => ({
+      id: e.id,
+      title: e.summary || 'Sans titre',
+      start: e.start.dateTime || e.start.date!,
+      end: e.end?.dateTime || e.end?.date,
+    }));
 
     return normalized
-      .filter((ev) => {
-        const d = new Date(ev.start);
-        return d >= now && d <= end;
-      })
-      .filter((ev) => matchesChildName(ev.title, selectedChildName))
+      .filter((e) => matchesSelectedChild(e.title, selectedChildName))
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-  }, [rawEvents, selectedChildName]);
+  }, [events, selectedChildName]);
+
+  const timelineBlockedMessage = useMemo(() => {
+    if (childrenError) return childrenError;
+    if (!selectedChildName) return "Sélectionnez un enfant pour afficher sa timeline.";
+    if (eventsError) return eventsError;
+    return null;
+  }, [childrenError, selectedChildName, eventsError]);
 
   return (
-    <div className="screen-grid kids-screen">
-      <ChildrenWidget />
-      <DailyTasksWidget />
+    <div className="dashboard-container carousel-mode">
+      <AppHeader title="Tableau de bord" description="Vue globale des missions familiales, agendas et finances." />
 
-      <ChildTimeline childName={selectedChildName} events={filteredChildEvents} rangeDays={RANGE_DAYS} />
+      <div className="dashboard-body">
+        <section className="dashboard-carousel">
+          <div className="dashboard-carousel-track" style={{ transform: `translateX(-${screenIndex * 100}%)` }}>
+            {/* SCREEN 1 — Kids */}
+            <div className="dashboard-screen" aria-label="Écran enfants">
+              <div className="screen-grid kids-screen">
+                <ChildrenWidget />
+                <DailyTasksWidget />
 
-      {eventsLoading ? (
-        <div style={{ gridColumn: '1 / -1', opacity: 0.45, fontSize: 12, fontWeight: 700 }}>
-          Chargement des événements…
-        </div>
-      ) : null}
+                {/* Timeline — enfant sélectionné uniquement */}
+                {timelineBlockedMessage ? (
+                  <div className="timeline-card child-timeline">
+                    <div className="timeline-empty">{timelineBlockedMessage}</div>
+                  </div>
+                ) : (
+                  <ChildTimeline childName={selectedChildName} events={timelineEvents} rangeDays={RANGE_DAYS} />
+                )}
+              </div>
+            </div>
+
+            {/* SCREEN 2 — Agenda */}
+            <div className="dashboard-screen" aria-label="Écran agenda">
+              <div className="screen-grid agenda-screen">
+                <CalendarWidget />
+                <GoogleTasksWidget />
+              </div>
+            </div>
+
+            {/* SCREEN 3 — Finance */}
+            <div className="dashboard-screen" aria-label="Écran finances">
+              <div className="screen-grid mobility-screen">
+                <FinanceWidget />
+                <StockTicker />
+              </div>
+            </div>
+
+            {/* SCREEN 4 — Mobility */}
+            <div className="dashboard-screen" aria-label="Écran mobilité">
+              <div className="screen-grid mobility-screen">
+                <VehicleWidget />
+                <div className="screen-card">
+                  <div className="widget">
+                    <div className="widget-header">
+                      <div className="widget-title">Raccourcis</div>
+                    </div>
+                    <div className="widget-scroll">
+                      <div className="empty-message">
+                        Ajoutez ici vos raccourcis (ex: entretien, pneus, stationnement).
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button className="screen-arrow left" onClick={goPrev} aria-label="Écran précédent" type="button">
+            ‹
+          </button>
+          <button className="screen-arrow right" onClick={goNext} aria-label="Écran suivant" type="button">
+            ›
+          </button>
+
+          <div className="screen-dots" role="tablist" aria-label="Navigation des écrans">
+            {Array.from({ length: screensCount }).map((_, i) => (
+              <button
+                key={i}
+                className={`screen-dot ${i === screenIndex ? 'active' : ''}`}
+                onClick={() => setScreenIndex(i)}
+                aria-label={`Aller à l'écran ${i + 1}`}
+                type="button"
+              />
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   );
 };
 
 export const DashboardPage: React.FC = () => {
-  const [pageIndex, setPageIndex] = useState(0);
-  const pagesCount = 3;
-
-  const goPrev = () => setPageIndex((p) => (p - 1 + pagesCount) % pagesCount);
-  const goNext = () => setPageIndex((p) => (p + 1) % pagesCount);
-
   return (
     <ChildSelectionProvider>
-      <div className="dashboard-container carousel-mode">
-        <AppHeader title="Tableau de bord" description="Vue globale des missions familiales, agendas et finances." />
-
-        <div className="dashboard-body">
-          <section className="dashboard-carousel">
-            <button className="screen-arrow left" onClick={goPrev} type="button" aria-label="Page précédente">
-              ‹
-            </button>
-
-            <div
-              className="dashboard-carousel-track"
-              style={{ transform: `translateX(-${pageIndex * 100}%)` }}
-            >
-              {/* PAGE 1: Kids */}
-              <div className="dashboard-screen">
-                <KidsScreen />
-              </div>
-
-              {/* PAGE 2: Agenda (remets tes widgets ici) */}
-              <div className="dashboard-screen">
-                <div className="screen-grid agenda-screen">
-                  {/* Exemple:
-                      <CalendarWidget />
-                      <GoogleTasksWidget />
-                  */}
-                  <div className="screen-card">Agenda screen (remets tes widgets ici)</div>
-                  <div className="screen-card">Tasks/Notes screen (remets tes widgets ici)</div>
-                </div>
-              </div>
-
-              {/* PAGE 3: Finance / Mobilité (remets tes widgets ici) */}
-              <div className="dashboard-screen">
-                <div className="screen-grid mobility-screen">
-                  {/* Exemple:
-                      <FinanceWidget />
-                      <VehicleWidget />
-                  */}
-                  <div className="screen-card">Finance screen (remets tes widgets ici)</div>
-                  <div className="screen-card">Mobilité screen (remets tes widgets ici)</div>
-                </div>
-              </div>
-            </div>
-
-            <button className="screen-arrow right" onClick={goNext} type="button" aria-label="Page suivante">
-              ›
-            </button>
-
-            <div className="screen-dots" role="tablist" aria-label="Navigation des pages">
-              {Array.from({ length: pagesCount }).map((_, i) => (
-                <button
-                  key={i}
-                  className={`screen-dot ${i === pageIndex ? 'active' : ''}`}
-                  onClick={() => setPageIndex(i)}
-                  type="button"
-                  aria-label={`Aller à la page ${i + 1}`}
-                />
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
+      <DashboardInner />
     </ChildSelectionProvider>
   );
 };

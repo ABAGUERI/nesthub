@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from 'react';
 
 export type ChildTimelineEvent = {
   id: string;
@@ -10,153 +10,204 @@ export type ChildTimelineEvent = {
 type Props = {
   childName: string;
   events: ChildTimelineEvent[];
-  rangeDays?: number; // default 28
+  rangeDays?: number;
 };
 
-function toDate(d: string | Date): Date {
-  return d instanceof Date ? d : new Date(d);
-}
+type GroupedDate = {
+  date: Date;
+  dateKey: string;
+  events: ChildTimelineEvent[];
+  position: number;
+};
 
-function startOfDay(date: Date): Date {
-  const x = new Date(date);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
-function clamp01(n: number): number {
-  if (Number.isNaN(n)) return 0;
-  return Math.max(0, Math.min(1, n));
-}
+const stripChildPrefix = (title: string, childName: string) => {
+  const t = (title || '').trim();
+  const n = (childName || '').trim();
 
-// "SAM 10 Janv."
-function formatShortFR(date: Date): string {
-  const fmt = new Intl.DateTimeFormat("fr-CA", {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-  });
+  const candidates = [
+    `${n} - `, `${n}- `, `${n} — `, `${n} – `, `${n}: `, `${n} `
+  ];
 
-  // ex: "sam. 10 janv."
-  const raw = fmt.format(date).replace(".", "");
-  const parts = raw.split(" ");
-  const weekday = (parts[0] ?? "").toUpperCase();
-  const day = parts[1] ?? "";
-  const monthRaw = parts[2] ?? "";
-  const month = monthRaw.charAt(0).toUpperCase() + monthRaw.slice(1);
-  return `${weekday} ${day} ${month}`;
-}
-
-// "samedi 10 janvier 2026"
-function formatLongFR(date: Date): string {
-  return new Intl.DateTimeFormat("fr-CA", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
-
-function stripChildPrefix(title: string, childName: string): string {
-  const t = title.trim();
-  const dash1 = `${childName} - `;
-  const dash2 = `${childName}-`;
-  if (t.toLowerCase().startsWith(dash1.toLowerCase())) return t.slice(dash1.length).trim();
-  if (t.toLowerCase().startsWith(dash2.toLowerCase())) return t.slice(dash2.length).trim();
+  for (const p of candidates) {
+    if (t.toLowerCase().startsWith(p.toLowerCase())) {
+      return t.slice(p.length).trim();
+    }
+  }
   return t;
-}
+};
 
-export default function ChildTimeline({ childName, events, rangeDays = 28 }: Props) {
-  const [openId, setOpenId] = useState<string | null>(null);
-  const rootRef = useRef<HTMLDivElement | null>(null);
+const formatDateAbove = (d: Date) => {
+  return d.toLocaleDateString('fr-CA', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  }).toUpperCase();
+};
 
-  const startRange = useMemo(() => startOfDay(new Date()), []);
-  const endRange = useMemo(() => {
-    const d = new Date(startRange);
-    d.setDate(d.getDate() + rangeDays);
-    return d;
-  }, [startRange, rangeDays]);
+const formatLongDate = (d: Date) => {
+  const date = d.toLocaleDateString('fr-CA', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  });
+  const weekday = d.toLocaleDateString('fr-CA', { weekday: 'long' });
+  return `${date} (${weekday})`;
+};
 
-  const prepared = useMemo(() => {
-    const startMs = startRange.getTime();
-    const endMs = endRange.getTime();
-    const todayMs = startOfDay(new Date()).getTime();
+const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) => {
+  const [hoveredDateKey, setHoveredDateKey] = useState<string | null>(null);
 
-    const inRange = events
-      .map((e) => {
-        const start = toDate(e.start);
-        const ms = start.getTime();
-        const pct = clamp01((ms - startMs) / (endMs - startMs));
-        return {
-          ...e,
-          start,
-          ms,
-          pct,
-          shortTitle: stripChildPrefix(e.title, childName),
-        };
-      })
-      .filter((e) => e.ms >= startMs && e.ms <= endMs)
-      .sort((a, b) => a.ms - b.ms);
+  const { startRange, endRange } = useMemo(() => {
+    const start = startOfDay(new Date());
+    const end = new Date(start.getTime() + rangeDays * 24 * 60 * 60 * 1000);
+    return { startRange: start, endRange: end };
+  }, [rangeDays]);
 
-    const next = inRange.find((e) => e.ms >= todayMs) ?? inRange[0];
-    return { inRange, next };
-  }, [events, childName, startRange, endRange]);
+  // Grouper les événements par date
+  const groupedByDate = useMemo(() => {
+    const sorted = [...(events || [])].sort(
+      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+    );
 
-  // close tooltip when clicking outside (mobile tap)
-  useEffect(() => {
-    if (!openId) return;
-    const onDown = (ev: MouseEvent | TouchEvent) => {
-      const el = rootRef.current;
-      if (!el) return;
-      if (!el.contains(ev.target as Node)) setOpenId(null);
-    };
-    window.addEventListener("mousedown", onDown);
-    window.addEventListener("touchstart", onDown, { passive: true });
-    return () => {
-      window.removeEventListener("mousedown", onDown);
-      window.removeEventListener("touchstart", onDown);
-    };
-  }, [openId]);
+    const groups = new Map<string, ChildTimelineEvent[]>();
+    
+    sorted.forEach((ev) => {
+      const d = startOfDay(new Date(ev.start));
+      const key = d.toISOString();
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(ev);
+    });
 
-  const label = useMemo(() => {
-    if (!prepared.next) return null;
-    return `${formatShortFR(prepared.next.start)} — ${prepared.next.shortTitle}`;
-  }, [prepared.next]);
+    const result: GroupedDate[] = [];
+    groups.forEach((evts, key) => {
+      const date = new Date(key);
+      const pct = clamp01(
+        (date.getTime() - startRange.getTime()) / 
+        (endRange.getTime() - startRange.getTime())
+      );
+      result.push({
+        date,
+        dateKey: key,
+        events: evts,
+        position: pct * 100,
+      });
+    });
+
+    return result.sort((a, b) => a.position - b.position);
+  }, [events, startRange, endRange]);
+
+  const nextDateKey = useMemo(() => {
+    const now = new Date();
+    const next = groupedByDate.find((g) => g.date.getTime() >= now.getTime());
+    return next?.dateKey || null;
+  }, [groupedByDate]);
+
+  // Événement principal à afficher (le prochain) - NOM UNIQUEMENT
+  const mainEventText = useMemo(() => {
+    if (groupedByDate.length === 0) return null;
+    
+    const nextGroup = groupedByDate.find((g) => g.dateKey === nextDateKey);
+    if (!nextGroup) return null;
+
+    const firstEvent = nextGroup.events[0];
+    const cleanTitle = stripChildPrefix(firstEvent.title, childName);
+    
+    if (nextGroup.events.length > 1) {
+      return `${cleanTitle} (+ ${nextGroup.events.length - 1} autre${nextGroup.events.length > 2 ? 's' : ''})`;
+    }
+    
+    return cleanTitle;
+  }, [groupedByDate, nextDateKey, childName]);
+
+  if (!groupedByDate || groupedByDate.length === 0) {
+    return (
+      <div className="timeline-card child-timeline">
+        <div className="timeline-empty">
+          Aucun événement sur les 4 prochaines semaines.
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="timeline-card" ref={rootRef} role="region" aria-label={`Événements à venir pour ${childName}`}>
-      <div className="timeline-label" title={label ?? ""}>
-        {label ?? `Aucun événement pour ${childName} sur les 4 prochaines semaines`}
-      </div>
+    <div className="timeline-card child-timeline">
+      {mainEventText && (
+        <div className="timeline-main-event">{mainEventText}</div>
+      )}
 
       <div className="timeline-rail-wrap">
         <div className="timeline-rail" />
+        
+        {/* Aujourd'hui */}
+        <div className="timeline-start">Aujourd&apos;hui</div>
+        <div 
+          className="timeline-dot-container" 
+          style={{ left: '0%' }}
+        >
+          <button
+            type="button"
+            className="timeline-dot start"
+            aria-label="Aujourd'hui"
+          />
+        </div>
 
-        {prepared.inRange.map((e) => {
-          const isNext = prepared.next?.id === e.id;
-          const left = `${(e.pct * 100).toFixed(2)}%`;
-          const open = openId === e.id;
+        {/* Dots groupés */}
+        {groupedByDate.map((group) => {
+          const isNext = group.dateKey === nextDateKey;
+          const isHovered = hoveredDateKey === group.dateKey;
+          const hasMultiple = group.events.length > 1;
 
           return (
-            <button
-              key={e.id}
-              type="button"
-              className={`timeline-dot${isNext ? " next" : ""}`}
-              style={{ left }}
-              aria-label={`${e.shortTitle} — ${formatLongFR(e.start)}`}
-              data-open={open ? "true" : "false"}
-              onClick={() => setOpenId((cur) => (cur === e.id ? null : e.id))}
-              onKeyDown={(ev) => {
-                if (ev.key === "Escape") setOpenId(null);
-              }}
+            <div
+              key={group.dateKey}
+              className="timeline-dot-container"
+              style={{ left: `${group.position}%` }}
+              onMouseEnter={() => setHoveredDateKey(group.dateKey)}
+              onMouseLeave={() => setHoveredDateKey(null)}
             >
-              <div className="timeline-tooltip" role="tooltip">
-                <div className="timeline-tooltip-title">{e.shortTitle}</div>
-                <div className="timeline-tooltip-date">{formatLongFR(e.start)}</div>
+              <div className="timeline-dot-date">
+                {formatDateAbove(group.date)}
               </div>
-            </button>
+              
+              <button
+                type="button"
+                className={`timeline-dot ${isNext ? 'next' : ''}`}
+                aria-label={`${group.events.length} événement${group.events.length > 1 ? 's' : ''} le ${formatLongDate(group.date)}`}
+                onFocus={() => setHoveredDateKey(group.dateKey)}
+                onBlur={() => setHoveredDateKey(null)}
+              >
+                {hasMultiple && (
+                  <div className="timeline-dot-badge">
+                    +{group.events.length - 1}
+                  </div>
+                )}
+              </button>
+
+              {isHovered && (
+                <div className="timeline-tooltip">
+                  {group.events.map((ev, idx) => (
+                    <div key={ev.id} className="timeline-tooltip-event">
+                      <div>{stripChildPrefix(ev.title, childName)}</div>
+                      {idx === 0 && (
+                        <div className="timeline-tooltip-date">
+                          {formatLongDate(group.date)}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
     </div>
   );
-}
+};
+
+export default ChildTimeline;

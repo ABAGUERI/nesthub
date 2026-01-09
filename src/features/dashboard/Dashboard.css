@@ -4,22 +4,19 @@
   flex-direction: column;
   height: 100vh;
   width: 100%;
-  padding: 10px 14px 14px;
-  gap: 10px;
-  background:
-    radial-gradient(circle at 10% 15%, rgba(34, 211, 238, 0.12), transparent 32%),
-    radial-gradient(circle at 85% 10%, rgba(168, 85, 247, 0.14), transparent 35%),
-    linear-gradient(145deg, #030712 0%, #0b1224 60%, #050a16 100%);
-  color: #e2e8f0;
+  padding: 12px 16px;
+  background: linear-gradient(145deg, #0a0f1f 0%, #0b1224 60%, #050a16 100%);
+  color: #fff;
   overflow: hidden;
 }
 
 .dashboard-body {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-height: 0;
+  overflow: hidden;
+}
+
+.dashboard-panel {
+  height: 100%;
 }
 
 .dashboard-container.carousel-mode {
@@ -72,10 +69,10 @@
 }
 
 .screen-grid.kids-screen {
-  /* Align the two top cards perfectly (same height) */
   align-items: stretch;
   align-content: start;
   grid-template-columns: 1.2fr 0.9fr;
+  grid-template-rows: minmax(400px, 1fr) auto;
 }
 
 .screen-grid.agenda-screen {
@@ -324,123 +321,375 @@
   }
 }
 
-/* === CHILD TIMELINE (Apple dark, compact) === */
-.timeline-card {
-  grid-column: 1 / -1;
-  height: clamp(80px, 9vh, 110px);
-  padding: 14px 16px;
-  border-radius: 20px;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 12px 45px rgba(0, 0, 0, 0.32);
+/* Layout helpers */
+.dashboard-top-row {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  overflow: hidden;
+  gap: 18px;
+  align-items: stretch;
+  height: 100%;
 }
 
-.timeline-label {
-  min-width: 260px;
-  max-width: 420px;
+.dashboard-left {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+.dashboard-right {
+  flex: 0.9;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+.dashboard-bottom-row {
+  display: flex;
+  gap: 18px;
+  align-items: stretch;
+  height: 100%;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-top-row,
+  .dashboard-bottom-row {
+    flex-direction: column;
+  }
+}
+
+/* Empty message helper */
+.empty-message {
+  opacity: 0.6;
   font-size: 14px;
+  line-height: 1.5;
+}
+
+/* =====================================================
+   CHILD TIMELINE - Apple Dark/Glass Ultra-Compact
+   Design: 1 ligne d'info + rail lumineux + dots avec dates
+   Pas de chevauchement, regroupement événements multiples
+   ===================================================== */
+.child-timeline {
+  grid-column: 1 / -1;
+}
+
+.timeline-card {
+  position: relative;
+  height: 78px;
+  padding: 12px 20px 14px 20px;
+  border-radius: 20px;
+  border-top: 1px solid rgba(120, 170, 255, 0.15);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background:
+    radial-gradient(circle at 15% 50%, rgba(120, 170, 255, 0.08), transparent 40%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.015));
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 12px 50px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: visible;
+}
+
+.timeline-title {
+  font-size: 16px;
   font-weight: 700;
   color: rgba(226, 232, 240, 0.88);
+  letter-spacing: 0.1px;
+  margin-bottom: 14px;
+}
+
+/* Événement principal (nom uniquement, ligne de texte unique) */
+.timeline-main-event {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(120, 170, 255, 0.92);
+  margin-bottom: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* Container du rail */
 .timeline-rail-wrap {
   position: relative;
-  flex: 1;
-  height: 22px;
-  display: flex;
-  align-items: center;
-}
-
-.timeline-rail {
   width: 100%;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  height: 38px;
 }
 
+/* Rail principal */
+.timeline-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 8px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(120, 170, 255, 0.12);
+  box-shadow: 
+    0 0 12px rgba(120, 170, 255, 0.08),
+    inset 0 1px 0 rgba(120, 170, 255, 0.15);
+}
+
+/* Glow subtil sur le rail */
+.timeline-rail::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(90deg, 
+    rgba(120,170,255,0.0), 
+    rgba(120,170,255,0.4) 20%, 
+    rgba(168,85,247,0.3) 80%, 
+    rgba(255,255,255,0.0));
+  opacity: 0.6;
+  filter: blur(1px);
+  border-radius: 999px;
+}
+
+/* Label "Aujourd'hui" en dessous du rail */
+.timeline-start {
+  position: absolute;
+  left: 0;
+  top: 18px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(226, 232, 240, 0.55);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* Conteneur absolu par dot (évite les chevauchements) */
+.timeline-dot-container {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+/* Dot de base */
 .timeline-dot {
   position: absolute;
-  top: 50%;
+  top: 8px;
+  left: 0;
   transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 999px;
-  border: 2px solid rgba(255, 255, 255, 0.55);
-  background: rgba(34, 211, 238, 0.85);
-  box-shadow: 0 6px 18px rgba(34, 211, 238, 0.18);
+  border: 2px solid rgba(120, 170, 255, 0.65);
+  background: rgba(120, 170, 255, 0.85);
+  box-shadow: 
+    0 0 8px rgba(120, 170, 255, 0.25),
+    0 8px 18px rgba(0, 0, 0, 0.3);
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
+.timeline-dot:hover {
+  transform: translate(-50%, -50%) scale(1.25);
+  box-shadow: 
+    0 0 14px rgba(120, 170, 255, 0.45),
+    0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Dot "aujourd'hui" */
+.timeline-dot.start {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.30);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Dot "next" (prochain événement) */
 .timeline-dot.next {
-  width: 12px;
-  height: 12px;
-  background: rgba(34, 211, 238, 0.95);
-  box-shadow: 0 10px 26px rgba(34, 211, 238, 0.28);
+  width: 11px;
+  height: 11px;
+  background: rgba(120, 170, 255, 1);
+  border-color: rgba(255, 255, 255, 0.75);
+  box-shadow: 
+    0 0 16px rgba(120, 170, 255, 0.5),
+    0 10px 26px rgba(0, 0, 0, 0.4);
+  animation: pulse-next 2.5s ease-in-out infinite;
 }
 
-.timeline-dot:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.25), 0 10px 26px rgba(34, 211, 238, 0.22);
+@keyframes pulse-next {
+  0%, 100% { 
+    box-shadow: 
+      0 0 16px rgba(120, 170, 255, 0.5),
+      0 10px 26px rgba(0, 0, 0, 0.4);
+  }
+  50% { 
+    box-shadow: 
+      0 0 24px rgba(120, 170, 255, 0.7),
+      0 12px 30px rgba(0, 0, 0, 0.45);
+  }
 }
 
+/* Date EN DESSOUS du dot */
+.timeline-dot-date {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(226, 232, 240, 0.72);
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  pointer-events: none;
+}
+
+/* Badge "+" pour événements groupés */
+.timeline-dot-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.92);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35);
+  pointer-events: none;
+}
+
+/* Tooltip au hover */
 .timeline-tooltip {
   position: absolute;
+  bottom: calc(100% + 12px);
   left: 50%;
-  top: -12px;
-  transform: translate(-50%, -100%);
-  min-width: 220px;
-  max-width: 320px;
+  transform: translateX(-50%);
+  min-width: 200px;
+  max-width: 280px;
   padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(8, 14, 28, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+  border-radius: 12px;
+  border: 1px solid rgba(120, 170, 255, 0.20);
+  background: rgba(8, 14, 26, 0.94);
+  backdrop-filter: blur(14px);
+  box-shadow: 
+    0 16px 50px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   color: rgba(226, 232, 240, 0.92);
-  font-size: 13px;
-  line-height: 1.25;
+  z-index: 10;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: translateX(-50%) translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.timeline-dot:hover .timeline-tooltip,
-.timeline-dot[data-open="true"] .timeline-tooltip {
+.timeline-dot-container:hover .timeline-tooltip,
+.timeline-dot:focus + .timeline-tooltip {
   opacity: 1;
-  transform: translate(-50%, -108%);
+  transform: translateX(-50%) translateY(0);
 }
 
-.timeline-tooltip-title {
-  font-weight: 800;
-  margin-bottom: 4px;
+.timeline-tooltip-event {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(120, 170, 255, 0.95);
+}
+
+.timeline-tooltip-event:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .timeline-tooltip-date {
-  color: rgba(203, 213, 225, 0.85);
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(226, 232, 240, 0.65);
+  margin-top: 2px;
 }
 
-/* Mobile: stack label above rail for breathing room */
-@media (max-width: 768px) {
+/* Empty state */
+.timeline-empty {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.60);
+}
+
+/* Mobile: réduction de hauteur */
+@media (max-width: 900px) {
   .timeline-card {
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: center;
-    gap: 10px;
     height: auto;
-    padding: 12px 14px;
+    min-height: 72px;
+    padding: 10px 16px 12px 16px;
   }
-  .timeline-label {
-    min-width: 0;
-    max-width: 100%;
+  
+  .timeline-main-event {
+    font-size: 13px;
   }
+  
+  .timeline-dot-date {
+    font-size: 9px;
+  }
+}
+
+/* =====================================================
+   FIX LAYOUT KIDS SCREEN
+   Reserve explicit space for timeline without overlap
+   ===================================================== */
+.screen-grid.kids-screen > :nth-child(1),
+.screen-grid.kids-screen > :nth-child(2) {
+  grid-row: 1;
+  min-height: 400px;
+  overflow: hidden;
+}
+
+.screen-grid.kids-screen .child-timeline {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  margin-top: 12px;
+}
+
+@media (max-width: 1100px) {
+  .screen-grid.kids-screen {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .screen-grid.kids-screen > :nth-child(1),
+  .screen-grid.kids-screen > :nth-child(2) {
+    grid-row: auto;
+    min-height: 380px;
+  }
+
+  .screen-grid.kids-screen .child-timeline {
+    grid-row: auto;
+    margin-top: 10px;
+  }
+}
+
+/* =====================================================
+   FIX FINAL TIMELINE - FORCE TOUT
+   ===================================================== */
+.screen-grid.kids-screen > :nth-child(3),
+.screen-grid.kids-screen .child-timeline {
+  grid-row: 2 !important;
+  grid-column: 1 / -1 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.dashboard-carousel {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.dashboard-screen {
+  overflow: visible !important;
 }
