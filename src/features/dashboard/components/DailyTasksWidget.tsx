@@ -45,7 +45,13 @@ export const DailyTasksWidget: React.FC = () => {
   useEffect(() => {
     // Recharger les tâches complétées quand on change d'enfant
     if (children.length > 0) {
-      loadCompletedTasks();
+      const childId = children[selectedChildIndex]?.id;
+      if (childId) {
+        loadCompletedTasks(childId);
+        void syncMonthlyProgress(childId).catch((error) => {
+          console.error('Error syncing monthly progress:', error);
+        });
+      }
     }
   }, [selectedChildIndex, children]);
 
@@ -91,7 +97,11 @@ export const DailyTasksWidget: React.FC = () => {
       }
 
       // Charger tâches complétées
-      await loadCompletedTasks();
+      const activeChildId = formattedChildren[selectedChildIndex]?.id;
+      if (activeChildId) {
+        await loadCompletedTasks(activeChildId);
+        await syncMonthlyProgress(activeChildId);
+      }
     } catch (error) {
       console.error('Error loading tasks:', error);
     } finally {
@@ -99,8 +109,11 @@ export const DailyTasksWidget: React.FC = () => {
     }
   };
 
-  const loadCompletedTasks = async () => {
+  const loadCompletedTasks = async (childId?: string) => {
     if (!user) return;
+
+    const targetChildId = childId ?? children[selectedChildIndex]?.id;
+    if (!targetChildId) return;
 
     try {
       // Charger tâches complétées aujourd'hui
@@ -108,6 +121,7 @@ export const DailyTasksWidget: React.FC = () => {
       const { data: completedData, error: completedError } = await supabase
         .from('completed_tasks')
         .select('*')
+        .eq('child_id', targetChildId)
         .gte('completed_at', `${today}T00:00:00`)
         .lte('completed_at', `${today}T23:59:59`);
 
@@ -192,42 +206,79 @@ export const DailyTasksWidget: React.FC = () => {
     return completedTasks.some((ct) => ct.taskId === taskId && ct.childId === childId);
   };
 
-  const completeTask = async (task: Task) => {
-    if (children.length === 0) return;
+  const getMonthlyProgress = async (childId: string) => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
+    const { data: monthlyTasks, error: monthlyError } = await supabase
+      .from('completed_tasks')
+      .select('points_earned')
+      .eq('child_id', childId)
+      .gte('completed_at', startOfMonth.toISOString())
+      .lt('completed_at', startOfNextMonth.toISOString());
+
+    if (monthlyError) throw monthlyError;
+
+    const totalPoints = (monthlyTasks || []).reduce((sum, task) => sum + (task.points_earned || 0), 0);
+    const totalTasksCompleted = (monthlyTasks || []).length;
+
+    return { totalPoints, totalTasksCompleted };
+  };
+
+  const syncMonthlyProgress = async (childId: string) => {
+    const { totalPoints, totalTasksCompleted } = await getMonthlyProgress(childId);
+
+    const { error: updateError } = await supabase
+      .from('child_progress')
+      .update({
+        total_points: totalPoints,
+        total_tasks_completed: totalTasksCompleted,
+      })
+      .eq('child_id', childId);
+
+    if (updateError) throw updateError;
+  };
+
+  const completeTask = async (task: Task) => {
     const activeChild = children[selectedChildIndex];
     if (!activeChild) return;
 
     try {
+      const { data: taskData, error: taskError } = await supabase
+        .from('available_tasks')
+        .select('id, name, points')
+        .eq('id', task.id)
+        .single();
+
+      if (taskError) throw taskError;
+
+      const resolvedTask = taskData
+        ? {
+            id: taskData.id,
+            name: taskData.name,
+            points: Number(taskData.points) || 0,
+          }
+        : {
+            id: task.id,
+            name: task.name,
+            points: task.points,
+          };
+
       // Créer la tâche complétée
       const { error: completedError } = await supabase.from('completed_tasks').insert({
         id: crypto.randomUUID(),
         child_id: activeChild.id,
-        task_id: task.id,
-        task_name: task.name,
-        points_earned: task.points,
+        task_id: resolvedTask.id,
+        task_name: resolvedTask.name,
+        points_earned: resolvedTask.points,
         completed_at: new Date().toISOString(),
       });
 
       if (completedError) throw completedError;
 
       // Mettre à jour la progression de l'enfant
-      const { data: progressData, error: progressError } = await supabase
-        .from('child_progress')
-        .select('total_points')
-        .eq('child_id', activeChild.id)
-        .single();
-
-      if (progressError) throw progressError;
-
-      const { error: updateError } = await supabase
-        .from('child_progress')
-        .update({
-          total_points: progressData.total_points + task.points,
-        })
-        .eq('child_id', activeChild.id);
-
-      if (updateError) throw updateError;
+      await syncMonthlyProgress(activeChild.id);
 
       await loadCompletedTasks();
     } catch (error) {
