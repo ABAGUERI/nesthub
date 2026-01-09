@@ -59,6 +59,7 @@ const formatLongDate = (d: Date) => {
 
 const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) => {
   const [hoveredDateKey, setHoveredDateKey] = useState<string | null>(null);
+  const [activeDateKey, setActiveDateKey] = useState<string | null>(null);
 
   const { startRange, endRange } = useMemo(() => {
     const start = startOfDay(new Date());
@@ -116,17 +117,21 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
 
     const firstEvent = nextGroup.events[0];
     const cleanTitle = stripChildPrefix(firstEvent.title, childName);
+    const dateText = formatLongDate(nextGroup.date);
     
     if (nextGroup.events.length > 1) {
-      return `${cleanTitle} (+ ${nextGroup.events.length - 1} autre${nextGroup.events.length > 2 ? 's' : ''})`;
+      return `${cleanTitle} — ${dateText} (+ ${nextGroup.events.length - 1} autre${nextGroup.events.length > 2 ? 's' : ''})`;
     }
     
-    return cleanTitle;
+    return `${cleanTitle} — ${dateText}`;
   }, [groupedByDate, nextDateKey, childName]);
 
   if (!groupedByDate || groupedByDate.length === 0) {
     return (
-      <div className="timeline-card child-timeline">
+      <div className="timeline-card glassCard child-timeline fullWidth">
+        <div className="timeline-title cardHeader">
+          Événements à venir pour {childName}
+        </div>
         <div className="timeline-empty">
           Aucun événement sur les 4 prochaines semaines.
         </div>
@@ -135,11 +140,10 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
   }
 
   return (
-    <div className="timeline-card child-timeline">
-      {mainEventText && (
-        <div className="timeline-main-event">{mainEventText}</div>
-      )}
-
+    <div className="timeline-card glassCard child-timeline fullWidth">
+      <div className="timeline-title cardHeader">
+        Événements à venir pour {childName}
+      </div>
       <div className="timeline-rail-wrap">
         <div className="timeline-rail" />
         
@@ -160,6 +164,7 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
         {groupedByDate.map((group) => {
           const isNext = group.dateKey === nextDateKey;
           const isHovered = hoveredDateKey === group.dateKey;
+          const isActive = activeDateKey === group.dateKey;
           const hasMultiple = group.events.length > 1;
 
           return (
@@ -180,6 +185,9 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
                 aria-label={`${group.events.length} événement${group.events.length > 1 ? 's' : ''} le ${formatLongDate(group.date)}`}
                 onFocus={() => setHoveredDateKey(group.dateKey)}
                 onBlur={() => setHoveredDateKey(null)}
+                onClick={() => {
+                  setActiveDateKey((prev) => (prev === group.dateKey ? null : group.dateKey));
+                }}
               >
                 {hasMultiple && (
                   <div className="timeline-dot-badge">
@@ -188,7 +196,7 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
                 )}
               </button>
 
-              {isHovered && (
+              {(isHovered || isActive) && (
                 <div className="timeline-tooltip">
                   {group.events.map((ev, idx) => (
                     <div key={ev.id} className="timeline-tooltip-event">
@@ -206,6 +214,9 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
           );
         })}
       </div>
+      {mainEventText && (
+        <div className="timeline-main-event">{mainEventText}</div>
+      )}
     </div>
   );
 };

@@ -237,8 +237,8 @@ export const DailyTasksWidget: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="widget">
-        <div className="widget-header">
+      <div className="widget glassCard">
+        <div className="widget-header cardHeader">
           <div className="widget-title">⭐ Tâches du jour</div>
         </div>
         <div className="loading-message">Chargement...</div>
@@ -248,8 +248,8 @@ export const DailyTasksWidget: React.FC = () => {
 
   if (children.length === 0) {
     return (
-      <div className="widget">
-        <div className="widget-header">
+      <div className="widget glassCard">
+        <div className="widget-header cardHeader">
           <div className="widget-title">⭐ Tâches du jour</div>
         </div>
         <div className="empty-message">Aucun enfant configuré</div>
@@ -260,8 +260,8 @@ export const DailyTasksWidget: React.FC = () => {
   const activeChild = children[selectedChildIndex];
   if (!activeChild) {
     return (
-      <div className="widget daily-tasks-widget">
-        <div className="widget-header">
+      <div className="widget glassCard daily-tasks-widget">
+        <div className="widget-header cardHeader">
           <div className="widget-title">⭐ Tâches du jour</div>
         </div>
         <div className="empty-message">Aucun enfant sélectionné</div>
@@ -279,15 +279,15 @@ export const DailyTasksWidget: React.FC = () => {
   const showPagination = safeTasks.length > tasksPerPage;
 
   return (
-    <div className="widget daily-tasks-widget">
-      <div className="widget-header">
+    <div className="widget glassCard daily-tasks-widget">
+      <div className="widget-header cardHeader">
         <div className="widget-title">⭐ Tâches du jour</div>
         <span className="refresh-btn" onClick={loadData}>
           🔄
         </span>
       </div>
 
-      <div className="widget-scroll">
+      <div className="widget-scroll cardBody">
         {safeTasks.length === 0 ? (
           <div className="empty-message">Aucune tâche disponible</div>
         ) : (
@@ -311,7 +311,7 @@ export const DailyTasksWidget: React.FC = () => {
       </div>
 
       {showPagination && (
-        <div className="tasks-navigation">
+        <div className="tasks-navigation cardFooter">
           <button
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}

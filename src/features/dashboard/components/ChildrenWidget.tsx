@@ -285,8 +285,8 @@ export const ChildrenWidget: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="widget children-widget">
-        <div className="widget-header">
+      <div className="widget glassCard children-widget">
+        <div className="widget-header cardHeader">
           <div className="widget-title">🏆 Vas-tu atteindre ton objectif?</div>
         </div>
         <div className="loading-message">Chargement...</div>
@@ -296,8 +296,8 @@ export const ChildrenWidget: React.FC = () => {
 
   if (children.length === 0) {
     return (
-      <div className="widget children-widget">
-        <div className="widget-header">
+      <div className="widget glassCard children-widget">
+        <div className="widget-header cardHeader">
           <div className="widget-title">🏆 Vas-tu atteindre ton objectif?</div>
         </div>
         <div className="empty-message">Aucun enfant configuré</div>
@@ -319,8 +319,8 @@ export const ChildrenWidget: React.FC = () => {
   const heartsUsed = Math.min(heartsTotal, Math.ceil(usedMinutes / minutesPerHeart));
 
   return (
-    <div className="widget children-widget">
-      <div className="widget-header">
+    <div className="widget glassCard children-widget">
+      <div className="widget-header cardHeader">
         <div className="widget-title">🏆 Vas-tu atteindre ton objectif?</div>
         <div className="points-chip">
           <span className="points-value">{selectedChild.totalPoints} pts</span>
@@ -328,23 +328,7 @@ export const ChildrenWidget: React.FC = () => {
         </div>
       </div>
 
-      <div className="carousel-container">
-        {children.length > 1 && (
-          <div className="child-switcher">
-            {children.map((child, index) => (
-              <button
-                key={child.id}
-                className={`switcher-pill ${index === selectedChildIndex ? 'active' : ''}`}
-                onClick={() => selectChild(index)}
-                aria-label={`Voir ${child.firstName}`}
-              >
-                <ChildAvatar child={child} size="small" className="pill-avatar" />
-                <span className="pill-name">{child.firstName}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
+      <div className="carousel-container cardBody">
         <button
           className="carousel-arrow carousel-arrow-left"
           onClick={prevChild}
@@ -371,29 +355,47 @@ export const ChildrenWidget: React.FC = () => {
               </div>
             )}
 
-            <div className="donut-and-hearts">
-              <div className="donut-wrapper">
-                <div className="donut-stack">
-                  <canvas ref={canvasRef} className="donut-chart-large" aria-label="Progression des points" />
-                  <div className="donut-label-large">
-                    <ChildAvatar child={selectedChild} size="large" className="donut-avatar-large" />
-                  </div>
-                </div>
-
-                <div className="child-name-large">{selectedChild.firstName}</div>
-              </div>
-
-              <div className="screen-time-hearts">
-                <div className="hearts-label">Temps d'écran</div>
-                <div className="hearts-column">
-                  {Array.from({ length: heartsTotal }).map((_, index) => (
-                    <span key={index} className={`heart ${index < heartsUsed ? 'used' : ''}`}>
-                      ❤️
-                    </span>
+            <div className="child-layout">
+              <div className="child-list">
+                <div className="child-switcher">
+                  {children.map((child, index) => (
+                    <button
+                      key={child.id}
+                      className={`switcher-pill ${index === selectedChildIndex ? 'active' : ''}`}
+                      onClick={() => selectChild(index)}
+                      aria-label={`Voir ${child.firstName}`}
+                    >
+                      <ChildAvatar child={child} size="small" className="pill-avatar" />
+                      <span className="pill-name">{child.firstName}</span>
+                    </button>
                   ))}
                 </div>
-                <div className="hearts-meta">
-                  {usedMinutes} / {totalMinutes} min
+              </div>
+
+              <div className="child-center">
+                <div className="donut-wrapper">
+                  <div className="donut-stack">
+                    <canvas ref={canvasRef} className="donut-chart-large" aria-label="Progression des points" />
+                    <div className="donut-label-large">
+                      <ChildAvatar child={selectedChild} size="large" className="donut-avatar-large" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="child-side">
+                <div className="screen-time-hearts glassCard">
+                  <div className="hearts-label">TEMPS D&apos;ÉCRAN</div>
+                  <div className="hearts-column">
+                    {Array.from({ length: heartsTotal }).map((_, index) => (
+                      <span key={index} className={`heart ${index < heartsUsed ? 'used' : ''}`}>
+                        ❤️
+                      </span>
+                    ))}
+                  </div>
+                  <div className="hearts-meta">
+                    {usedMinutes} / {totalMinutes} min
+                  </div>
                 </div>
               </div>
             </div>

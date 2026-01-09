@@ -187,7 +187,10 @@ const DashboardInner: React.FC = () => {
 
                 {/* Timeline — enfant sélectionné uniquement */}
                 {timelineBlockedMessage ? (
-                  <div className="timeline-card child-timeline">
+                  <div className="timeline-card glassCard child-timeline fullWidth">
+                    <div className="timeline-title cardHeader">
+                      Événements à venir pour {selectedChildName || 'votre enfant'}
+                    </div>
                     <div className="timeline-empty">{timelineBlockedMessage}</div>
                   </div>
                 ) : (
