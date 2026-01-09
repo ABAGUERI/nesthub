@@ -91,7 +91,7 @@ export const DailyTasksWidget: React.FC = () => {
       }
 
       // Charger tâches complétées
-      await loadCompletedTasks();
+      await loadCompletedTasks(formattedChildren[selectedChildIndex]?.id);
     } catch (error) {
       console.error('Error loading tasks:', error);
     } finally {
@@ -99,8 +99,11 @@ export const DailyTasksWidget: React.FC = () => {
     }
   };
 
-  const loadCompletedTasks = async () => {
+  const loadCompletedTasks = async (childId?: string) => {
     if (!user) return;
+
+    const targetChildId = childId ?? children[selectedChildIndex]?.id;
+    if (!targetChildId) return;
 
     try {
       // Charger tâches complétées aujourd'hui
@@ -108,6 +111,7 @@ export const DailyTasksWidget: React.FC = () => {
       const { data: completedData, error: completedError } = await supabase
         .from('completed_tasks')
         .select('*')
+        .eq('child_id', targetChildId)
         .gte('completed_at', `${today}T00:00:00`)
         .lte('completed_at', `${today}T23:59:59`);
 
@@ -193,19 +197,37 @@ export const DailyTasksWidget: React.FC = () => {
   };
 
   const completeTask = async (task: Task) => {
-    if (children.length === 0) return;
-
     const activeChild = children[selectedChildIndex];
     if (!activeChild) return;
 
     try {
+      const { data: taskData, error: taskError } = await supabase
+        .from('available_tasks')
+        .select('id, name, points')
+        .eq('id', task.id)
+        .single();
+
+      if (taskError) throw taskError;
+
+      const resolvedTask = taskData
+        ? {
+            id: taskData.id,
+            name: taskData.name,
+            points: Number(taskData.points) || 0,
+          }
+        : {
+            id: task.id,
+            name: task.name,
+            points: task.points,
+          };
+
       // Créer la tâche complétée
       const { error: completedError } = await supabase.from('completed_tasks').insert({
         id: crypto.randomUUID(),
         child_id: activeChild.id,
-        task_id: task.id,
-        task_name: task.name,
-        points_earned: task.points,
+        task_id: resolvedTask.id,
+        task_name: resolvedTask.name,
+        points_earned: resolvedTask.points,
         completed_at: new Date().toISOString(),
       });
 
@@ -214,7 +236,7 @@ export const DailyTasksWidget: React.FC = () => {
       // Mettre à jour la progression de l'enfant
       const { data: progressData, error: progressError } = await supabase
         .from('child_progress')
-        .select('total_points')
+        .select('total_points, total_tasks_completed')
         .eq('child_id', activeChild.id)
         .single();
 
@@ -223,7 +245,8 @@ export const DailyTasksWidget: React.FC = () => {
       const { error: updateError } = await supabase
         .from('child_progress')
         .update({
-          total_points: progressData.total_points + task.points,
+          total_points: progressData.total_points + resolvedTask.points,
+          total_tasks_completed: (progressData.total_tasks_completed || 0) + 1,
         })
         .eq('child_id', activeChild.id);
 
