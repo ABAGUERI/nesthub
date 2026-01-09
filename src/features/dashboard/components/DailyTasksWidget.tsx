@@ -45,7 +45,13 @@ export const DailyTasksWidget: React.FC = () => {
   useEffect(() => {
     // Recharger les tâches complétées quand on change d'enfant
     if (children.length > 0) {
-      loadCompletedTasks();
+      const childId = children[selectedChildIndex]?.id;
+      if (childId) {
+        loadCompletedTasks(childId);
+        void syncMonthlyProgress(childId).catch((error) => {
+          console.error('Error syncing monthly progress:', error);
+        });
+      }
     }
   }, [selectedChildIndex, children]);
 
@@ -91,7 +97,11 @@ export const DailyTasksWidget: React.FC = () => {
       }
 
       // Charger tâches complétées
-      await loadCompletedTasks(formattedChildren[selectedChildIndex]?.id);
+      const activeChildId = formattedChildren[selectedChildIndex]?.id;
+      if (activeChildId) {
+        await loadCompletedTasks(activeChildId);
+        await syncMonthlyProgress(activeChildId);
+      }
     } catch (error) {
       console.error('Error loading tasks:', error);
     } finally {
@@ -196,6 +206,40 @@ export const DailyTasksWidget: React.FC = () => {
     return completedTasks.some((ct) => ct.taskId === taskId && ct.childId === childId);
   };
 
+  const getMonthlyProgress = async (childId: string) => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    const { data: monthlyTasks, error: monthlyError } = await supabase
+      .from('completed_tasks')
+      .select('points_earned')
+      .eq('child_id', childId)
+      .gte('completed_at', startOfMonth.toISOString())
+      .lt('completed_at', startOfNextMonth.toISOString());
+
+    if (monthlyError) throw monthlyError;
+
+    const totalPoints = (monthlyTasks || []).reduce((sum, task) => sum + (task.points_earned || 0), 0);
+    const totalTasksCompleted = (monthlyTasks || []).length;
+
+    return { totalPoints, totalTasksCompleted };
+  };
+
+  const syncMonthlyProgress = async (childId: string) => {
+    const { totalPoints, totalTasksCompleted } = await getMonthlyProgress(childId);
+
+    const { error: updateError } = await supabase
+      .from('child_progress')
+      .update({
+        total_points: totalPoints,
+        total_tasks_completed: totalTasksCompleted,
+      })
+      .eq('child_id', childId);
+
+    if (updateError) throw updateError;
+  };
+
   const completeTask = async (task: Task) => {
     const activeChild = children[selectedChildIndex];
     if (!activeChild) return;
@@ -234,23 +278,7 @@ export const DailyTasksWidget: React.FC = () => {
       if (completedError) throw completedError;
 
       // Mettre à jour la progression de l'enfant
-      const { data: progressData, error: progressError } = await supabase
-        .from('child_progress')
-        .select('total_points, total_tasks_completed')
-        .eq('child_id', activeChild.id)
-        .single();
-
-      if (progressError) throw progressError;
-
-      const { error: updateError } = await supabase
-        .from('child_progress')
-        .update({
-          total_points: progressData.total_points + resolvedTask.points,
-          total_tasks_completed: (progressData.total_tasks_completed || 0) + 1,
-        })
-        .eq('child_id', activeChild.id);
-
-      if (updateError) throw updateError;
+      await syncMonthlyProgress(activeChild.id);
 
       await loadCompletedTasks();
     } catch (error) {
