@@ -30,8 +30,11 @@
   from = "/*"
   to = "/index.html"
   status = 200
-  force = false
-  conditions = {path = ["!/.netlify/*"]}
+
+[[redirects]]
+  from = "/.netlify/*"
+  to = "/.netlify/:splat"
+  status = 200
 
 # Headers de sécurité
 [[headers]]
