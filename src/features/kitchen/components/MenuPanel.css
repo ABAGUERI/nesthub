@@ -1,8 +1,6 @@
 /* =====================================================
  * MENU PANEL - VERSION ARDOISE RESTAURANT (FINAL)
- * Compatible avec KitchenPage.css (hauteur contrainte)
- * Objectif: 2 rangées visibles + repas lisibles + AUCUNE carte grise interne
- * + Centrage quand 1 seul repas
+ * Lisibilité améliorée + Aujourd'hui mis en avant
  * ===================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap');
@@ -11,7 +9,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* <-- change */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   height: 100%;
   min-height: 0;
 }
@@ -199,9 +197,23 @@
   transform: translateY(-2px);
 }
 
+/* ✨ MISE EN AVANT D'AUJOURD'HUI - AMÉLIORÉ */
 .menu-day-card.today {
-  background: rgba(34, 211, 238, 0.05);
-  border: 1px solid rgba(34, 211, 238, 0.3);
+  background: linear-gradient(155deg, rgba(34, 211, 238, 0.12), rgba(34, 211, 238, 0.06));
+  border: 2px solid rgba(34, 211, 238, 0.5);
+  box-shadow: 
+    0 0 24px rgba(34, 211, 238, 0.25),
+    0 8px 32px rgba(0, 0, 0, 0.3);
+  transform: scale(1.02);
+  z-index: 10;
+  position: relative;
+}
+
+.menu-day-card.today:hover {
+  transform: scale(1.03) translateY(-2px);
+  box-shadow: 
+    0 0 32px rgba(34, 211, 238, 0.35),
+    0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* =========================
@@ -231,6 +243,9 @@
 
 .menu-day-card.today .day-name-text {
   color: #22d3ee;
+  font-size: 17px;
+  font-weight: 900;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
 }
 
 .day-number-text {
@@ -240,10 +255,16 @@
   line-height: 1;
 }
 
+/* ✨ Numéro du jour aujourd'hui - Plus visible */
+.menu-day-card.today .day-number-text {
+  font-size: 28px;
+  font-weight: 900;
+  color: #22d3ee;
+  text-shadow: 0 0 12px rgba(34, 211, 238, 0.5);
+}
+
 /* =========================
  * ZONE REPAS
- * - 2 repas: empilés, lisibles, sans carte interne
- * - 1 repas: centré verticalement
  * ========================= */
 
 .day-meals {
@@ -258,19 +279,19 @@
   overflow: hidden;
 }
 
-/* 1 seul repas => centrage vertical + léger "air" */
+/* 1 seul repas => centrage vertical */
 .day-meals:has(.meal-item-compact:only-child) {
   justify-content: center;
 }
 
-/* Séparation subtile quand 2 repas (sans carte grise) */
+/* Séparation subtile quand 2 repas */
 .day-meals .meal-item-compact + .meal-item-compact {
   border-top: 1px dashed rgba(255, 255, 255, 0.12);
   padding-top: 10px;
 }
 
 /* =========================
- * REPAS (SANS CARTE GRISE)
+ * REPAS - LISIBILITÉ AMÉLIORÉE
  * ========================= */
 
 .meal-item-compact {
@@ -288,26 +309,33 @@
   justify-content: center;
 
   padding: 6px 8px;
-  gap: 6px;
+  gap: 8px;
 
   overflow: hidden;
 }
 
+/* ✨ EMOJI PLUS GRAND */
 .meal-icon {
-  font-size: 28px;
+  font-size: 44px; /* ↑ De 28px à 44px */
   line-height: 1;
   flex-shrink: 0;
 }
 
-/* Titre: zone garantie + clamp 2 lignes */
+/* ✨ Emoji encore plus grand pour aujourd'hui */
+.menu-day-card.today .meal-icon {
+  font-size: 50px;
+  filter: drop-shadow(0 2px 8px rgba(34, 211, 238, 0.3));
+}
+
+/* ✨ TITRE PLUS LISIBLE */
 .meal-title-compact {
   width: 100%;
   padding: 0 6px;
   text-align: center;
 
-  font-size: 18px;
+  font-size: 20px; /* ↑ De 18px à 20px */
   font-weight: 900;
-  line-height: 1.1;
+  line-height: 1.15;
 
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -316,7 +344,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
 
-  min-height: calc(2 * 1.1em);
+  min-height: calc(2 * 1.15em);
+}
+
+/* ✨ Titre encore plus visible pour aujourd'hui */
+.menu-day-card.today .meal-title-compact {
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .meal-title-compact * {
@@ -324,7 +359,7 @@
 }
 
 /* =========================
- * BOUTON AJOUTER (toujours visible)
+ * BOUTON AJOUTER
  * ========================= */
 
 .add-meal-btn-compact {
@@ -365,6 +400,12 @@
   border-color: rgba(34, 211, 238, 0.4);
   border-style: solid;
   box-shadow: 0 0 12px rgba(34, 211, 238, 0.18);
+}
+
+/* Bouton ajouter pour aujourd'hui */
+.menu-day-card.today .add-meal-btn-compact {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.4);
 }
 
 /* =========================
@@ -419,11 +460,27 @@
   .day-meals {
     overflow: visible;
   }
+  
+  .meal-icon {
+    font-size: 40px;
+  }
+  
+  .menu-day-card.today .meal-icon {
+    font-size: 46px;
+  }
 }
 
 @media (max-width: 767px) {
   .menu-days-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .meal-icon {
+    font-size: 36px;
+  }
+  
+  .meal-title-compact {
+    font-size: 18px;
   }
 }
 
