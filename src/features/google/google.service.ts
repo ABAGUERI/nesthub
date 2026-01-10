@@ -131,7 +131,13 @@ export const refreshAccessToken = async (refreshToken: string) => {
 export const ensureValidToken = async (userId: string): Promise<string | null> => {
   const { data: connection, error } = await supabase
     .from('google_connections')
-    .select('*')
+    .select(`
+      id,
+      user_id,
+      access_token,
+      refresh_token,
+      token_expires_at
+    `)
     .eq('user_id', userId)
     .single();
 
@@ -202,7 +208,18 @@ export const getGoogleConnection = async (userId: string) => {
   
   const { data, error } = await supabase
     .from('google_connections')
-    .select('*')
+    .select(`
+      id,
+      user_id,
+      gmail_address,
+      access_token,
+      refresh_token,
+      token_expires_at,
+      selected_calendar_id,
+      selected_calendar_name,
+      grocery_list_id,
+      grocery_list_name
+    `)
     .eq('user_id', userId)
     .single();
 
@@ -212,7 +229,7 @@ export const getGoogleConnection = async (userId: string) => {
     id: data.id,
     userId: data.user_id,
     gmailAddress: data.gmail_address,
-    accessToken: accessToken, // Utiliser le token refreshé
+    accessToken: accessToken,
     refreshToken: data.refresh_token,
     tokenExpiresAt: data.token_expires_at,
     selectedCalendarId: data.selected_calendar_id,

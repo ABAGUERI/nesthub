@@ -1,16 +1,15 @@
 /* =====================================================
- * DailyTasksWidget.css (UPDATED)
- * Objectifs:
- * - 3 colonnes x 2 lignes (6 tâches visibles)
- * - pas de scroll interne pour la grille (pagination via flèches)
- * - widget stable dans un screen-card (pas de "carte arrière" inutile)
+ * DailyTasksWidget.css
+ * Grille 3x2 avec pagination, responsive harmonieux
  * ===================================================== */
 
 /* === DAILY TASKS WIDGET WRAPPER === */
 .daily-tasks-widget {
   display: flex;
   flex-direction: column;
-  min-height: 0; /* IMPORTANT: permet au layout parent de contraindre */
+  min-height: 0;
+  max-width: 100%;
+  width: 100%;
 }
 
 .daily-tasks-widget .widget-header {
@@ -25,12 +24,12 @@
   letter-spacing: 0.2px;
 }
 
-/* Si tu as un conteneur scroll générique, on le neutralise ici
-   car on ne veut pas de scroll vertical dans la grille */
 .daily-tasks-widget .widget-scroll {
   flex: 1;
   min-height: 0;
-  overflow: hidden; /* IMPORTANT: évite le scroll qui casse le 3x2 */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* =====================================================
@@ -42,7 +41,6 @@
   grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 12px;
   padding: 2px;
-
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -54,21 +52,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-
   gap: 8px;
   padding: 14px 12px 12px;
-
   background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.07), rgba(15, 23, 42, 0.65) 60%);
   border: 1px solid rgba(148, 163, 184, 0.4);
   border-radius: 16px;
-
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-
   box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05), 0 12px 28px rgba(0, 0, 0, 0.4);
-
   text-align: center;
-
   min-width: 0;
   overflow: hidden;
 }
@@ -84,12 +76,11 @@
 
 .daily-tasks-widget .task-row.completed {
   opacity: 0.5;
-  cursor: default;
+  cursor: pointer;
   background: rgba(15, 23, 42, 0.45);
   border-color: rgba(16, 185, 129, 0.2);
 }
 
-/* Icon */
 .daily-tasks-widget .task-icon {
   font-size: 28px;
   flex-shrink: 0;
@@ -97,17 +88,14 @@
   margin-top: 2px;
 }
 
-/* Nom tâche */
 .daily-tasks-widget .task-name {
   font-size: 16px;
   font-weight: 700;
   color: #e2e8f0;
   line-height: 1.2;
-
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-
   overflow: hidden;
   text-overflow: ellipsis;
   min-height: calc(2 * 1.2em);
@@ -122,14 +110,13 @@
 }
 
 /* =====================================================
- * Pagination (flèches)
+ * Pagination
  * ===================================================== */
 .daily-tasks-widget .tasks-navigation {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-
   margin-top: 8px;
   flex-shrink: 0;
 }
@@ -137,18 +124,14 @@
 .daily-tasks-widget .tasks-nav-btn {
   width: 30px;
   height: 30px;
-
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
-
   color: rgba(226, 232, 240, 0.95);
   font-weight: 900;
   cursor: pointer;
-
   display: grid;
   place-items: center;
-
   transition: all 0.15s ease;
 }
 
@@ -172,44 +155,107 @@
 }
 
 /* =====================================================
- * Couleurs (tone)
+ * Couleurs par catégorie
  * ===================================================== */
 .daily-tasks-widget .tone-blue {
   border-color: rgba(56, 189, 248, 0.8);
   box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.2), 0 12px 28px rgba(0, 0, 0, 0.4);
 }
+
 .daily-tasks-widget .tone-violet {
   border-color: rgba(168, 85, 247, 0.8);
   box-shadow: inset 0 0 0 1px rgba(168, 85, 247, 0.2), 0 12px 28px rgba(0, 0, 0, 0.4);
 }
+
 .daily-tasks-widget .tone-green {
   border-color: rgba(34, 197, 94, 0.8);
   box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.2), 0 12px 28px rgba(0, 0, 0, 0.4);
 }
+
 .daily-tasks-widget .tone-orange {
   border-color: rgba(251, 146, 60, 0.8);
   box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.2), 0 12px 28px rgba(0, 0, 0, 0.4);
 }
+
 .daily-tasks-widget .tone-cyan {
   border-color: rgba(34, 211, 238, 0.8);
   box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.2), 0 12px 28px rgba(0, 0, 0, 0.4);
 }
 
 /* =====================================================
- * RESPONSIVE
+ * RESPONSIVE - Cohérent avec DashboardPage.css
  * ===================================================== */
-@media (max-width: 900px) {
-  .daily-tasks-widget .task-icon {
-    font-size: 24px;
-  }
 
-  .daily-tasks-widget .task-name {
-    font-size: 14px;
+/* Grand écran (1400px+) : Optimal */
+@media (min-width: 1400px) {
+  .daily-tasks-widget {
+    max-width: 580px;
   }
 }
 
-@media (max-width: 640px) {
+/* Écran large (1100-1399px) : Léger ajustement */
+@media (min-width: 1100px) and (max-width: 1399px) {
+  .daily-tasks-widget {
+    max-width: 620px;
+  }
+}
+
+/* Tablette large (900-1099px) : Pleine largeur */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .daily-tasks-widget {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .daily-tasks-widget .tasks-list {
+    gap: 14px;
+  }
+}
+
+/* Tablette (640-899px) : Grille 2x3 */
+@media (min-width: 640px) and (max-width: 899px) {
+  .daily-tasks-widget .tasks-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  
+  .daily-tasks-widget .task-icon {
+    font-size: 26px;
+  }
+  
+  .daily-tasks-widget .task-name {
+    font-size: 15px;
+  }
+}
+
+/* Petit mobile (<640px) : 1 colonne */
+@media (max-width: 639px) {
+  .daily-tasks-widget .tasks-list {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, auto);
+    gap: 10px;
+  }
+  
   .daily-tasks-widget .task-row {
-    padding: 8px 8px;
+    padding: 12px 10px;
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 12px;
+  }
+  
+  .daily-tasks-widget .task-icon {
+    font-size: 24px;
+  }
+  
+  .daily-tasks-widget .task-name {
+    font-size: 14px;
+    text-align: left;
+    padding: 0;
+  }
+  
+  .daily-tasks-widget .task-status {
+    margin-left: auto;
   }
 }
