@@ -33,6 +33,10 @@ export const DailyTasksWidget: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pageIndex, setPageIndex] = useState(0);
+
+  // 3 colonnes x 2 lignes
+  const tasksPerPage = 6;
 
   useEffect(() => {
     loadData();
@@ -41,9 +45,19 @@ export const DailyTasksWidget: React.FC = () => {
   useEffect(() => {
     // Recharger les tâches complétées quand on change d'enfant
     if (children.length > 0) {
-      loadCompletedTasks();
+      const childId = children[selectedChildIndex]?.id;
+      if (childId) {
+        loadCompletedTasks(childId);
+        void syncMonthlyProgress(childId).catch((error) => {
+          console.error('Error syncing monthly progress:', error);
+        });
+      }
     }
   }, [selectedChildIndex, children]);
+
+  useEffect(() => {
+    setPageIndex(0);
+  }, [selectedChildIndex, tasks.length]);
 
   const loadData = async () => {
     if (!user) return;
@@ -74,7 +88,7 @@ export const DailyTasksWidget: React.FC = () => {
             name: t.name,
             points: t.points,
             category: t.category,
-            icon: getCategoryIcon(t.category),
+            icon: t.icon || getCategoryIcon(t.category),
           }))
         );
       } else {
@@ -83,7 +97,11 @@ export const DailyTasksWidget: React.FC = () => {
       }
 
       // Charger tâches complétées
-      await loadCompletedTasks();
+      const activeChildId = formattedChildren[selectedChildIndex]?.id;
+      if (activeChildId) {
+        await loadCompletedTasks(activeChildId);
+        await syncMonthlyProgress(activeChildId);
+      }
     } catch (error) {
       console.error('Error loading tasks:', error);
     } finally {
@@ -91,8 +109,11 @@ export const DailyTasksWidget: React.FC = () => {
     }
   };
 
-  const loadCompletedTasks = async () => {
+  const loadCompletedTasks = async (childId?: string) => {
     if (!user) return;
+
+    const targetChildId = childId ?? children[selectedChildIndex]?.id;
+    if (!targetChildId) return;
 
     try {
       // Charger tâches complétées aujourd'hui
@@ -100,6 +121,7 @@ export const DailyTasksWidget: React.FC = () => {
       const { data: completedData, error: completedError } = await supabase
         .from('completed_tasks')
         .select('*')
+        .eq('child_id', targetChildId)
         .gte('completed_at', `${today}T00:00:00`)
         .lte('completed_at', `${today}T23:59:59`);
 
@@ -140,6 +162,7 @@ export const DailyTasksWidget: React.FC = () => {
           name: t.name,
           points: t.points,
           category: t.category,
+          icon: t.icon,
         }))
       )
       .select();
@@ -151,7 +174,7 @@ export const DailyTasksWidget: React.FC = () => {
           name: t.name,
           points: t.points,
           category: t.category,
-          icon: getCategoryIcon(t.category),
+          icon: t.icon || getCategoryIcon(t.category),
         }))
       );
     }
@@ -180,76 +203,102 @@ export const DailyTasksWidget: React.FC = () => {
   };
 
   const isTaskCompleted = (taskId: string, childId: string): boolean => {
-    return completedTasks.some(
-      (ct) => ct.taskId === taskId && ct.childId === childId
-    );
+    return completedTasks.some((ct) => ct.taskId === taskId && ct.childId === childId);
+  };
+
+  const getMonthlyProgress = async (childId: string) => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    const { data: monthlyTasks, error: monthlyError } = await supabase
+      .from('completed_tasks')
+      .select('points_earned')
+      .eq('child_id', childId)
+      .gte('completed_at', startOfMonth.toISOString())
+      .lt('completed_at', startOfNextMonth.toISOString());
+
+    if (monthlyError) throw monthlyError;
+
+    const totalPoints = (monthlyTasks || []).reduce((sum, task) => sum + (task.points_earned || 0), 0);
+    const totalTasksCompleted = (monthlyTasks || []).length;
+
+    return { totalPoints, totalTasksCompleted };
+  };
+
+  const syncMonthlyProgress = async (childId: string) => {
+    const { totalPoints, totalTasksCompleted } = await getMonthlyProgress(childId);
+
+    const { error: updateError } = await supabase
+      .from('child_progress')
+      .update({
+        total_points: totalPoints,
+        total_tasks_completed: totalTasksCompleted,
+      })
+      .eq('child_id', childId);
+
+    if (updateError) throw updateError;
   };
 
   const completeTask = async (task: Task) => {
-    if (children.length === 0) return;
-    
-    const activeChild = children[selectedChildIndex];
-    if (!activeChild) return;
+  const activeChild = children[selectedChildIndex];
+  if (!activeChild) return;
 
-    try {
-      // Créer la tâche complétée
-      const { error: completedError } = await supabase
+  try {
+    // Vérifier si la tâche est déjà complétée
+    const alreadyCompleted = completedTasks.find(
+      (ct) => ct.taskId === task.id && ct.childId === activeChild.id
+    );
+
+    if (alreadyCompleted) {
+      // DÉCOCHER : Supprimer la tâche complétée
+      const { error: deleteError } = await supabase
         .from('completed_tasks')
-        .insert({
-          id: crypto.randomUUID(),
-          child_id: activeChild.id,
-          task_id: task.id,
-          task_name: task.name,
-          points_earned: task.points,
-          completed_at: new Date().toISOString(),
-        });
+        .delete()
+        .eq('id', alreadyCompleted.id);
 
-      if (completedError) throw completedError;
-
-      // Mettre à jour la progression de l'enfant
-      const { data: progressData, error: progressError } = await supabase
-        .from('child_progress')
-        .select('total_points')
-        .eq('child_id', activeChild.id)
+      if (deleteError) throw deleteError;
+    } else {
+      // COCHER : Créer la tâche complétée
+      const { data: taskData, error: taskError } = await supabase
+        .from('available_tasks')
+        .select('id, name, points')
+        .eq('id', task.id)
         .single();
 
-      if (progressError) throw progressError;
+      if (taskError) throw taskError;
 
-      const { error: updateError } = await supabase
-        .from('child_progress')
-        .update({
-          total_points: progressData.total_points + task.points,
-        })
-        .eq('child_id', activeChild.id);
+      const resolvedTask = taskData
+        ? {
+            id: taskData.id,
+            name: taskData.name,
+            points: Number(taskData.points) || 0,
+          }
+        : {
+            id: task.id,
+            name: task.name,
+            points: task.points,
+          };
 
-      if (updateError) throw updateError;
+      const { error: completedError } = await supabase.from('completed_tasks').insert({
+        id: crypto.randomUUID(),
+        child_id: activeChild.id,
+        task_id: resolvedTask.id,
+        task_name: resolvedTask.name,
+        points_earned: resolvedTask.points,
+        completed_at: new Date().toISOString(),
+      });
 
-      // Recharger les données
-      await loadCompletedTasks();
-    } catch (error) {
-      console.error('Error completing task:', error);
+      if (completedError) throw completedError;
     }
-  };
 
-  const getChildColor = (icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar'): string => {
-    const colors = {
-      bee: '#fbbf24',
-      ladybug: '#f87171',
-      butterfly: '#a78bfa',
-      caterpillar: '#34d399',
-    };
-    return colors[icon] || '#fbbf24';
-  };
-
-  const getChildIcon = (icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar'): string => {
-    const icons = {
-      bee: '🐝',
-      ladybug: '🐞',
-      butterfly: '🦋',
-      caterpillar: '🐛',
-    };
-    return icons[icon] || '🐝';
-  };
+    // Recalculer la progression dans les deux cas
+    await syncMonthlyProgress(activeChild.id);
+    await loadCompletedTasks();
+  } catch (error) {
+    console.error('Error completing/uncompleting task:', error);
+  }
+};
 
   if (loading) {
     return (
@@ -290,6 +339,10 @@ export const DailyTasksWidget: React.FC = () => {
     points: Number.isFinite(task.points) ? task.points : Number(task.points) || 0,
   }));
 
+  const totalPages = Math.max(1, Math.ceil(safeTasks.length / tasksPerPage));
+  const paginatedTasks = safeTasks.slice(pageIndex * tasksPerPage, pageIndex * tasksPerPage + tasksPerPage);
+  const showPagination = safeTasks.length > tasksPerPage;
+
   return (
     <div className="widget daily-tasks-widget">
       <div className="widget-header">
@@ -299,45 +352,52 @@ export const DailyTasksWidget: React.FC = () => {
         </span>
       </div>
 
-      {/* Header avec nom de l'enfant actif */}
-      <div className="tasks-header">
-        <div className="tasks-child-name">
-          <span style={{ color: getChildColor(activeChild.icon) }}>
-            {getChildIcon(activeChild.icon)}
-          </span>
-          <span>{activeChild.firstName}</span>
-        </div>
-      </div>
-
       <div className="widget-scroll">
         {safeTasks.length === 0 ? (
           <div className="empty-message">Aucune tâche disponible</div>
         ) : (
           <div className="tasks-list">
-            {safeTasks.map((task) => {
+            {paginatedTasks.map((task) => {
               const isCompleted = isTaskCompleted(task.id, activeChild.id);
               return (
                 <div
                   key={task.id}
                   className={`task-row ${isCompleted ? 'completed' : ''} ${getCategoryTone(task.category)}`}
-                  onClick={() => !isCompleted && completeTask(task)}
+                  onClick={() => completeTask(task)}
                 >
-                  <div className="task-checkbox">
-                    {isCompleted && <span className="checkmark">✓</span>}
-                  </div>
                   <div className="task-icon">{task.icon}</div>
-                  <div className="task-info">
-                    <div className="task-name">{task.name}</div>
-                    <div className="task-reward">
-                      <span className="reward-chip">+{task.points} pts ⭐</span>
-                    </div>
-                  </div>
+                  <div className="task-name">{task.name}</div>
+                  {isCompleted && <div className="task-status">Terminé</div>}
                 </div>
               );
             })}
           </div>
         )}
       </div>
+
+      {showPagination && (
+        <div className="tasks-navigation">
+          <button
+            className="tasks-nav-btn"
+            onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
+            disabled={pageIndex === 0}
+            aria-label="Tâches précédentes"
+          >
+            ‹
+          </button>
+          <div className="tasks-nav-indicator">
+            Page {pageIndex + 1} / {totalPages}
+          </div>
+          <button
+            className="tasks-nav-btn"
+            onClick={() => setPageIndex((prev) => Math.min(prev + 1, totalPages - 1))}
+            disabled={pageIndex >= totalPages - 1}
+            aria-label="Tâches suivantes"
+          >
+            ›
+          </button>
+        </div>
+      )}
     </div>
   );
 };

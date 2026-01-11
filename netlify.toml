@@ -1,0 +1,53 @@
+# netlify.toml
+# Configuration Netlify pour Hub Familial 2.0
+
+[build]
+  command = "vite build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[dev]
+  targetPort = 3000
+  port = 8888
+  command = "npm run dev"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = []
+
+# ⚠️ SECTIONS SÉPARÉES (pas imbriquées) ⚠️
+[functions.generate-menu]
+  timeout = 60
+
+[functions.generate-quick-recipes]
+  timeout = 45
+
+# Redirects et rewrites
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/.netlify/*"
+  to = "/.netlify/:splat"
+  status = 200
+
+# Headers de sécurité
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type"

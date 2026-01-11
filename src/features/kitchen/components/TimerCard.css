@@ -1,0 +1,314 @@
+/* =====================================================
+ * TimerCard.css — COMPACT (no scroll) + Overlay hardened
+ * Objectif: tenir dans une tuile type "jour"
+ * ===================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
+
+.timer-card-container {
+  /* Permet les container queries */
+  container-type: size;
+  container-name: timerCard;
+
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+
+  display: grid;
+  grid-template-rows: auto auto auto; /* header / controls / footer */
+  gap: 10px;
+
+  padding: 12px;
+
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  overflow: hidden;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: rgba(248, 250, 252, 0.95);
+}
+
+.timer-card-container *,
+.timer-card-container button {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.1;
+  box-sizing: border-box;
+}
+
+/* ================= HEADER ================= */
+
+.timer-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.timer-card-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(34, 211, 238, 0.08);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  font-size: 16px;
+}
+
+.timer-card-title {
+  font-family: 'Caveat', cursive;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+}
+
+.timer-card-subtitle {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: rgba(248, 250, 252, 0.65);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================= CONTROLS ================= */
+
+.timer-controls {
+  display: grid;
+  gap: 10px;
+  /* Important: pas de scroll interne */
+  overflow: hidden;
+}
+
+.timer-quick-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* 4 presets = 2x2 + Personnalisé pleine largeur */
+.timer-quick-btn {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+
+  height: 54px;
+  min-height: 54px;
+  padding: 8px 10px;
+
+  display: grid;
+  place-items: center;
+
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.05;
+  color: rgba(248, 250, 252, 0.95);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timer-quick-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(34, 211, 238, 0.22);
+  transform: translateY(-1px);
+}
+
+.timer-quick-btn:active {
+  transform: translateY(0);
+}
+
+.timer-quick-btn.highlight {
+  grid-column: 1 / -1;
+  background: rgba(34, 211, 238, 0.10);
+  border-color: rgba(34, 211, 238, 0.25);
+  color: #22d3ee;
+}
+
+.timer-overlay-btn {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 12px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  color: rgba(248, 250, 252, 0.88);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timer-overlay-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(34, 211, 238, 0.20);
+}
+
+.timer-overlay-btn.subtle {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(248, 250, 252, 0.72);
+}
+
+.timer-overlay-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ================= FOOTER ================= */
+
+.timer-floating-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  min-width: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.timer-summary-text {
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: rgba(248, 250, 252, 0.60);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timer-floating-summary .timer-overlay-btn {
+  width: auto;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+
+  background: rgba(34, 211, 238, 0.10);
+  border-color: rgba(34, 211, 238, 0.22);
+  color: rgba(248, 250, 252, 0.95);
+}
+
+/* =====================================================
+ * MODE ULTRA-COMPACT (quand la tuile est petite)
+ * -> réduit toutes les hauteurs/paddings, sans scroll
+ * ===================================================== */
+
+@container timerCard (max-height: 320px) {
+  .timer-card-container { gap: 8px; padding: 10px; }
+
+  .timer-card-icon { width: 34px; height: 34px; font-size: 15px; }
+  .timer-card-title { font-size: 24px; }
+  .timer-card-subtitle { font-size: 11px; }
+
+  .timer-quick-btn {
+    height: 44px;
+    min-height: 44px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+
+  .timer-overlay-btn {
+    height: 32px;
+    min-height: 32px;
+    font-size: 11px;
+    border-radius: 10px;
+  }
+
+  .timer-floating-summary { padding-top: 8px; }
+  .timer-summary-text { font-size: 10px; }
+  .timer-floating-summary .timer-overlay-btn {
+    height: 30px;
+    min-height: 30px;
+    padding: 0 10px;
+  }
+}
+
+/* Fallback si container queries non supportées */
+@media (max-height: 760px) {
+  .timer-quick-btn { height: 44px; min-height: 44px; font-size: 14px; }
+  .timer-overlay-btn { height: 32px; min-height: 32px; font-size: 11px; }
+}
+
+/* =====================================================
+ * OVERLAY (popup) — IMPORTANT pour qu’il soit visible
+ * ===================================================== */
+
+.timer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000; /* CRITIQUE: au-dessus de tout */
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.timer-overlay-card {
+  width: min(820px, 92vw);
+  max-height: 86vh;
+  overflow: auto;
+
+  background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 18px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  padding: 14px;
+}
+
+/* Exemple de header overlay si tu veux */
+.timer-overlay-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 6px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.timer-overlay-title {
+  font-family: 'Caveat', cursive;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.timer-overlay-subtitle {
+  font-size: 12px;
+  color: rgba(248, 250, 252, 0.65);
+  margin-top: 2px;
+}
+
+.timer-overlay-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(248, 250, 252, 0.9);
+  cursor: pointer;
+}

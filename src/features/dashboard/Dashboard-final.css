@@ -1,0 +1,326 @@
+/* === DASHBOARD LAYOUT === */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  padding: 10px 14px 14px;
+  gap: 10px;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(34, 211, 238, 0.12), transparent 32%),
+    radial-gradient(circle at 85% 10%, rgba(168, 85, 247, 0.14), transparent 35%),
+    linear-gradient(145deg, #030712 0%, #0b1224 60%, #050a16 100%);
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+.dashboard-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.dashboard-container.carousel-mode {
+  position: relative;
+}
+
+/* === CAROUSEL === */
+.dashboard-carousel {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  height: calc(100% - 4px);
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(145deg, rgba(18, 24, 38, 0.92), rgba(5, 10, 20, 0.9));
+  box-shadow:
+    0 18px 80px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.dashboard-carousel-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s ease;
+}
+
+.dashboard-screen {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 25%, rgba(34, 211, 238, 0.06), transparent 45%),
+    radial-gradient(circle at 80% 60%, rgba(168, 85, 247, 0.08), transparent 50%),
+    linear-gradient(160deg, rgba(10, 17, 35, 0.85), rgba(4, 7, 16, 0.9));
+}
+
+.screen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  width: 100%;
+  align-items: stretch;
+  max-height: 100%;
+}
+
+.screen-grid.kids-screen {
+  align-items: stretch;
+  align-content: start;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  height: 100%;
+}
+
+.screen-grid.agenda-screen {
+  grid-template-columns: minmax(520px, 1.25fr) minmax(420px, 1fr);
+  align-items: stretch;
+}
+
+.screen-grid.mobility-screen {
+  grid-template-columns: 1fr 1fr;
+}
+
+.screen-card {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 45px rgba(0, 0, 0, 0.32);
+  height: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.screen-card.wide {
+  grid-column: span 1;
+}
+
+.screen-card.narrow {
+  max-width: none;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-container {
+    padding: 12px;
+  }
+
+  .dashboard-carousel {
+    height: auto;
+    min-height: 60vh;
+  }
+
+  .dashboard-screen {
+    padding: 16px;
+  }
+
+  .screen-grid,
+  .screen-grid.kids-screen,
+  .screen-grid.agenda-screen,
+  .screen-grid.mobility-screen {
+    grid-template-columns: 1fr;
+  }
+
+  .screen-card.narrow {
+    max-width: none;
+    margin-left: 0;
+  }
+}
+
+.screen-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.screen-arrow:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(168, 85, 247, 0.18));
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 12px 34px rgba(34, 211, 238, 0.15);
+}
+
+.screen-arrow:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.screen-arrow.left {
+  left: 12px;
+}
+
+.screen-arrow.right {
+  right: 12px;
+}
+
+.screen-dots {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.screen-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.35);
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.screen-dot.active {
+  width: 28px;
+  background: linear-gradient(90deg, #22d3ee, #a855f7);
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
+}
+
+/* === WIDGET COMMUN === */
+.widget {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 20px 22px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.42);
+  transition: all 0.3s ease;
+}
+
+.widget:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 14px 50px rgba(0, 0, 0, 0.6);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.widget-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.widget-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+}
+
+/* Scrollbar styling */
+.widget-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.widget-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+
+.widget-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.widget-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* === REFRESH BUTTON === */
+.refresh-btn {
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.refresh-btn:hover {
+  opacity: 0.8;
+  transform: rotate(90deg);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1280px) {
+  .dashboard-screen {
+    padding: 18px;
+  }
+
+  .screen-grid,
+  .screen-grid.kids-screen,
+  .screen-grid.agenda-screen,
+  .screen-grid.mobility-screen {
+    grid-template-columns: 1fr;
+  }
+
+  .screen-card.narrow,
+  .screen-card.wide {
+    max-width: none;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 14px;
+  }
+
+  .dashboard-carousel {
+    border-radius: 14px;
+  }
+
+  .screen-arrow {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+  }
+
+  .widget {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .widget {
+    padding: 16px;
+  }
+}

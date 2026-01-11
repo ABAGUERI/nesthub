@@ -19,6 +19,8 @@ export interface Child {
   userId: string;
   firstName: string;
   icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
+  role?: 'child' | 'adult';
+  avatarUrl?: string;
   createdAt: string;
 }
 
@@ -50,6 +52,9 @@ export interface ClientConfig {
   // Config météo
   weatherCity: string;
   weatherPostalCode: string;
+  
+  // Config rotation des tâches
+  rotationResetDay: number; // 0=Dimanche, 1=Lundi, 2=Mardi, etc.
   
   // Config récompenses
   rewardSystem: 'points' | 'money' | 'hybrid' | 'none';

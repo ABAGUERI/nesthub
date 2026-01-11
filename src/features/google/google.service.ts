@@ -75,7 +75,6 @@ export const saveGoogleConnection = async (
 ) => {
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
-  // Utiliser upsert avec onConflict pour gérer les doublons
   const { error } = await supabase
     .from('google_connections')
     .upsert(
@@ -85,10 +84,11 @@ export const saveGoogleConnection = async (
         access_token: accessToken,
         refresh_token: refreshToken,
         token_expires_at: expiresAt.toISOString(),
+        expires_at: expiresAt.toISOString(),  // ← AJOUTER CETTE LIGNE
         updated_at: new Date().toISOString(),
       },
       {
-        onConflict: 'user_id', // Spécifier la colonne de conflit
+        onConflict: 'user_id',
       }
     );
 
@@ -131,7 +131,13 @@ export const refreshAccessToken = async (refreshToken: string) => {
 export const ensureValidToken = async (userId: string): Promise<string | null> => {
   const { data: connection, error } = await supabase
     .from('google_connections')
-    .select('*')
+    .select(`
+      id,
+      user_id,
+      access_token,
+      refresh_token,
+      token_expires_at
+    `)
     .eq('user_id', userId)
     .single();
 
@@ -158,13 +164,14 @@ export const ensureValidToken = async (userId: string): Promise<string | null> =
       const newExpiresAt = new Date(Date.now() + expiresIn * 1000);
       
       const { error: updateError } = await supabase
-        .from('google_connections')
-        .update({
-          access_token: accessToken,
-          token_expires_at: newExpiresAt.toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId);
+      .from('google_connections')
+      .update({
+        access_token: accessToken,
+        token_expires_at: newExpiresAt.toISOString(),
+        expires_at: newExpiresAt.toISOString(),  // ← AJOUTER CETTE LIGNE
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
 
       if (updateError) throw updateError;
 
@@ -201,7 +208,18 @@ export const getGoogleConnection = async (userId: string) => {
   
   const { data, error } = await supabase
     .from('google_connections')
-    .select('*')
+    .select(`
+      id,
+      user_id,
+      gmail_address,
+      access_token,
+      refresh_token,
+      token_expires_at,
+      selected_calendar_id,
+      selected_calendar_name,
+      grocery_list_id,
+      grocery_list_name
+    `)
     .eq('user_id', userId)
     .single();
 
@@ -211,7 +229,7 @@ export const getGoogleConnection = async (userId: string) => {
     id: data.id,
     userId: data.user_id,
     gmailAddress: data.gmail_address,
-    accessToken: accessToken, // Utiliser le token refreshé
+    accessToken: accessToken,
     refreshToken: data.refresh_token,
     tokenExpiresAt: data.token_expires_at,
     selectedCalendarId: data.selected_calendar_id,
@@ -220,6 +238,11 @@ export const getGoogleConnection = async (userId: string) => {
     groceryListName: data.grocery_list_name,
   } : null;
 };
+
+export interface GoogleTaskList {
+  id: string;
+  title: string;
+}
 
 /**
  * Récupérer les informations du profil Google (email)
@@ -276,6 +299,50 @@ export const getCalendars = async (accessToken: string) => {
 export const getCalendarsWithAuth = async (userId: string) => {
   const token = await getAccessTokenOrThrow(userId);
   return getCalendars(token);
+};
+
+export const getTaskLists = async (accessToken: string): Promise<GoogleTaskList[]> => {
+  const response = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('unauthorized');
+    }
+    throw new Error('Failed to fetch task lists');
+  }
+
+  const data = await response.json();
+  const items = Array.isArray(data.items) ? data.items : [];
+  return items.map((item: any) => ({ id: item.id, title: item.title }));
+};
+
+export const getTaskListsWithAuth = async (userId: string): Promise<GoogleTaskList[]> => {
+  const token = await getAccessTokenOrThrow(userId);
+  return getTaskLists(token);
+};
+
+export const updateGroceryListSelection = async (
+  userId: string,
+  listId: string,
+  listName: string
+): Promise<void> => {
+  const { error } = await supabase
+    .from('google_connections')
+    .upsert(
+      {
+        user_id: userId,
+        grocery_list_id: listId,
+        grocery_list_name: listName,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' }
+    );
+
+  if (error) throw error;
 };
 
 /**
@@ -510,4 +577,99 @@ export const getTasks = async (accessToken: string, taskListId: string) => {
 export const getTasksWithAuth = async (userId: string, taskListId: string) => {
   const token = await getAccessTokenOrThrow(userId);
   return getTasks(token, taskListId);
+};
+
+export type GoogleTaskStatus = 'needsAction' | 'completed';
+
+export interface GoogleTaskItem {
+  id: string;
+  title: string;
+  status: GoogleTaskStatus;
+  completed?: string;
+}
+
+export const createTask = async (
+  accessToken: string,
+  taskListId: string,
+  title: string
+): Promise<GoogleTaskItem> => {
+  const response = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ title }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('unauthorized');
+    }
+    throw new Error('Failed to create task');
+  }
+
+  const data = await response.json();
+  return {
+    id: data.id,
+    title: data.title,
+    status: data.status,
+    completed: data.completed,
+  };
+};
+
+export const createTaskWithAuth = async (
+  userId: string,
+  taskListId: string,
+  title: string
+): Promise<GoogleTaskItem> => {
+  const token = await getAccessTokenOrThrow(userId);
+  return createTask(token, taskListId, title);
+};
+
+export const updateTaskStatus = async (
+  accessToken: string,
+  taskListId: string,
+  taskId: string,
+  status: GoogleTaskStatus
+): Promise<GoogleTaskItem> => {
+  const response = await fetch(
+    `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks/${taskId}`,
+    {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        status,
+        completed: status === 'completed' ? new Date().toISOString() : null,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('unauthorized');
+    }
+    throw new Error('Failed to update task');
+  }
+
+  const data = await response.json();
+  return {
+    id: data.id,
+    title: data.title,
+    status: data.status,
+    completed: data.completed,
+  };
+};
+
+export const updateTaskStatusWithAuth = async (
+  userId: string,
+  taskListId: string,
+  taskId: string,
+  status: GoogleTaskStatus
+): Promise<GoogleTaskItem> => {
+  const token = await getAccessTokenOrThrow(userId);
+  return updateTaskStatus(token, taskListId, taskId, status);
 };

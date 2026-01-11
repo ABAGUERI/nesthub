@@ -1,0 +1,237 @@
+/* src/features/kitchen/components/PreviewPanel.css */
+/* COMPACT - Design ultra serré, tout visible */
+
+.preview-panel-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(34, 211, 238, 0.05);
+  border: 2px solid rgba(34, 211, 238, 0.3);
+  border-radius: 12px;
+  max-height: none;
+}
+
+/* Header COMPACT */
+.preview-header-compact {
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid rgba(34, 211, 238, 0.2);
+}
+
+.preview-title-compact {
+  font-size: 16px;
+  font-weight: 900;
+  color: #22d3ee;
+  margin: 0;
+  text-align: center;
+}
+
+/* Grid COMPACT - 7 colonnes serrées */
+.preview-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  overflow: visible;
+  padding: 4px;
+}
+
+/* Day card COMPACT */
+.preview-day-compact {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px dashed rgba(34, 211, 238, 0.3);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 120px;
+  transition: all 0.2s ease;
+}
+
+.preview-day-compact:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(34, 211, 238, 0.5);
+}
+
+/* Header jour COMPACT */
+.day-header-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.day-name-compact {
+  font-size: 10px;
+  font-weight: 900;
+  color: #22d3ee;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.day-num-compact {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+/* Meal COMPACT */
+.meal-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.meal-compact:active {
+  cursor: grabbing;
+  transform: scale(1.02);
+}
+
+.meal-text-compact {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+/* Actions COMPACT */
+.meal-actions-compact {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.action-btn-compact {
+  flex: 1;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 28px;
+}
+
+.action-btn-compact.edit:hover {
+  background: rgba(34, 211, 238, 0.2);
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
+.action-btn-compact.remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Empty COMPACT */
+.empty-compact {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  opacity: 0.3;
+  padding: 12px;
+}
+
+/* Actions STICKY BOTTOM */
+.preview-actions-compact {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 15, 15, 0.95);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.preview-btn-compact {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.preview-btn-compact.cancel {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+}
+
+.preview-btn-compact.cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.preview-btn-compact.regenerate {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(34, 211, 238, 0.3);
+  color: #22d3ee;
+}
+
+.preview-btn-compact.regenerate:hover {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.5);
+}
+
+.preview-btn-compact.confirm {
+  background: linear-gradient(135deg, #22d3ee, #06b6d4);
+  border: none;
+  color: #0f0f0f;
+}
+
+.preview-btn-compact.confirm:hover {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4);
+}
+
+/* Responsive - Passer à grid vertical */
+@media (max-width: 1400px) {
+  .preview-grid-compact {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 1000px) {
+  .preview-grid-compact {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .preview-grid-compact {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .preview-panel-compact {
+    padding: 12px;
+  }
+
+  .preview-grid-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-actions-compact {
+    flex-direction: column;
+  }
+}
