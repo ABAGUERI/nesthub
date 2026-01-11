@@ -1,22 +1,59 @@
 /* === DASHBOARD LAYOUT === */
 .dashboard-container {
+  --dashboard-bg: linear-gradient(145deg, #0a0f1f 0%, #0b1224 60%, #050a16 100%);
+  --dashboard-text: #fff;
+  --carousel-bg: linear-gradient(145deg, rgba(18, 24, 38, 0.92), rgba(5, 10, 20, 0.9));
+  --carousel-shadow: 0 18px 80px rgba(0, 0, 0, 0.65);
+  --carousel-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --carousel-outline: 0 0 0 1px rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-strong: rgba(255, 255, 255, 0.1);
+  --glass-border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-bg-soft: rgba(255, 255, 255, 0.03);
+  --glass-bg-softer: rgba(255, 255, 255, 0.02);
+  --glass-bg-light: rgba(255, 255, 255, 0.05);
+  --radius-carousel: 22px;
+  --radius-card: 20px;
+  --radius-mobile: 14px;
+  --shadow-card: 0 12px 45px rgba(0, 0, 0, 0.32);
+  --shadow-widget: 0 10px 32px rgba(0, 0, 0, 0.42);
+  --shadow-widget-hover: 0 14px 50px rgba(0, 0, 0, 0.6);
+  --accent-start: #22d3ee;
+  --accent-end: #a855f7;
+  --text-heading: #cbd5e1;
+  --text-muted: rgba(226, 232, 240, 0.6);
+  --text-secondary: #e2e8f0;
+  --timeline-border: rgba(120, 170, 255, 0.15);
+  --timeline-accent: rgba(120, 170, 255, 0.92);
+  --timeline-accent-strong: rgba(120, 170, 255, 1);
+  --timeline-accent-soft: rgba(120, 170, 255, 0.2);
+  --timeline-accent-glow: rgba(120, 170, 255, 0.18);
+  --timeline-accent-bright: rgba(120, 170, 255, 0.65);
+  --timeline-dot-bg: rgba(120, 170, 255, 0.85);
+  --timeline-dot-start-bg: rgba(255, 255, 255, 0.3);
+  --timeline-dot-start-border: rgba(255, 255, 255, 0.35);
+  --timeline-dot-start-shadow: rgba(0, 0, 0, 0.2);
+  --timeline-date-muted: rgba(226, 232, 240, 0.72);
+  --timeline-text-muted: rgba(226, 232, 240, 0.55);
+  --timeline-tooltip-bg: rgba(8, 14, 26, 0.94);
+  --timeline-tooltip-border: rgba(120, 170, 255, 0.2);
+  --timeline-tooltip-text: rgba(226, 232, 240, 0.92);
+  --timeline-tooltip-muted: rgba(226, 232, 240, 0.65);
+  --timeline-badge-bg: rgba(168, 85, 247, 0.92);
+  --timeline-badge-border: rgba(255, 255, 255, 0.85);
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100%;
   padding: 12px 16px;
-  background: linear-gradient(145deg, #0a0f1f 0%, #0b1224 60%, #050a16 100%);
-  color: #fff;
+  background: var(--dashboard-bg);
+  color: var(--dashboard-text);
   overflow: hidden;
 }
 
 .dashboard-body {
   flex: 1;
   overflow: hidden;
-}
-
-.dashboard-panel {
-  height: 100%;
 }
 
 .dashboard-container.carousel-mode {
@@ -29,14 +66,14 @@
   flex: 1;
   min-height: 0;
   height: calc(100% - 4px);
-  border-radius: 22px;
+  border-radius: var(--radius-carousel);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(145deg, rgba(18, 24, 38, 0.92), rgba(5, 10, 20, 0.9));
+  border: 1px solid var(--glass-border);
+  background: var(--carousel-bg);
   box-shadow:
-    0 18px 80px rgba(0, 0, 0, 0.65),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 0 0 1px rgba(255, 255, 255, 0.02);
+    var(--carousel-shadow),
+    var(--carousel-inner-shadow),
+    var(--carousel-outline);
 }
 
 .dashboard-carousel-track {
@@ -85,12 +122,12 @@
 }
 
 .screen-card {
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  background: linear-gradient(155deg, var(--glass-bg-soft), var(--glass-bg-softer));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
   padding: 14px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 12px 45px rgba(0, 0, 0, 0.32);
+  box-shadow: var(--shadow-card);
   height: 100%;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
@@ -137,9 +174,9 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: #e2e8f0;
+  border: 1px solid var(--glass-border-strong);
+  background: var(--glass-bg-light);
+  color: var(--text-secondary);
   font-size: 28px;
   display: flex;
   align-items: center;
@@ -190,27 +227,27 @@
 
 .screen-dot.active {
   width: 28px;
-  background: linear-gradient(90deg, #22d3ee, #a855f7);
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
   box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
 }
 
 /* === WIDGET COMMUN === */
 .widget {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  background: var(--glass-bg-soft);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
   padding: 20px 22px;
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.42);
+  box-shadow: var(--shadow-widget);
   transition: all 0.3s ease;
 }
 
 .widget:hover {
   border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 14px 50px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-widget-hover);
 }
 
 .widget-header {
@@ -219,13 +256,13 @@
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--glass-border-subtle);
 }
 
 .widget-title {
   font-size: 18px;
   font-weight: 700;
-  color: #cbd5e1;
+  color: var(--text-heading);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -244,7 +281,7 @@
 }
 
 .widget-scroll::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--glass-bg-softer);
   border-radius: 3px;
 }
 
@@ -296,7 +333,7 @@
   }
 
   .dashboard-carousel {
-    border-radius: 14px;
+    border-radius: var(--radius-mobile);
   }
 
   .screen-arrow {
@@ -310,403 +347,9 @@
   }
 }
 
-@media (max-width: 768px) {
-  .dashboard-container {
-    padding: 12px;
-    gap: 12px;
-  }
-  
-  .widget {
-    padding: 16px;
-  }
-}
-
-/* Layout helpers */
-.dashboard-top-row {
-  display: flex;
-  gap: 18px;
-  align-items: stretch;
-  height: 100%;
-}
-
-.dashboard-left {
-  flex: 1.2;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  height: 100%;
-}
-
-.dashboard-right {
-  flex: 0.9;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  height: 100%;
-}
-
-.dashboard-bottom-row {
-  display: flex;
-  gap: 18px;
-  align-items: stretch;
-  height: 100%;
-}
-
-@media (max-width: 1024px) {
-  .dashboard-top-row,
-  .dashboard-bottom-row {
-    flex-direction: column;
-  }
-}
-
 /* Empty message helper */
 .empty-message {
   opacity: 0.6;
   font-size: 14px;
   line-height: 1.5;
-}
-
-/* =====================================================
-   CHILD TIMELINE - Apple Dark/Glass Ultra-Compact
-   Design: 1 ligne d'info + rail lumineux + dots avec dates
-   Pas de chevauchement, regroupement événements multiples
-   ===================================================== */
-.child-timeline {
-  grid-column: 1 / -1;
-}
-
-.timeline-card {
-  position: relative;
-  min-height: 128px;
-  padding: 16px 20px 18px 20px;
-  border-radius: 20px;
-  border-top: 1px solid rgba(120, 170, 255, 0.15);
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background:
-    radial-gradient(circle at 15% 50%, rgba(120, 170, 255, 0.08), transparent 40%),
-    linear-gradient(155deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.015));
-  backdrop-filter: blur(16px);
-  box-shadow:
-    0 12px 50px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  overflow: visible;
-}
-
-.timeline-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: rgba(226, 232, 240, 0.88);
-  letter-spacing: 0.1px;
-  margin-bottom: 10px;
-}
-
-/* Événement principal (nom uniquement, ligne de texte unique) */
-.timeline-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.timeline-main-event {
-  flex: 0 1 320px;
-  max-width: 42%;
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(120, 170, 255, 0.92);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Container du rail */
-.timeline-rail-wrap {
-  position: relative;
-  flex: 1;
-  width: 100%;
-  min-width: 0;
-  height: 52px;
-  padding-top: 12px;
-}
-
-/* Rail principal */
-.timeline-rail {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 24px;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(120, 170, 255, 0.2);
-  box-shadow: 
-    0 0 14px rgba(120, 170, 255, 0.18),
-    inset 0 1px 0 rgba(120, 170, 255, 0.25);
-}
-
-/* Glow subtil sur le rail */
-.timeline-rail::after {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  background: linear-gradient(90deg, 
-    rgba(120,170,255,0.0), 
-    rgba(120,170,255,0.4) 20%, 
-    rgba(168,85,247,0.3) 80%, 
-    rgba(255,255,255,0.0));
-  opacity: 0.6;
-  filter: blur(1px);
-  border-radius: 999px;
-}
-
-/* Label "Aujourd'hui" en dessous du rail */
-.timeline-start {
-  position: absolute;
-  left: 0;
-  top: 36px;
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(226, 232, 240, 0.55);
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-
-/* Conteneur absolu par dot (évite les chevauchements) */
-.timeline-dot-container {
-  position: absolute;
-  top: 24px;
-  transform: translateX(-50%);
-}
-
-/* Dot de base */
-.timeline-dot {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  border: 2px solid rgba(120, 170, 255, 0.65);
-  background: rgba(120, 170, 255, 0.85);
-  box-shadow: 
-    0 0 8px rgba(120, 170, 255, 0.25),
-    0 8px 18px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.timeline-dot:hover {
-  transform: translate(-50%, -50%) scale(1.25);
-  box-shadow: 
-    0 0 14px rgba(120, 170, 255, 0.45),
-    0 10px 24px rgba(0, 0, 0, 0.4);
-}
-
-/* Dot "aujourd'hui" */
-.timeline-dot.start {
-  width: 9px;
-  height: 9px;
-  background: rgba(255, 255, 255, 0.30);
-  border-color: rgba(255, 255, 255, 0.35);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-/* Dot "next" (prochain événement) */
-.timeline-dot.next {
-  width: 12px;
-  height: 12px;
-  background: rgba(120, 170, 255, 1);
-  border-color: rgba(255, 255, 255, 0.75);
-  box-shadow: 
-    0 0 16px rgba(120, 170, 255, 0.5),
-    0 10px 26px rgba(0, 0, 0, 0.4);
-  animation: pulse-next 2.5s ease-in-out infinite;
-}
-
-@keyframes pulse-next {
-  0%, 100% { 
-    box-shadow: 
-      0 0 16px rgba(120, 170, 255, 0.5),
-      0 10px 26px rgba(0, 0, 0, 0.4);
-  }
-  50% { 
-    box-shadow: 
-      0 0 24px rgba(120, 170, 255, 0.7),
-      0 12px 30px rgba(0, 0, 0, 0.45);
-  }
-}
-
-/* Date AU-DESSUS du dot */
-.timeline-dot-date {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 8px;
-  font-size: 10px;
-  font-weight: 700;
-  color: rgba(226, 232, 240, 0.72);
-  white-space: nowrap;
-  letter-spacing: 0.2px;
-  pointer-events: none;
-}
-
-/* Badge "+" pour événements groupés */
-.timeline-dot-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 16px;
-  height: 16px;
-  border-radius: 999px;
-  background: rgba(168, 85, 247, 0.92);
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 800;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35);
-  pointer-events: none;
-}
-
-/* Tooltip au hover */
-.timeline-tooltip {
-  position: absolute;
-  bottom: calc(100% + 12px);
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 200px;
-  max-width: 280px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(120, 170, 255, 0.20);
-  background: rgba(8, 14, 26, 0.94);
-  backdrop-filter: blur(14px);
-  box-shadow: 
-    0 16px 50px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  color: rgba(226, 232, 240, 0.92);
-  z-index: 10;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateX(-50%) translateY(4px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.timeline-dot-container:hover .timeline-tooltip,
-.timeline-dot:focus + .timeline-tooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-.timeline-tooltip-event {
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 6px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(120, 170, 255, 0.95);
-}
-
-.timeline-tooltip-event:last-child {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  border-bottom: none;
-}
-
-.timeline-tooltip-date {
-  font-size: 11px;
-  font-weight: 500;
-  color: rgba(226, 232, 240, 0.65);
-  margin-top: 2px;
-}
-
-/* Empty state */
-.timeline-empty {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(226, 232, 240, 0.60);
-}
-
-/* Mobile: réduction de hauteur */
-@media (max-width: 900px) {
-  .timeline-card {
-    min-height: 110px;
-    padding: 10px 16px 12px 16px;
-  }
-
-  .timeline-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .timeline-main-event {
-    font-size: 13px;
-    max-width: 100%;
-  }
-  
-  .timeline-dot-date {
-    font-size: 9px;
-  }
-}
-
-/* =====================================================
-   FIX LAYOUT KIDS SCREEN
-   Reserve explicit space for timeline without overlap
-   ===================================================== */
-.screen-grid.kids-screen > :nth-child(1),
-.screen-grid.kids-screen > :nth-child(2) {
-  grid-row: 1;
-  min-height: 400px;
-  overflow: hidden;
-}
-
-.screen-grid.kids-screen .child-timeline {
-  grid-row: 2;
-  grid-column: 1 / -1;
-  margin-top: 12px;
-}
-
-@media (max-width: 1100px) {
-  .screen-grid.kids-screen {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-  }
-
-  .screen-grid.kids-screen > :nth-child(1),
-  .screen-grid.kids-screen > :nth-child(2) {
-    grid-row: auto;
-    min-height: 380px;
-  }
-
-  .screen-grid.kids-screen .child-timeline {
-    grid-row: auto;
-    margin-top: 10px;
-  }
-}
-
-/* =====================================================
-   FIX FINAL TIMELINE - FORCE TOUT
-   ===================================================== */
-.screen-grid.kids-screen > :nth-child(3),
-.screen-grid.kids-screen .child-timeline {
-  grid-row: 2 !important;
-  grid-column: 1 / -1 !important;
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-.dashboard-carousel {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-}
-
-.dashboard-screen {
-  overflow: visible !important;
 }
