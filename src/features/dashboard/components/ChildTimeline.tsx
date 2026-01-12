@@ -1,4 +1,11 @@
 import React, { useMemo, useState } from 'react';
+import {
+  formatDateLongFR,
+  formatDateShortFR,
+  getPctInRange,
+  stripChildPrefix,
+} from '../utils/dateHelpers';
+import './ChildTimeline.css';
 
 export type ChildTimelineEvent = {
   id: string;
@@ -21,42 +28,6 @@ type GroupedDate = {
 };
 
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-
-const stripChildPrefix = (title: string, childName: string) => {
-  const t = (title || '').trim();
-  const n = (childName || '').trim();
-
-  const candidates = [
-    `${n} - `, `${n}- `, `${n} — `, `${n} – `, `${n}: `, `${n} `
-  ];
-
-  for (const p of candidates) {
-    if (t.toLowerCase().startsWith(p.toLowerCase())) {
-      return t.slice(p.length).trim();
-    }
-  }
-  return t;
-};
-
-const formatDateAbove = (d: Date) => {
-  return d.toLocaleDateString('fr-CA', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  }).toUpperCase();
-};
-
-const formatLongDate = (d: Date) => {
-  const date = d.toLocaleDateString('fr-CA', { 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric' 
-  });
-  const weekday = d.toLocaleDateString('fr-CA', { weekday: 'long' });
-  return `${date} (${weekday})`;
-};
-
 const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) => {
   const [hoveredDateKey, setHoveredDateKey] = useState<string | null>(null);
   const [activeDateKey, setActiveDateKey] = useState<string | null>(null);
@@ -87,10 +58,7 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
     const result: GroupedDate[] = [];
     groups.forEach((evts, key) => {
       const date = new Date(key);
-      const pct = clamp01(
-        (date.getTime() - startRange.getTime()) / 
-        (endRange.getTime() - startRange.getTime())
-      );
+      const pct = getPctInRange(date, startRange, endRange);
       result.push({
         date,
         dateKey: key,
@@ -117,7 +85,7 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
 
     const firstEvent = nextGroup.events[0];
     const cleanTitle = stripChildPrefix(firstEvent.title, childName);
-    const dateText = formatLongDate(nextGroup.date);
+    const dateText = formatDateLongFR(nextGroup.date);
     
     if (nextGroup.events.length > 1) {
       return `${cleanTitle} — ${dateText} (+ ${nextGroup.events.length - 1} autre${nextGroup.events.length > 2 ? 's' : ''})`;
@@ -160,9 +128,11 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
           >
             <button
               type="button"
-              className="timeline-dot start"
+              className="timeline-dot-hitbox"
               aria-label="Aujourd'hui"
-            />
+            >
+              <span className="timeline-dot start" />
+            </button>
           </div>
 
           {/* Dots groupés */}
@@ -181,19 +151,20 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
                 onMouseLeave={() => setHoveredDateKey(null)}
               >
                 <div className="timeline-dot-date">
-                  {formatDateAbove(group.date)}
+                  {formatDateShortFR(group.date)}
                 </div>
                 
                 <button
                   type="button"
-                  className={`timeline-dot ${isNext ? 'next' : ''}`}
-                  aria-label={`${group.events.length} événement${group.events.length > 1 ? 's' : ''} le ${formatLongDate(group.date)}`}
+                  className="timeline-dot-hitbox"
+                  aria-label={`${group.events.length} événement${group.events.length > 1 ? 's' : ''} le ${formatDateLongFR(group.date)}`}
                   onFocus={() => setHoveredDateKey(group.dateKey)}
                   onBlur={() => setHoveredDateKey(null)}
                   onClick={() => {
                     setActiveDateKey((prev) => (prev === group.dateKey ? null : group.dateKey));
                   }}
                 >
+                  <span className={`timeline-dot ${isNext ? 'next' : ''}`} />
                   {hasMultiple && (
                     <div className="timeline-dot-badge">
                       +{group.events.length - 1}
@@ -208,7 +179,7 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
                         <div>{stripChildPrefix(ev.title, childName)}</div>
                         {idx === 0 && (
                           <div className="timeline-tooltip-date">
-                            {formatLongDate(group.date)}
+                            {formatDateLongFR(group.date)}
                           </div>
                         )}
                       </div>

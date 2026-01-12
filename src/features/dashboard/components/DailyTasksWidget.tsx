@@ -362,12 +362,17 @@ export const DailyTasksWidget: React.FC = () => {
               return (
                 <div
                   key={task.id}
-                  className={`task-row ${isCompleted ? 'completed' : ''} ${getCategoryTone(task.category)}`}
+                  className={`task-row ${isCompleted ? 'completed is-done' : ''} ${getCategoryTone(task.category)}`}
                   onClick={() => completeTask(task)}
+                  aria-label={`${task.name}${isCompleted ? ' (validée)' : ''}`}
                 >
                   <div className="task-icon">{task.icon}</div>
                   <div className="task-name">{task.name}</div>
-                  {isCompleted && <div className="task-status">Terminé</div>}
+                  {isCompleted && (
+                    <div className="task-done-badge" aria-hidden="true">
+                      ✓ Validé
+                    </div>
+                  )}
                 </div>
               );
             })}
