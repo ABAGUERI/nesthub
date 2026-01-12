@@ -113,25 +113,39 @@
   transform: translateX(-50%);
 }
 
+/* Zone cliquable large */
+.timeline-dot-hitbox {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Dot de base */
 .timeline-dot {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 999px;
   border: 2px solid var(--timeline-accent-bright);
   background: var(--timeline-dot-bg);
   box-shadow:
     0 0 8px rgba(120, 170, 255, 0.25),
     0 8px 18px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.timeline-dot:hover {
+.timeline-dot-hitbox:hover .timeline-dot {
   transform: translate(-50%, -50%) scale(1.25);
   box-shadow:
     0 0 14px rgba(120, 170, 255, 0.45),
@@ -140,8 +154,8 @@
 
 /* Dot "aujourd'hui" */
 .timeline-dot.start {
-  width: 9px;
-  height: 9px;
+  width: 11px;
+  height: 11px;
   background: var(--timeline-dot-start-bg);
   border-color: var(--timeline-dot-start-border);
   box-shadow: 0 6px 16px var(--timeline-dot-start-shadow);
@@ -149,8 +163,8 @@
 
 /* Dot "next" (prochain événement) */
 .timeline-dot.next {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   background: var(--timeline-accent-strong);
   border-color: rgba(255, 255, 255, 0.75);
   box-shadow:
@@ -233,7 +247,7 @@
 }
 
 .timeline-dot-container:hover .timeline-tooltip,
-.timeline-dot:focus + .timeline-tooltip {
+.timeline-dot-hitbox:focus + .timeline-tooltip {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
@@ -287,6 +301,21 @@
 
   .timeline-dot-date {
     font-size: 9px;
+  }
+
+  .timeline-dot {
+    width: 16px;
+    height: 16px;
+  }
+
+  .timeline-dot.start {
+    width: 14px;
+    height: 14px;
+  }
+
+  .timeline-dot.next {
+    width: 18px;
+    height: 18px;
   }
 }
 
@@ -344,4 +373,26 @@
 
 .dashboard-screen {
   overflow: visible !important;
+}
+
+@media (max-width: 900px) {
+  .screen-grid.kids-screen > :nth-child(1),
+  .screen-grid.kids-screen > :nth-child(2),
+  .screen-grid.kids-screen > :nth-child(3),
+  .screen-grid.kids-screen .child-timeline {
+    grid-row: auto !important;
+  }
+
+  .screen-grid.kids-screen > :nth-child(1) {
+    order: 1;
+  }
+
+  .screen-grid.kids-screen > :nth-child(2) {
+    order: 2;
+  }
+
+  .screen-grid.kids-screen > :nth-child(3),
+  .screen-grid.kids-screen .child-timeline {
+    order: 3;
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppHeader } from '@/shared/components/AppHeader';
 import { useAuth } from '@/shared/hooks/useAuth';
 
@@ -43,6 +43,7 @@ const DashboardInner: React.FC = () => {
 
   const [children, setChildren] = useState<ChildRow[]>([]);
   const [childrenError, setChildrenError] = useState<string | null>(null);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
 
   const { events, error: eventsError } = useChildEvents(user?.id, RANGE_DAYS);
 
@@ -53,6 +54,10 @@ const DashboardInner: React.FC = () => {
   const goNext = useCallback(() => {
     setScreenIndex((v) => (v + 1) % screensCount);
   }, [screensCount]);
+
+  const handleScrollToTimeline = useCallback(() => {
+    timelineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -126,18 +131,25 @@ const DashboardInner: React.FC = () => {
           <div className="dashboard-carousel-track" style={{ transform: `translateX(-${screenIndex * 100}%)` }}>
             {/* SCREEN 1 — Kids */}
             <div className="dashboard-screen" aria-label="Écran enfants">
+              <div className="kids-screen-actions">
+                <button type="button" className="kids-screen-link" onClick={handleScrollToTimeline}>
+                  Voir événements
+                </button>
+              </div>
               <div className="screen-grid kids-screen">
                 <ChildrenWidget />
                 <DailyTasksWidget />
 
                 {/* Timeline — enfant sélectionné uniquement */}
-                {timelineBlockedMessage ? (
-                  <div className="timeline-card child-timeline">
-                    <div className="timeline-empty">{timelineBlockedMessage}</div>
-                  </div>
-                ) : (
-                  <ChildTimeline childName={selectedChildName} events={timelineEvents} rangeDays={RANGE_DAYS} />
-                )}
+                <div ref={timelineRef} className="kids-timeline-anchor">
+                  {timelineBlockedMessage ? (
+                    <div className="timeline-card child-timeline">
+                      <div className="timeline-empty">{timelineBlockedMessage}</div>
+                    </div>
+                  ) : (
+                    <ChildTimeline childName={selectedChildName} events={timelineEvents} rangeDays={RANGE_DAYS} />
+                  )}
+                </div>
               </div>
             </div>
 

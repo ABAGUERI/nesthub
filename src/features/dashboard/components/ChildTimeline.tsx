@@ -128,9 +128,11 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
           >
             <button
               type="button"
-              className="timeline-dot start"
+              className="timeline-dot-hitbox"
               aria-label="Aujourd'hui"
-            />
+            >
+              <span className="timeline-dot start" />
+            </button>
           </div>
 
           {/* Dots groupés */}
@@ -154,7 +156,7 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
                 
                 <button
                   type="button"
-                  className={`timeline-dot ${isNext ? 'next' : ''}`}
+                  className="timeline-dot-hitbox"
                   aria-label={`${group.events.length} événement${group.events.length > 1 ? 's' : ''} le ${formatDateLongFR(group.date)}`}
                   onFocus={() => setHoveredDateKey(group.dateKey)}
                   onBlur={() => setHoveredDateKey(null)}
@@ -162,6 +164,7 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
                     setActiveDateKey((prev) => (prev === group.dateKey ? null : group.dateKey));
                   }}
                 >
+                  <span className={`timeline-dot ${isNext ? 'next' : ''}`} />
                   {hasMultiple && (
                     <div className="timeline-dot-badge">
                       +{group.events.length - 1}
