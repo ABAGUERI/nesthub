@@ -202,6 +202,10 @@
   pointer-events: none;
 }
 
+.timeline-dot-container:nth-of-type(even) .timeline-dot-date {
+  transform: translateX(-50%) translateY(6px);
+}
+
 /* Badge "+" pour événements groupés */
 .timeline-dot-badge {
   position: absolute;
@@ -316,6 +320,79 @@
   .timeline-dot.next {
     width: 18px;
     height: 18px;
+  }
+}
+
+@media (min-width: 1180px) and (max-height: 900px) {
+  .timeline-card {
+    min-height: 120px;
+  }
+
+  .timeline-title {
+    margin-bottom: 6px;
+  }
+
+  .timeline-main-event {
+    flex: 0 1 240px;
+    max-width: 28%;
+    font-size: 15px;
+  }
+
+  .timeline-rail-wrap {
+    height: 60px;
+    padding-top: 14px;
+  }
+
+  .timeline-rail {
+    height: 5px;
+    box-shadow:
+      0 0 18px rgba(120, 170, 255, 0.28),
+      inset 0 1px 0 rgba(120, 170, 255, 0.3);
+  }
+
+  .timeline-start {
+    font-size: 13px;
+    color: rgba(226, 232, 240, 0.7);
+  }
+
+  .timeline-dot {
+    width: 18px;
+    height: 18px;
+    box-shadow:
+      0 0 12px rgba(120, 170, 255, 0.32),
+      0 10px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  .timeline-dot.start {
+    width: 16px;
+    height: 16px;
+  }
+
+  .timeline-dot.next {
+    width: 20px;
+    height: 20px;
+  }
+
+  .timeline-dot-date {
+    font-size: 14px;
+    letter-spacing: 0.3px;
+  }
+
+  .timeline-dot-container .timeline-dot-date {
+    display: none;
+  }
+
+  .timeline-dot-container:nth-of-type(odd) .timeline-dot-date,
+  .timeline-dot-container.is-next .timeline-dot-date {
+    display: block;
+  }
+
+  .timeline-dot-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    top: -7px;
+    right: -7px;
   }
 }
 

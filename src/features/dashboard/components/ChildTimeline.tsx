@@ -145,7 +145,7 @@ const ChildTimeline: React.FC<Props> = ({ childName, events, rangeDays = 28 }) =
             return (
               <div
                 key={group.dateKey}
-                className="timeline-dot-container"
+                className={`timeline-dot-container${isNext ? ' is-next' : ''}`}
                 style={{ left: `${group.position}%` }}
                 onMouseEnter={() => setHoveredDateKey(group.dateKey)}
                 onMouseLeave={() => setHoveredDateKey(null)}

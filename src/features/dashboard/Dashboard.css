@@ -169,15 +169,24 @@
 @media (max-width: 1100px) {
   .dashboard-container {
     padding: 12px;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
   }
 
   .dashboard-carousel {
     height: auto;
     min-height: 60vh;
+    overflow: visible;
   }
 
   .dashboard-screen {
     padding: 16px;
+    height: auto;
+  }
+
+  .dashboard-carousel-track {
+    height: auto;
   }
 
   .screen-grid,
@@ -190,6 +199,10 @@
   .screen-card.narrow {
     max-width: none;
     margin-left: 0;
+  }
+
+  .dashboard-body {
+    overflow: visible;
   }
 }
 
@@ -376,6 +389,29 @@
 @media (max-width: 900px) {
   .kids-screen-actions {
     display: flex;
+  }
+}
+
+@media (min-width: 1180px) and (max-height: 900px) {
+  .screen-grid.kids-screen {
+    grid-template-columns: 5fr 7fr;
+    grid-template-rows: auto minmax(120px, 160px);
+    gap: 16px;
+  }
+
+  .screen-grid.kids-screen > :nth-child(1),
+  .screen-grid.kids-screen > :nth-child(2) {
+    min-height: 0;
+  }
+
+  .screen-grid.kids-screen .kids-timeline-anchor {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .screen-grid.kids-screen .child-timeline {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 }
 
