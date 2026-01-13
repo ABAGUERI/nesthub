@@ -246,7 +246,7 @@
   .timeline-event-pill {
     transition: none;
   }
-
+}
 @media (max-width: 1024px) {
   .timeline-rail-zone {
     height: 104px;
