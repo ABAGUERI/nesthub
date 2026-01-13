@@ -10,7 +10,7 @@ import { FinanceWidget } from './components/FinanceWidget';
 import { StockTicker } from './components/StockTicker';
 import { VehicleWidget } from './components/VehicleWidget';
 
-import { ChildSelectionProvider, useChildSelection } from './contexts/ChildSelectionContext';
+import { useChildSelection } from './contexts/ChildSelectionContext';
 import ChildTimeline, { ChildTimelineEvent } from './components/ChildTimeline';
 
 import { supabase } from '@/shared/utils/supabase';
@@ -261,9 +261,5 @@ const DashboardInner: React.FC = () => {
 };
 
 export const DashboardPage: React.FC = () => {
-  return (
-    <ChildSelectionProvider>
-      <DashboardInner />
-    </ChildSelectionProvider>
-  );
+  return <DashboardInner />;
 };
