@@ -113,7 +113,7 @@
   gap: 16px;
   width: 100%;
   align-items: stretch;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 7fr 3fr;
   grid-template-rows: auto auto;
   grid-template-areas:
     'goal tasks'

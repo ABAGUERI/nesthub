@@ -338,6 +338,16 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
     );
   }
 
+  const activeChild = children[selectedChildIndex];
+  const completedTodayCount = useMemo(() => {
+    if (!activeChild) return 0;
+    return completedTasks.filter((ct) => ct.childId === activeChild.id).length;
+  }, [activeChild, completedTasks]);
+
+  useEffect(() => {
+    onCompletedTodayCountChange?.(completedTodayCount);
+  }, [completedTodayCount, onCompletedTodayCountChange]);
+
   if (children.length === 0) {
     return (
       <div className="widget">
