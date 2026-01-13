@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { supabase } from '@/shared/utils/supabase';
 import { getChildrenWithProgress } from '@/shared/utils/children.service';
@@ -28,9 +28,13 @@ interface CompletedTask {
 
 type DailyTasksWidgetProps = {
   onMilestone?: () => void;
+  onCompletedTodayCountChange?: (count: number) => void;
 };
 
-export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone }) => {
+export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
+  onMilestone,
+  onCompletedTodayCountChange,
+}) => {
   const { user } = useAuth();
   const { selectedChildIndex } = useChildSelection();
   const [children, setChildren] = useState<Child[]>([]);
@@ -315,6 +319,16 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
     );
   }
 
+  const activeChild = children[selectedChildIndex];
+  const completedTodayCount = useMemo(() => {
+    if (!activeChild) return 0;
+    return completedTasks.filter((ct) => ct.childId === activeChild.id).length;
+  }, [activeChild, completedTasks]);
+
+  useEffect(() => {
+    onCompletedTodayCountChange?.(completedTodayCount);
+  }, [completedTodayCount, onCompletedTodayCountChange]);
+
   if (children.length === 0) {
     return (
       <div className="widget">
@@ -326,7 +340,6 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
     );
   }
 
-  const activeChild = children[selectedChildIndex];
   if (!activeChild) {
     return (
       <div className="widget daily-tasks-widget">
@@ -346,8 +359,6 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
   const totalPages = Math.max(1, Math.ceil(safeTasks.length / tasksPerPage));
   const paginatedTasks = safeTasks.slice(pageIndex * tasksPerPage, pageIndex * tasksPerPage + tasksPerPage);
   const showPagination = safeTasks.length > tasksPerPage;
-
-  const completedTodayCount = completedTasks.filter((ct) => ct.childId === activeChild.id).length;
 
   const handleTaskClick = (task: Task, isCompleted: boolean) => {
     if (!isCompleted && completedTodayCount === 1) {
@@ -399,8 +410,8 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
             disabled={pageIndex === 0}
-            aria-label="Page de tâches précédente"
-            title="Page de tâches précédente"
+            aria-label="Tâches précédentes"
+            title="Tâches précédentes"
           >
             ‹
           </button>
@@ -411,8 +422,8 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.min(prev + 1, totalPages - 1))}
             disabled={pageIndex >= totalPages - 1}
-            aria-label="Page de tâches suivante"
-            title="Page de tâches suivante"
+            aria-label="Tâches suivantes"
+            title="Tâches suivantes"
           >
             ›
           </button>
