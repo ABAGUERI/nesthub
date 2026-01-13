@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { getPctInRange, stripChildPrefix } from '../utils/dateHelpers';
 import './ChildTimeline.css';
 
@@ -50,6 +50,21 @@ const cleanTitle = (title: string, childName: string) => {
 const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [isCompact, setIsCompact] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 600px)');
+    const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
+      setIsCompact(event.matches);
+    };
+
+    handleChange(mediaQuery);
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, []);
 
   const { startRange, endRange } = useMemo(() => {
     const today = startOfDay(new Date());
@@ -59,8 +74,9 @@ const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
   }, [weekOffset]);
 
   const windowLabel = useMemo(() => {
-    if (weekOffset === 0) return 'Cette semaine';
-    return formatWeekRange(startRange, endRange);
+    const range = formatWeekRange(startRange, endRange);
+    if (weekOffset === 0) return `Cette semaine (${range.replace('Semaine du ', '')})`;
+    return range;
   }, [weekOffset, startRange, endRange]);
 
   const windowEvents = useMemo(() => {
@@ -79,8 +95,9 @@ const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
     return windowEvents.find((ev) => new Date(ev.start).getTime() >= now.getTime()) || null;
   }, [windowEvents]);
 
-  const visibleEvents = windowEvents.slice(0, 6);
-  const remainingEvents = windowEvents.slice(6);
+  const visibleLimit = isCompact ? 3 : 4;
+  const visibleEvents = windowEvents.slice(0, visibleLimit);
+  const remainingEvents = windowEvents.slice(visibleLimit);
   const remainingCount = remainingEvents.length;
 
   const selectedEvent = useMemo(() => {
@@ -103,40 +120,42 @@ const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
 
     const date = new Date(baseEvent.start);
     const relative = getRelativeLabel(date, new Date());
-    const label = `${cleanTitle(baseEvent.title, childName)} — ${formatWeekdayDate(date)} (${relative})`;
-    if (selectedEvent) return label;
+    const title = cleanTitle(baseEvent.title, childName);
+    if (selectedEvent) {
+      return `${title} — ${formatWeekdayDate(date)} (${relative})`;
+    }
 
-    return `Prochain: ${label}`;
+    return `Prochain : ${title} — ${relative}`;
   }, [windowEvents, selectedEvent, selectedEventId, remainingEvents, childName, nextEvent]);
 
   if (!windowEvents || windowEvents.length === 0) {
     return (
       <div className="timeline-card child-timeline">
         <div className="timeline-header">
-          <div className="timeline-title">Timeline enfant — {childName}</div>
-          <div className="timeline-week-nav">
+          <div className="timeline-header-title">Événements — {childName}</div>
+          <div className="timeline-week-label">{windowLabel}</div>
+          <div className="timeline-week-actions">
             <button
               type="button"
-              className="timeline-week-button"
+              className="timeline-week-icon"
               aria-label="Semaine précédente"
               onClick={() => {
                 setWeekOffset((prev) => prev - 1);
                 setSelectedEventId(null);
               }}
             >
-              ← Semaine précédente
+              ←
             </button>
-            <div className="timeline-week-label">{windowLabel}</div>
             <button
               type="button"
-              className="timeline-week-button"
+              className="timeline-week-icon"
               aria-label="Semaine suivante"
               onClick={() => {
                 setWeekOffset((prev) => prev + 1);
                 setSelectedEventId(null);
               }}
             >
-              Semaine suivante →
+              →
             </button>
           </div>
         </div>
@@ -148,32 +167,36 @@ const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
   return (
     <div className="timeline-card child-timeline">
       <div className="timeline-header">
-        <div className="timeline-title">Timeline enfant — {childName}</div>
-        <div className="timeline-week-nav">
+        <div className="timeline-header-title">Événements — {childName}</div>
+        <div className="timeline-week-label">{windowLabel}</div>
+        <div className="timeline-week-actions">
           <button
             type="button"
-            className="timeline-week-button"
+            className="timeline-week-icon"
             aria-label="Semaine précédente"
             onClick={() => {
               setWeekOffset((prev) => prev - 1);
               setSelectedEventId(null);
             }}
           >
-            ← Semaine précédente
+            ←
           </button>
-          <div className="timeline-week-label">{windowLabel}</div>
           <button
             type="button"
-            className="timeline-week-button"
+            className="timeline-week-icon"
             aria-label="Semaine suivante"
             onClick={() => {
               setWeekOffset((prev) => prev + 1);
               setSelectedEventId(null);
             }}
           >
-            Semaine suivante →
+            →
           </button>
         </div>
+      </div>
+
+      <div className="timeline-info" aria-live="polite">
+        {detailsText}
       </div>
 
       <div className="timeline-rail-zone" aria-label="Timeline des 7 prochains jours">
@@ -232,9 +255,6 @@ const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
         )}
       </div>
 
-      <div className="timeline-details" aria-live="polite">
-        {detailsText}
-      </div>
     </div>
   );
 };
