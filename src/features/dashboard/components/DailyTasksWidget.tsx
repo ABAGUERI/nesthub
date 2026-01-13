@@ -26,7 +26,11 @@ interface CompletedTask {
   completedAt: string;
 }
 
-export const DailyTasksWidget: React.FC = () => {
+type DailyTasksWidgetProps = {
+  onMilestone?: () => void;
+};
+
+export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone }) => {
   const { user } = useAuth();
   const { selectedChildIndex } = useChildSelection();
   const [children, setChildren] = useState<Child[]>([]);
@@ -343,6 +347,15 @@ export const DailyTasksWidget: React.FC = () => {
   const paginatedTasks = safeTasks.slice(pageIndex * tasksPerPage, pageIndex * tasksPerPage + tasksPerPage);
   const showPagination = safeTasks.length > tasksPerPage;
 
+  const completedTodayCount = completedTasks.filter((ct) => ct.childId === activeChild.id).length;
+
+  const handleTaskClick = (task: Task, isCompleted: boolean) => {
+    if (!isCompleted && completedTodayCount === 1) {
+      onMilestone?.();
+    }
+    void completeTask(task);
+  };
+
   return (
     <div className="widget daily-tasks-widget">
       <div className="widget-header">
@@ -362,12 +375,17 @@ export const DailyTasksWidget: React.FC = () => {
               return (
                 <div
                   key={task.id}
-                  className={`task-row ${isCompleted ? 'completed' : ''} ${getCategoryTone(task.category)}`}
-                  onClick={() => completeTask(task)}
+                  className={`task-row ${isCompleted ? 'completed is-done' : ''} ${getCategoryTone(task.category)}`}
+                  onClick={() => handleTaskClick(task, isCompleted)}
+                  aria-label={`${task.name}${isCompleted ? ' (validée)' : ''}`}
                 >
                   <div className="task-icon">{task.icon}</div>
                   <div className="task-name">{task.name}</div>
-                  {isCompleted && <div className="task-status">Terminé</div>}
+                  {isCompleted && (
+                    <div className="task-done-badge" aria-hidden="true">
+                      ✓ Validé
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -381,18 +399,20 @@ export const DailyTasksWidget: React.FC = () => {
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
             disabled={pageIndex === 0}
-            aria-label="Tâches précédentes"
+            aria-label="Page de tâches précédente"
+            title="Page de tâches précédente"
           >
             ‹
           </button>
           <div className="tasks-nav-indicator">
-            Page {pageIndex + 1} / {totalPages}
+            Tâches {pageIndex + 1} / {totalPages}
           </div>
           <button
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.min(prev + 1, totalPages - 1))}
             disabled={pageIndex >= totalPages - 1}
-            aria-label="Tâches suivantes"
+            aria-label="Page de tâches suivante"
+            title="Page de tâches suivante"
           >
             ›
           </button>
