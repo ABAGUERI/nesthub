@@ -47,6 +47,7 @@
   color: #e2e8f0;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 0;
 }
 
 .switcher-pill.active {
@@ -61,6 +62,9 @@
 .pill-name {
   font-weight: 700;
   font-size: clamp(12px, 1.2vw, 15px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* === CAROUSEL CONTAINER === */
