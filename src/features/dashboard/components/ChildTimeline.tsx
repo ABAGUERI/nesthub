@@ -146,21 +146,15 @@ export default function ChildTimeline({ childName, events }: Props) {
           <div className="timeline-week-actions">
             <button
               className="ct-icon-btn"
-              onClick={() => setWeekOffset((v) => v - 1)}
+              onClick={() => setWeekOffset((prev) => prev - 1)}
               aria-label="Semaine précédente"
-              onClick={() => {
-                setWeekOffset((prev) => prev - 1);
-              }}
             >
               ‹
             </button>
             <button
               className="ct-icon-btn"
-              onClick={() => setWeekOffset((v) => v + 1)}
+              onClick={() => setWeekOffset((prev) => prev + 1)}
               aria-label="Semaine suivante"
-              onClick={() => {
-                setWeekOffset((prev) => prev + 1);
-              }}
             >
               ›
             </button>
@@ -190,9 +184,9 @@ export default function ChildTimeline({ childName, events }: Props) {
               >
                 <span className="timeline-dot-core" />
               </button>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
 
         {selectedEvent && selectedDayIndex >= 0 && (
           <div className="timeline-event-bubble" style={{ left: `${(selectedDayIndex / 6) * 100}%` }}>
