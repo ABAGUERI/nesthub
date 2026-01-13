@@ -28,9 +28,13 @@ interface CompletedTask {
 
 type DailyTasksWidgetProps = {
   onMilestone?: () => void;
+  onCompletedTodayCountChange?: (count: number) => void;
 };
 
-export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone }) => {
+export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
+  onMilestone,
+  onCompletedTodayCountChange,
+}) => {
   const { user } = useAuth();
   const { selectedChildIndex } = useChildSelection();
   const [children, setChildren] = useState<Child[]>([]);
@@ -315,6 +319,14 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
     );
   }
 
+  const activeChild = children[selectedChildIndex];
+
+  useEffect(() => {
+    if (!activeChild) {
+      onCompletedTodayCountChange?.(0);
+    }
+  }, [activeChild, onCompletedTodayCountChange]);
+
   if (children.length === 0) {
     return (
       <div className="widget">
@@ -326,7 +338,6 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
     );
   }
 
-  const activeChild = children[selectedChildIndex];
   if (!activeChild) {
     return (
       <div className="widget daily-tasks-widget">
@@ -348,6 +359,10 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
   const showPagination = safeTasks.length > tasksPerPage;
 
   const completedTodayCount = completedTasks.filter((ct) => ct.childId === activeChild.id).length;
+
+  useEffect(() => {
+    onCompletedTodayCountChange?.(completedTodayCount);
+  }, [completedTodayCount, onCompletedTodayCountChange]);
 
   const handleTaskClick = (task: Task, isCompleted: boolean) => {
     if (!isCompleted && completedTodayCount === 1) {
@@ -399,8 +414,8 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
             disabled={pageIndex === 0}
-            aria-label="Page de tâches précédente"
-            title="Page de tâches précédente"
+            aria-label="Tâches précédentes"
+            title="Tâches précédentes"
           >
             ‹
           </button>
@@ -411,8 +426,8 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.min(prev + 1, totalPages - 1))}
             disabled={pageIndex >= totalPages - 1}
-            aria-label="Page de tâches suivante"
-            title="Page de tâches suivante"
+            aria-label="Tâches suivantes"
+            title="Tâches suivantes"
           >
             ›
           </button>
