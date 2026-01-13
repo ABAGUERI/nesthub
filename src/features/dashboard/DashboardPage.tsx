@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppHeader } from '@/shared/components/AppHeader';
 import { useAuth } from '@/shared/hooks/useAuth';
 
@@ -13,19 +13,10 @@ import { VehicleWidget } from './components/VehicleWidget';
 import { ChildSelectionProvider, useChildSelection } from './contexts/ChildSelectionContext';
 import ChildTimeline, { ChildTimelineEvent } from './components/ChildTimeline';
 
-import { getGoogleConnection, getCalendarEventsWithAuth } from '@/features/google/google.service';
 import { supabase } from '@/shared/utils/supabase';
+import { useChildEvents } from './hooks/useChildEvents';
 
 import './Dashboard.css';
-
-type CalendarEvent = {
-  id: string;
-  summary: string;
-  start: { dateTime?: string; date?: string };
-  end?: { dateTime?: string; date?: string };
-  calendarName?: string;
-  calendarId?: string;
-};
 
 type ChildRow = {
   id: string;
@@ -52,12 +43,34 @@ const DashboardInner: React.FC = () => {
 
   const [children, setChildren] = useState<ChildRow[]>([]);
   const [childrenError, setChildrenError] = useState<string | null>(null);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
+  const celebrationTimerRef = useRef<number | null>(null);
+  const [celebrationActive, setCelebrationActive] = useState(false);
 
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [eventsError, setEventsError] = useState<string | null>(null);
+  const { events, error: eventsError } = useChildEvents(user?.id, RANGE_DAYS);
 
-  const goPrev = () => setScreenIndex((v) => (v - 1 + screensCount) % screensCount);
-  const goNext = () => setScreenIndex((v) => (v + 1) % screensCount);
+  const goPrev = useCallback(() => {
+    setScreenIndex((v) => (v - 1 + screensCount) % screensCount);
+  }, [screensCount]);
+
+  const goNext = useCallback(() => {
+    setScreenIndex((v) => (v + 1) % screensCount);
+  }, [screensCount]);
+
+  const handleScrollToTimeline = useCallback(() => {
+    timelineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  const handleCelebration = useCallback(() => {
+    if (celebrationTimerRef.current) {
+      window.clearTimeout(celebrationTimerRef.current);
+    }
+    setCelebrationActive(true);
+    celebrationTimerRef.current = window.setTimeout(() => {
+      setCelebrationActive(false);
+      celebrationTimerRef.current = null;
+    }, 900);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -66,88 +79,46 @@ const DashboardInner: React.FC = () => {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goNext, goPrev]);
+
+  useEffect(() => {
+    return () => {
+      if (celebrationTimerRef.current) {
+        window.clearTimeout(celebrationTimerRef.current);
+      }
+    };
   }, []);
+
+  const loadChildren = useCallback(async () => {
+    if (!user) return;
+
+    setChildrenError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('family_members')
+        .select('id, first_name')
+        .eq('user_id', user.id)
+        .eq('role', 'child')
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setChildren((data as ChildRow[]) || []);
+    } catch (e: any) {
+      console.error('Error loading children:', e);
+      setChildren([]);
+      setChildrenError('Impossible de charger la liste des enfants.');
+    }
+  }, [user]);
 
   // 1) Charger les enfants (pour obtenir le prénom réel de l’enfant sélectionné)
   useEffect(() => {
-    const loadChildren = async () => {
-      if (!user) return;
-
-      setChildrenError(null);
-
-      try {
-        const { data, error } = await supabase
-          .from('family_members')
-          .select('id, first_name')
-          .eq('user_id', user.id)
-          .eq('role', 'child')
-          .order('created_at', { ascending: true });
-
-        if (error) throw error;
-        setChildren((data as ChildRow[]) || []);
-      } catch (e: any) {
-        console.error('Error loading children:', e);
-        setChildren([]);
-        setChildrenError('Impossible de charger la liste des enfants.');
-      }
-    };
-
     loadChildren();
-  }, [user]);
+  }, [loadChildren]);
 
   const selectedChildName = useMemo(() => {
     return children[selectedChildIndex]?.first_name || '';
   }, [children, selectedChildIndex]);
-
-  // 2) Charger les événements Google (même logique que CalendarWidget)
-  useEffect(() => {
-    loadEvents();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const loadEvents = async () => {
-    if (!user) return;
-
-    setEventsError(null);
-
-    try {
-      const connection = await getGoogleConnection(user.id);
-      if (!connection || !connection.accessToken) {
-        setEventsError('Connectez ou reconnectez Google pour afficher la timeline.');
-        setEvents([]);
-        return;
-      }
-
-      const calendarIds = [connection.selectedCalendarId || 'primary'];
-
-      const fetchedEvents = await getCalendarEventsWithAuth(
-        user.id,
-        calendarIds.filter(Boolean) as string[],
-        80,
-        RANGE_DAYS
-      );
-
-      const now = new Date();
-      const horizon = new Date(now.getTime() + RANGE_DAYS * 24 * 60 * 60 * 1000);
-
-      const withinRange = fetchedEvents.filter((event: CalendarEvent) => {
-        const date = new Date(event.start.dateTime || event.start.date!);
-        return date >= now && date <= horizon;
-      });
-
-      setEvents(withinRange);
-    } catch (error: any) {
-      console.error('Error loading calendar events (timeline):', error);
-      const isUnauthorized = error?.message === 'unauthorized';
-      setEventsError(
-        isUnauthorized
-          ? 'Session Google expirée : reconnectez-vous dans Paramètres > Google.'
-          : 'Impossible de charger les événements Google'
-      );
-      setEvents([]);
-    }
-  };
 
   // 3) Timeline = STRICTEMENT l’enfant sélectionné
   const timelineEvents: ChildTimelineEvent[] = useMemo(() => {
@@ -181,18 +152,30 @@ const DashboardInner: React.FC = () => {
           <div className="dashboard-carousel-track" style={{ transform: `translateX(-${screenIndex * 100}%)` }}>
             {/* SCREEN 1 — Kids */}
             <div className="dashboard-screen" aria-label="Écran enfants">
+              <div className="kids-screen-actions">
+                <button type="button" className="kids-screen-link" onClick={handleScrollToTimeline}>
+                  Voir événements
+                </button>
+              </div>
+              <div className={`kids-celebration-toast${celebrationActive ? ' is-visible' : ''}`}>
+                Bravo — 2 tâches aujourd&apos;hui
+              </div>
               <div className="screen-grid kids-screen">
-                <ChildrenWidget />
-                <DailyTasksWidget />
+                <div className={`kids-celebration${celebrationActive ? ' is-active' : ''}`}>
+                  <ChildrenWidget />
+                </div>
+                <DailyTasksWidget onMilestone={handleCelebration} />
 
                 {/* Timeline — enfant sélectionné uniquement */}
-                {timelineBlockedMessage ? (
-                  <div className="timeline-card child-timeline">
-                    <div className="timeline-empty">{timelineBlockedMessage}</div>
-                  </div>
-                ) : (
-                  <ChildTimeline childName={selectedChildName} events={timelineEvents} rangeDays={RANGE_DAYS} />
-                )}
+                <div ref={timelineRef} className="kids-timeline-anchor">
+                  {timelineBlockedMessage ? (
+                    <div className="timeline-card child-timeline">
+                      <div className="timeline-empty">{timelineBlockedMessage}</div>
+                    </div>
+                  ) : (
+                    <ChildTimeline childName={selectedChildName} events={timelineEvents} rangeDays={RANGE_DAYS} />
+                  )}
+                </div>
               </div>
             </div>
 
@@ -233,10 +216,12 @@ const DashboardInner: React.FC = () => {
           </div>
 
           <button className="screen-arrow left" onClick={goPrev} aria-label="Écran précédent" type="button">
-            ‹
+            <span className="screen-arrow-icon">‹</span>
+            <span className="screen-arrow-label">Écran précédent</span>
           </button>
           <button className="screen-arrow right" onClick={goNext} aria-label="Écran suivant" type="button">
-            ›
+            <span className="screen-arrow-icon">›</span>
+            <span className="screen-arrow-label">Écran suivant</span>
           </button>
 
           <div className="screen-dots" role="tablist" aria-label="Navigation des écrans">
