@@ -44,6 +44,8 @@ const DashboardInner: React.FC = () => {
   const [children, setChildren] = useState<ChildRow[]>([]);
   const [childrenError, setChildrenError] = useState<string | null>(null);
   const timelineRef = useRef<HTMLDivElement | null>(null);
+  const celebrationTimerRef = useRef<number | null>(null);
+  const [celebrationActive, setCelebrationActive] = useState(false);
 
   const { events, error: eventsError } = useChildEvents(user?.id, RANGE_DAYS);
 
@@ -59,6 +61,17 @@ const DashboardInner: React.FC = () => {
     timelineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
+  const handleCelebration = useCallback(() => {
+    if (celebrationTimerRef.current) {
+      window.clearTimeout(celebrationTimerRef.current);
+    }
+    setCelebrationActive(true);
+    celebrationTimerRef.current = window.setTimeout(() => {
+      setCelebrationActive(false);
+      celebrationTimerRef.current = null;
+    }, 900);
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') goPrev();
@@ -67,6 +80,14 @@ const DashboardInner: React.FC = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [goNext, goPrev]);
+
+  useEffect(() => {
+    return () => {
+      if (celebrationTimerRef.current) {
+        window.clearTimeout(celebrationTimerRef.current);
+      }
+    };
+  }, []);
 
   const loadChildren = useCallback(async () => {
     if (!user) return;
@@ -136,9 +157,14 @@ const DashboardInner: React.FC = () => {
                   Voir événements
                 </button>
               </div>
+              <div className={`kids-celebration-toast${celebrationActive ? ' is-visible' : ''}`}>
+                Bravo — 2 tâches aujourd&apos;hui
+              </div>
               <div className="screen-grid kids-screen">
-                <ChildrenWidget />
-                <DailyTasksWidget />
+                <div className={`kids-celebration${celebrationActive ? ' is-active' : ''}`}>
+                  <ChildrenWidget />
+                </div>
+                <DailyTasksWidget onMilestone={handleCelebration} />
 
                 {/* Timeline — enfant sélectionné uniquement */}
                 <div ref={timelineRef} className="kids-timeline-anchor">

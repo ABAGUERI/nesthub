@@ -322,6 +322,12 @@
   }
 }
 
+@media (min-width: 1025px) {
+  .timeline-card {
+    min-height: 130px;
+  }
+}
+
 @media (max-width: 600px) {
   .timeline-dot-date {
     font-size: 10px;
