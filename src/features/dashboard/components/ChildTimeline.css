@@ -323,12 +323,12 @@
 /* ===================================================== */
 .timeline-event-bubble {
   position: absolute;
-  top: -60px; /* Garde le titre à la même hauteur */
+  top: -48px; /* Réduit de -60px à -48px */
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px; /* Gap réduit pour compenser la tige plus courte */
+  gap: 4px; /* Réduit de 6px à 4px */
   max-width: min(320px, 70vw);
   z-index: 10;
 }
@@ -375,7 +375,7 @@
 .timeline-event-bubble::before {
   content: "";
   width: 2px;
-  height: 24px; /* Tige plus courte - ajuste selon préférence */
+  height: 16px; /* Réduit de 24px à 16px */
   background: rgba(255,255,255,0.20);
   box-shadow: 0 0 18px rgba(170, 130, 255, 0.22);
   border-radius: 999px;
@@ -448,11 +448,11 @@
   }
   
   .timeline-event-bubble {
-    top: -65px;
+    top: -45px; /* Ajusté */
   }
   
   .timeline-event-bubble::before {
-    height: 20px; /* Tige encore plus courte sur tablette */
+    height: 14px; /* Tige plus courte */
   }
 }
 
@@ -504,6 +504,6 @@
   }
   
   .timeline-event-bubble::before {
-    height: 18px; /* Tige plus courte sur mobile */
+    height: 12px; /* Tige plus courte sur mobile */
   }
 }

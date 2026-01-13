@@ -75,10 +75,15 @@ const cleanTitle = (title: string, childName: string) => {
 
 export default function ChildTimeline({ childName, events }: Props) {
   const [weekOffset, setWeekOffset] = useState(0);
-  const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null); // null = afficher le prochain événement
   const [dayEventIndex, setDayEventIndex] = useState(0);
+  const [isEventVisible, setIsEventVisible] = useState(true);
 
-  const weekBaseDate = useMemo(() => addDays(selectedDate, weekOffset * 7), [selectedDate, weekOffset]);
+  const weekBaseDate = useMemo(() => {
+    const today = startOfDay(new Date());
+    return addDays(today, weekOffset * 7);
+  }, [weekOffset]);
+  
   const weekStart = useMemo(() => startOfWeek(weekBaseDate), [weekBaseDate]);
   const weekEnd = useMemo(() => endOfDay(addDays(weekStart, 6)), [weekStart]);
 
@@ -104,33 +109,68 @@ export default function ChildTimeline({ childName, events }: Props) {
     }, {});
   }, [weekEvents]);
 
-  const selectedDisplayDate = useMemo(() => addDays(selectedDate, weekOffset * 7), [selectedDate, weekOffset]);
-  const selectedKey = formatKey(startOfDay(selectedDisplayDate));
-  const selectedDayIndex = useMemo(
-    () => days.findIndex((day) => formatKey(day) === selectedKey),
-    [days, selectedKey]
-  );
-
-  const selectedDayEvents = eventsByDay[selectedKey] || [];
-
-  useEffect(() => {
-    setDayEventIndex(0);
-  }, [selectedKey]);
-
-  const selectedEvent = selectedDayEvents[dayEventIndex] || null;
-
-  const nextEvent = useMemo(() => {
+  // Trouver le prochain événement (ou le premier de la semaine)
+  const defaultEvent = useMemo(() => {
     const now = new Date();
     return weekEvents.find((ev) => new Date(ev.start).getTime() >= now.getTime()) || weekEvents[0] || null;
   }, [weekEvents]);
 
+  // Déterminer quel jour/événement afficher
+  const displayDate = useMemo(() => {
+    if (selectedDate) {
+      return addDays(selectedDate, weekOffset * 7);
+    }
+    if (defaultEvent) {
+      return startOfDay(new Date(defaultEvent.start));
+    }
+    return null;
+  }, [selectedDate, defaultEvent, weekOffset]);
+
+  const selectedKey = displayDate ? formatKey(displayDate) : null;
+  const selectedDayIndex = useMemo(
+    () => (selectedKey ? days.findIndex((day) => formatKey(day) === selectedKey) : -1),
+    [days, selectedKey]
+  );
+
+  const selectedDayEvents = selectedKey ? (eventsByDay[selectedKey] || []) : [];
+
+  // Reset l'index des événements quand on change de jour
+  useEffect(() => {
+    setDayEventIndex(0);
+  }, [selectedKey]);
+
+  // Reset la sélection quand on change de semaine
+  useEffect(() => {
+    setSelectedDate(null);
+    setIsEventVisible(true);
+  }, [weekOffset]);
+
+  const selectedEvent = isEventVisible && selectedDayEvents.length > 0 
+    ? selectedDayEvents[dayEventIndex] 
+    : null;
+
   const detailsText = useMemo(() => {
-    if (!nextEvent) return 'Aucun événement cette semaine.';
-    const date = new Date(nextEvent.start);
-    return `Prochain : ${cleanTitle(nextEvent.title, childName)} — ${formatRelativeLabel(date)}`;
-  }, [nextEvent, childName]);
+    if (!defaultEvent) return 'Aucun événement cette semaine.';
+    const date = new Date(defaultEvent.start);
+    return `Prochain : ${cleanTitle(defaultEvent.title, childName)} — ${formatRelativeLabel(date)}`;
+  }, [defaultEvent, childName]);
 
   const weekLabel = useMemo(() => formatDateRange(weekStart, weekEnd), [weekStart, weekEnd]);
+
+  const handleDotClick = (day: Date, dayKey: string) => {
+    const isSameDay = selectedKey === dayKey;
+    
+    if (isSameDay) {
+      // Si on clique sur le même jour, on toggle la visibilité
+      setIsEventVisible(!isEventVisible);
+    } else {
+      // Si on clique sur un autre jour, on le sélectionne et on affiche l'événement
+      setSelectedDate(addDays(day, -weekOffset * 7));
+      setIsEventVisible(true);
+    }
+    
+    setDayEventIndex(0);
+  };
 
   return (
     <div className="timeline-card child-timeline">
@@ -176,10 +216,7 @@ export default function ChildTimeline({ childName, events }: Props) {
               <button
                 type="button"
                 className={`timeline-dot${isSelected ? ' is-selected' : ''}${count > 0 ? ' has-event' : ''}`}
-                onClick={() => {
-                  setSelectedDate(addDays(day, -weekOffset * 7));
-                  setDayEventIndex(0);
-                }}
+                onClick={() => handleDotClick(day, key)}
                 aria-label={`Jour ${formatDayLabel(day)}${count ? `, ${count} événement${count > 1 ? 's' : ''}` : ''}`}
               >
                 <span className="timeline-dot-core" />
