@@ -1,0 +1,80 @@
+.project-card {
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+}
+
+.project-image {
+  height: 120px;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.project-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.project-image-fallback {
+  font-size: 34px;
+  color: #94a3b8;
+}
+
+.project-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.project-content h3 {
+  font-size: 18px;
+  color: #f8fafc;
+}
+
+.project-amounts {
+  font-size: 14px;
+  color: #cbd5f5;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.project-divider {
+  color: #64748b;
+}
+
+.project-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.project-progress-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+  overflow: hidden;
+}
+
+.project-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8, #a78bfa);
+}
+
+.project-progress-value {
+  font-size: 12px;
+  color: #e2e8f0;
+  min-width: 36px;
+  text-align: right;
+}

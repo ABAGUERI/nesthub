@@ -8,6 +8,8 @@ import { OAuthCallback } from '@/features/google/components/OAuthCallback';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { ConfigPage } from '@/features/config/ConfigPage';
 import { KitchenPage } from '@/features/kitchen/KitchenPage';
+import { FinancePage } from '@/features/finance/FinancePage';
+import { ChildSelectionProvider } from '@/features/dashboard/contexts/ChildSelectionContext';
 import '@/styles/global.css';
 
 // Composant pour protéger les routes authentifiées
@@ -142,6 +144,15 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/finances"
+        element={
+          <ProtectedRoute>
+            <FinancePage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Redirection par défaut */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
@@ -154,7 +165,9 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <ClientConfigProvider>
-          <AppRoutes />
+          <ChildSelectionProvider>
+            <AppRoutes />
+          </ChildSelectionProvider>
         </ClientConfigProvider>
       </AuthProvider>
     </BrowserRouter>
