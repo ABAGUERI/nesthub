@@ -5,14 +5,14 @@ import './ChildTimeline.css';
 export type ChildTimelineEvent = {
   id: string;
   title: string;
-  start: string | Date;
-  end?: string | Date;
+  start: string; // ISO
+  end?: string;  // ISO
 };
 
 type Props = {
   childName: string;
   events: ChildTimelineEvent[];
-  rangeDays?: number;
+  rangeDays?: number; // conservé pour compat
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -73,7 +73,7 @@ const cleanTitle = (title: string, childName: string) => {
   return stripped.replace(/[\p{Extended_Pictographic}]/gu, '').trim();
 };
 
-const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
+export default function ChildTimeline({ childName, events }: Props) {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
   const [dayEventIndex, setDayEventIndex] = useState(0);
@@ -145,8 +145,8 @@ const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
           <div className="timeline-week-label">CETTE SEMAINE ({weekLabel})</div>
           <div className="timeline-week-actions">
             <button
-              type="button"
-              className="timeline-week-icon"
+              className="ct-icon-btn"
+              onClick={() => setWeekOffset((v) => v - 1)}
               aria-label="Semaine précédente"
               onClick={() => {
                 setWeekOffset((prev) => prev - 1);
@@ -155,8 +155,8 @@ const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
               ‹
             </button>
             <button
-              type="button"
-              className="timeline-week-icon"
+              className="ct-icon-btn"
+              onClick={() => setWeekOffset((v) => v + 1)}
               aria-label="Semaine suivante"
               onClick={() => {
                 setWeekOffset((prev) => prev + 1);
@@ -190,9 +190,9 @@ const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
               >
                 <span className="timeline-dot-core" />
               </button>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
 
         {selectedEvent && selectedDayIndex >= 0 && (
           <div className="timeline-event-bubble" style={{ left: `${(selectedDayIndex / 6) * 100}%` }}>
@@ -228,6 +228,4 @@ const ChildTimeline: React.FC<Props> = ({ childName, events }) => {
       </div>
     </div>
   );
-};
-
-export default ChildTimeline;
+}

@@ -59,9 +59,9 @@
   white-space: nowrap;
 }
 
-.timeline-week-actions {
+.ct-range-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .timeline-week-icon {
@@ -69,19 +69,19 @@
   min-height: 34px;
   padding: 0;
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: rgba(15, 23, 42, 0.4);
-  color: rgba(226, 232, 240, 0.82);
-  font-size: 16px;
-  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(20, 24, 40, 0.30);
+  color: rgba(255,255,255,0.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
 }
 
-.timeline-week-icon:hover,
-.timeline-week-icon:focus-visible {
-  border-color: rgba(120, 170, 255, 0.5);
-  background: rgba(30, 41, 59, 0.65);
+.ct-icon-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(28, 36, 60, 0.38);
+  border-color: rgba(120,180,255,0.28);
 }
 
 .timeline-info {
@@ -93,13 +93,14 @@
   text-overflow: ellipsis;
 }
 
-.timeline-rail-zone {
+/* --- Timeline rail --- */
+.ct-rail {
   position: relative;
   height: 120px;
   padding: 10px 12px 0 12px;
 }
 
-.timeline-rail {
+.ct-line {
   position: absolute;
   left: 12px;
   right: 12px;
