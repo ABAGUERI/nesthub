@@ -228,6 +228,10 @@
     max-width: none;
     margin-left: 0;
   }
+
+  .dashboard-body {
+    overflow: visible;
+  }
 }
 
 .screen-arrow {
