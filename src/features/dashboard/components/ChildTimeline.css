@@ -288,6 +288,15 @@
   transition: all 0.2s ease;
 }
 
+/* Dot avec événement = ROUGE */
+.timeline-dot.has-event .timeline-dot-core {
+  background: rgba(239, 68, 68, 0.90);
+  box-shadow: 
+    0 0 12px rgba(239, 68, 68, 0.45),
+    0 0 18px rgba(239, 68, 68, 0.25);
+}
+
+/* Dot sélectionné */
 .timeline-dot.is-selected .timeline-dot-core {
   width: 10px;
   height: 10px;
@@ -298,17 +307,28 @@
     0 0 26px rgba(170, 130, 255, 0.22);
 }
 
+/* Dot sélectionné + événement = ROUGE BRILLANT */
+.timeline-dot.is-selected.has-event .timeline-dot-core {
+  width: 10px;
+  height: 10px;
+  background: rgba(239, 68, 68, 0.98);
+  box-shadow:
+    0 0 0 6px rgba(239, 68, 68, 0.15),
+    0 0 22px rgba(239, 68, 68, 0.55),
+    0 0 26px rgba(239, 68, 68, 0.35);
+}
+
 /* ===================================================== */
 /* Event Bubble (marqueur d'événement) */
 /* ===================================================== */
 .timeline-event-bubble {
   position: absolute;
-  top: -45px;
+  top: -60px; /* Garde le titre à la même hauteur */
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px; /* Gap réduit pour compenser la tige plus courte */
   max-width: min(320px, 70vw);
   z-index: 10;
 }
@@ -351,11 +371,11 @@
   color: rgba(226, 232, 240, 0.6);
 }
 
-/* Marqueur stem (tige verticale) */
+/* Marqueur stem (tige verticale RACCOURCIE) */
 .timeline-event-bubble::before {
   content: "";
   width: 2px;
-  height: 42px;
+  height: 24px; /* Tige plus courte - ajuste selon préférence */
   background: rgba(255,255,255,0.20);
   box-shadow: 0 0 18px rgba(170, 130, 255, 0.22);
   border-radius: 999px;
@@ -428,10 +448,11 @@
   }
   
   .timeline-event-bubble {
-    top: -40px;
+    top: -65px;
   }
+  
   .timeline-event-bubble::before {
-    height: 20px; /* Tige plus courte sur mobile */
+    height: 20px; /* Tige encore plus courte sur tablette */
   }
 }
 
@@ -480,5 +501,9 @@
 
   .timeline-event-title {
     max-width: 120px;
+  }
+  
+  .timeline-event-bubble::before {
+    height: 18px; /* Tige plus courte sur mobile */
   }
 }
