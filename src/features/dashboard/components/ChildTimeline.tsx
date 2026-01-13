@@ -175,7 +175,7 @@ export default function ChildTimeline({ childName, events }: Props) {
             <div key={key} className="timeline-day" style={{ left }}>
               <button
                 type="button"
-                className={`timeline-dot${isSelected ? ' is-selected' : ''}`}
+                className={`timeline-dot${isSelected ? ' is-selected' : ''}${count > 0 ? ' has-event' : ''}`}
                 onClick={() => {
                   setSelectedDate(addDays(day, -weekOffset * 7));
                   setDayEventIndex(0);
