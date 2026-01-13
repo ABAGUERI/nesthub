@@ -21,6 +21,7 @@ export interface Child {
   icon: 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
   role?: 'child' | 'adult';
   avatarUrl?: string;
+  birthDate?: string | null;
   createdAt: string;
 }
 
