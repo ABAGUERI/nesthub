@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { supabase } from '@/shared/utils/supabase';
 import { getChildrenWithProgress } from '@/shared/utils/children.service';
@@ -320,12 +320,14 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
   }
 
   const activeChild = children[selectedChildIndex];
+  const completedTodayCount = useMemo(() => {
+    if (!activeChild) return 0;
+    return completedTasks.filter((ct) => ct.childId === activeChild.id).length;
+  }, [activeChild, completedTasks]);
 
   useEffect(() => {
-    if (!activeChild) {
-      onCompletedTodayCountChange?.(0);
-    }
-  }, [activeChild, onCompletedTodayCountChange]);
+    onCompletedTodayCountChange?.(completedTodayCount);
+  }, [completedTodayCount, onCompletedTodayCountChange]);
 
   if (children.length === 0) {
     return (
@@ -357,12 +359,6 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
   const totalPages = Math.max(1, Math.ceil(safeTasks.length / tasksPerPage));
   const paginatedTasks = safeTasks.slice(pageIndex * tasksPerPage, pageIndex * tasksPerPage + tasksPerPage);
   const showPagination = safeTasks.length > tasksPerPage;
-
-  const completedTodayCount = completedTasks.filter((ct) => ct.childId === activeChild.id).length;
-
-  useEffect(() => {
-    onCompletedTodayCountChange?.(completedTodayCount);
-  }, [completedTodayCount, onCompletedTodayCountChange]);
 
   const handleTaskClick = (task: Task, isCompleted: boolean) => {
     if (!isCompleted && completedTodayCount === 1) {
