@@ -216,10 +216,12 @@ const DashboardInner: React.FC = () => {
           </div>
 
           <button className="screen-arrow left" onClick={goPrev} aria-label="Écran précédent" type="button">
-            ‹
+            <span className="screen-arrow-icon">‹</span>
+            <span className="screen-arrow-label">Écran précédent</span>
           </button>
           <button className="screen-arrow right" onClick={goNext} aria-label="Écran suivant" type="button">
-            ›
+            <span className="screen-arrow-icon">›</span>
+            <span className="screen-arrow-label">Écran suivant</span>
           </button>
 
           <div className="screen-dots" role="tablist" aria-label="Navigation des écrans">

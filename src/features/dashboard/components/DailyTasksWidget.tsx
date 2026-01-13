@@ -399,18 +399,20 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
             disabled={pageIndex === 0}
-            aria-label="Tâches précédentes"
+            aria-label="Page de tâches précédente"
+            title="Page de tâches précédente"
           >
             ‹
           </button>
           <div className="tasks-nav-indicator">
-            Page {pageIndex + 1} / {totalPages}
+            Tâches {pageIndex + 1} / {totalPages}
           </div>
           <button
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.min(prev + 1, totalPages - 1))}
             disabled={pageIndex >= totalPages - 1}
-            aria-label="Tâches suivantes"
+            aria-label="Page de tâches suivante"
+            title="Page de tâches suivante"
           >
             ›
           </button>

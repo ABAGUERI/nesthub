@@ -160,17 +160,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
 
   margin-top: 8px;
   flex-shrink: 0;
 }
 
 .daily-tasks-widget .tasks-nav-btn {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
 
-  border-radius: 10px;
+  border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
 
@@ -196,10 +196,10 @@
 }
 
 .daily-tasks-widget .tasks-nav-indicator {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: rgba(148, 163, 184, 0.9);
-  min-width: 70px;
+  min-width: 84px;
   text-align: center;
 }
 
