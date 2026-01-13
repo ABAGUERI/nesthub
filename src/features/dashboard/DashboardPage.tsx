@@ -46,6 +46,7 @@ const DashboardInner: React.FC = () => {
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const celebrationTimerRef = useRef<number | null>(null);
   const [celebrationActive, setCelebrationActive] = useState(false);
+  const [completedTodayCount, setCompletedTodayCount] = useState(0);
 
   const { events, error: eventsError } = useChildEvents(user?.id, RANGE_DAYS);
 
@@ -160,14 +161,26 @@ const DashboardInner: React.FC = () => {
               <div className={`kids-celebration-toast${celebrationActive ? ' is-visible' : ''}`}>
                 Bravo — 2 tâches aujourd&apos;hui
               </div>
-              <div className="screen-grid kids-screen">
-                <div className={`kids-celebration${celebrationActive ? ' is-active' : ''}`}>
-                  <ChildrenWidget />
+              <section className="kids-layout">
+                <div className="kids-top kids-goal">
+                  <div className={`kids-celebration${celebrationActive ? ' is-active' : ''}`}>
+                    {completedTodayCount >= 2 && (
+                      <div className="kids-magic-badge" aria-live="polite">
+                        Bravo — {completedTodayCount} tâches aujourd&apos;hui
+                      </div>
+                    )}
+                    <ChildrenWidget />
+                  </div>
                 </div>
-                <DailyTasksWidget onMilestone={handleCelebration} />
+                <div className="kids-top kids-tasks">
+                  <DailyTasksWidget
+                    onMilestone={handleCelebration}
+                    onCompletedTodayCountChange={setCompletedTodayCount}
+                  />
+                </div>
 
                 {/* Timeline — enfant sélectionné uniquement */}
-                <div ref={timelineRef} className="kids-timeline-anchor">
+                <div ref={timelineRef} className="kids-timeline">
                   {timelineBlockedMessage ? (
                     <div className="timeline-card child-timeline">
                       <div className="timeline-empty">{timelineBlockedMessage}</div>
@@ -176,7 +189,7 @@ const DashboardInner: React.FC = () => {
                     <ChildTimeline childName={selectedChildName} events={timelineEvents} rangeDays={RANGE_DAYS} />
                   )}
                 </div>
-              </div>
+              </section>
             </div>
 
             {/* SCREEN 2 — Agenda */}
@@ -217,11 +230,17 @@ const DashboardInner: React.FC = () => {
 
           <button className="screen-arrow left" onClick={goPrev} aria-label="Écran précédent" type="button">
             <span className="screen-arrow-icon">‹</span>
-            <span className="screen-arrow-label">Écran précédent</span>
+            <span className="screen-arrow-label">
+              <span>ÉCRAN</span>
+              <span>PRÉCÉDENT</span>
+            </span>
           </button>
           <button className="screen-arrow right" onClick={goNext} aria-label="Écran suivant" type="button">
             <span className="screen-arrow-icon">›</span>
-            <span className="screen-arrow-label">Écran suivant</span>
+            <span className="screen-arrow-label">
+              <span>ÉCRAN</span>
+              <span>SUIVANT</span>
+            </span>
           </button>
 
           <div className="screen-dots" role="tablist" aria-label="Navigation des écrans">

@@ -160,21 +160,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
 
   margin-top: 8px;
   flex-shrink: 0;
 }
 
 .daily-tasks-widget .tasks-nav-btn {
-  width: 44px;
-  height: 44px;
+  width: 34px;
+  height: 34px;
 
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.45);
 
-  color: rgba(226, 232, 240, 0.95);
+  color: rgba(226, 232, 240, 0.85);
   font-weight: 900;
   cursor: pointer;
 
@@ -185,9 +185,8 @@
 }
 
 .daily-tasks-widget .tasks-nav-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(34, 211, 238, 0.22);
-  transform: translateY(-1px);
+  background: rgba(148, 163, 184, 0.16);
+  border-color: rgba(148, 163, 184, 0.35);
 }
 
 .daily-tasks-widget .tasks-nav-btn:disabled {
