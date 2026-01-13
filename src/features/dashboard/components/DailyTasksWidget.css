@@ -230,7 +230,7 @@
 /* =====================================================
  * RESPONSIVE
  * ===================================================== */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .daily-tasks-widget .task-icon {
     font-size: 24px;
   }
@@ -240,7 +240,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 600px) {
   .daily-tasks-widget .task-row {
     padding: 8px 8px;
   }

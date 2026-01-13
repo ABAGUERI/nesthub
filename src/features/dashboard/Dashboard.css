@@ -166,7 +166,7 @@
   max-width: none;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
   .dashboard-container {
     padding: 12px;
     height: auto;
@@ -174,18 +174,22 @@
     overflow: visible;
   }
 
+  .dashboard-body {
+    overflow: visible;
+  }
+
   .dashboard-carousel {
     height: auto;
-    min-height: 60vh;
+    min-height: 0;
     overflow: visible;
+  }
+
+  .dashboard-carousel-track {
+    height: auto;
   }
 
   .dashboard-screen {
     padding: 16px;
-    height: auto;
-  }
-
-  .dashboard-carousel-track {
     height: auto;
   }
 
@@ -196,7 +200,31 @@
     grid-template-columns: 1fr;
   }
 
-  .screen-card.narrow {
+  .screen-grid.kids-screen {
+    grid-template-rows: auto auto auto;
+  }
+
+  .screen-grid.kids-screen > :nth-child(1) {
+    order: 1;
+  }
+
+  .screen-grid.kids-screen > :nth-child(2) {
+    order: 2;
+  }
+
+  .screen-grid.kids-screen .kids-timeline-anchor {
+    order: 3;
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .screen-grid.kids-screen .child-timeline {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .screen-card.narrow,
+  .screen-card.wide {
     max-width: none;
     margin-left: 0;
   }
@@ -347,28 +375,9 @@
 }
 
 /* === RESPONSIVE === */
-@media (max-width: 1280px) {
-  .dashboard-screen {
-    padding: 18px;
-  }
-
-  .screen-grid,
-  .screen-grid.kids-screen,
-  .screen-grid.agenda-screen,
-  .screen-grid.mobility-screen {
-    grid-template-columns: 1fr;
-  }
-
-  .screen-card.narrow,
-  .screen-card.wide {
-    max-width: none;
-    margin-left: 0;
-  }
-}
-
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .dashboard-container {
-    padding: 14px;
+    padding: 12px;
   }
 
   .dashboard-carousel {
@@ -384,34 +393,9 @@
   .widget {
     padding: 16px;
   }
-}
 
-@media (max-width: 900px) {
   .kids-screen-actions {
     display: flex;
-  }
-}
-
-@media (min-width: 1180px) and (max-height: 900px) {
-  .screen-grid.kids-screen {
-    grid-template-columns: 5fr 7fr;
-    grid-template-rows: auto minmax(120px, 160px);
-    gap: 16px;
-  }
-
-  .screen-grid.kids-screen > :nth-child(1),
-  .screen-grid.kids-screen > :nth-child(2) {
-    min-height: 0;
-  }
-
-  .screen-grid.kids-screen .kids-timeline-anchor {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .screen-grid.kids-screen .child-timeline {
-    grid-column: 1 / -1;
-    grid-row: 2;
   }
 }
 
