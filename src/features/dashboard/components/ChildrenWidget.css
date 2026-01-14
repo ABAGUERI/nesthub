@@ -108,6 +108,66 @@
   color: #e0f2fe;
 }
 
+.piggy-cta {
+  position: relative;
+  min-height: 44px;
+  padding: 12px 22px;
+  font-size: clamp(13px, 1.4vw, 16px);
+  font-weight: 800;
+  border-color: rgba(236, 72, 153, 0.45);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.82), rgba(30, 41, 59, 0.7));
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.4), 0 0 16px rgba(236, 72, 153, 0.15);
+  animation: piggyPulse 2.8s ease-in-out infinite;
+}
+
+.piggy-cta::after {
+  content: "✦";
+  position: absolute;
+  top: -6px;
+  right: 10px;
+  font-size: 12px;
+  color: rgba(236, 72, 153, 0.85);
+  opacity: 0.8;
+  text-shadow: 0 0 10px rgba(236, 72, 153, 0.4);
+  animation: piggySparkle 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.piggy-cta:hover {
+  border-color: rgba(236, 72, 153, 0.7);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.45), 0 0 22px rgba(236, 72, 153, 0.25);
+  transform: translateY(-1px);
+}
+
+.piggy-cta:focus-visible {
+  outline: 2px solid rgba(236, 72, 153, 0.7);
+  outline-offset: 3px;
+}
+
+@keyframes piggyPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.4), 0 0 16px rgba(236, 72, 153, 0.15);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.5), 0 0 22px rgba(236, 72, 153, 0.28);
+  }
+}
+
+@keyframes piggySparkle {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.1);
+  }
+}
+
 .carousel-content {
   flex: 1;
   display: flex;

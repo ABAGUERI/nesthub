@@ -438,8 +438,8 @@ export const ChildrenWidget: React.FC = () => {
       </div>
 
       <div className="children-widget-footer">
-        <button type="button" className="finance-cta" onClick={() => navigate('/finances')}>
-          💰 Finances
+        <button type="button" className="finance-cta piggy-cta" onClick={() => navigate('/finances')}>
+          🐷 Ma tirelire
         </button>
       </div>
     </div>
