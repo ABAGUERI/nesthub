@@ -1,9 +1,10 @@
 .finance-header {
   position: sticky;
-  top: var(--app-header-height, 92px);
+  top: 0;
   z-index: 50;
   background: rgba(8, 12, 24, 0.92);
   backdrop-filter: blur(18px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   border-bottom: 1px solid rgba(148, 163, 184, 0.2);
   transition: padding 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
