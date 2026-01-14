@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { supabase } from '@/shared/utils/supabase';
@@ -36,6 +37,15 @@ export const EditProjectModal: React.FC<EditProjectModalProps> = ({
       setIsSaving(false);
     }
   }, [isOpen, project]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
 
   if (!isOpen || !project) return null;
 
@@ -82,7 +92,7 @@ export const EditProjectModal: React.FC<EditProjectModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div className="finance-modal-overlay" role="dialog" aria-modal="true">
       <div className="finance-modal">
         <div className="finance-modal-header">
@@ -123,6 +133,7 @@ export const EditProjectModal: React.FC<EditProjectModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
