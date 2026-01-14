@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { supabase } from '@/shared/utils/supabase';
@@ -45,6 +46,15 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({
       setError(null);
       setIsSaving(false);
     }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
   }, [isOpen]);
 
   const title = useMemo(() => {
@@ -104,7 +114,7 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div className="finance-modal-overlay" role="dialog" aria-modal="true">
       <div className="finance-modal">
         <div className="finance-modal-header">
@@ -161,6 +171,7 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
