@@ -1,5 +1,5 @@
 .finance-page {
-  height: 100vh;
+  height: calc(100vh - var(--app-header-height));
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
