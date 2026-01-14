@@ -417,7 +417,7 @@ export const ChildrenWidget: React.FC = () => {
 
     const previousHeartsOn = prevHeartsOnRef.current;
     if (heartsOn < previousHeartsOn) {
-      const turnedOffIndex = heartsOn;
+      const turnedOffIndex = Math.max(0, heartsTotal - heartsOn - 1);
       setLastTurnedOffIndex(turnedOffIndex);
       if (turnOffTimeoutRef.current !== null) {
         window.clearTimeout(turnOffTimeoutRef.current);
@@ -432,7 +432,7 @@ export const ChildrenWidget: React.FC = () => {
       setLastTurnedOffIndex(null);
     }
     prevHeartsOnRef.current = heartsOn;
-  }, [heartsOn, lastTurnedOffIndex]);
+  }, [heartsOn, heartsTotal, lastTurnedOffIndex]);
 
   useEffect(() => {
     return () => {
@@ -537,7 +537,7 @@ export const ChildrenWidget: React.FC = () => {
                 <div className="hearts-label">Temps d'écran</div>
                 <div className="hearts-column">
                   {Array.from({ length: heartsTotal }).map((_, index) => {
-                    const isActive = index < heartsOn;
+                    const isActive = index >= heartsTotal - heartsOn;
                     const isTurningOff = index === lastTurnedOffIndex;
                     return (
                       <span
