@@ -6,9 +6,10 @@ import { RotationTab } from './components/tabs/RotationTab';
 import { GoogleTab } from './components/tabs/GoogleTab';
 import { RewardsTab } from './components/tabs/RewardsTab';
 import { WeatherTab } from './components/tabs/WeatherTab';
+import { ScreenTimeTab } from './components/tabs/ScreenTimeTab';
 import './ConfigPage.css';
 
-type TabId = 'family' | 'rotation' | 'google' | 'rewards' | 'weather';
+type TabId = 'family' | 'rotation' | 'google' | 'rewards' | 'weather' | 'screenTime';
 
 const TABS: Array<{ id: TabId; label: string; description: string; icon: string }> = [
   { id: 'family', label: 'Famille', description: 'Membres et avatars', icon: '👨‍👩‍👧' },
@@ -16,6 +17,7 @@ const TABS: Array<{ id: TabId; label: string; description: string; icon: string 
   { id: 'google', label: 'Google', description: 'Gmail, agendas, tâches', icon: '📧' },
   { id: 'rewards', label: 'Récompenses', description: 'Points et argent', icon: '🎯' },
   { id: 'weather', label: 'Météo', description: 'Ville et code postal', icon: '🌦️' },
+  { id: 'screenTime', label: 'Temps d’écran', description: 'Budget et cœurs', icon: '⏱️' },
 ];
 
 export const ConfigPage: React.FC = () => {
@@ -49,6 +51,7 @@ export const ConfigPage: React.FC = () => {
           {activeTab === 'google' && <GoogleTab />}
           {activeTab === 'rewards' && <RewardsTab />}
           {activeTab === 'weather' && <WeatherTab />}
+          {activeTab === 'screenTime' && <ScreenTimeTab />}
         </div>
       </div>
     </div>
