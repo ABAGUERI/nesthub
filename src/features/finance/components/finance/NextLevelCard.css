@@ -1,0 +1,76 @@
+.next-level-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 32px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
+}
+
+.next-level-kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 12px;
+  color: #93c5fd;
+  margin-bottom: 8px;
+}
+
+.next-level-card h2 {
+  font-size: 26px;
+  color: #f8fafc;
+  margin-bottom: 10px;
+}
+
+.next-level-text {
+  color: #cbd5f5;
+  max-width: 520px;
+}
+
+.next-level-visual {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.next-level-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 36px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  position: relative;
+  z-index: 2;
+}
+
+.next-level-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.35) 0%, rgba(167, 139, 250, 0) 70%);
+}
+
+.next-level-coins {
+  position: absolute;
+  top: 8px;
+  right: 6px;
+  font-size: 24px;
+  opacity: 0.8;
+}
+
+@media (max-width: 900px) {
+  .next-level-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

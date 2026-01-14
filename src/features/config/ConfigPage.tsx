@@ -1,6 +1,5 @@
 import './components/FamilyRotationTabs.css';
 import React, { useState } from 'react';
-import { AppHeader } from '@/shared/components/AppHeader';
 import { TabNavigation } from './components/TabNavigation';
 import { FamilyTab } from './components/tabs/FamilyTab';
 import { RotationTab } from './components/tabs/RotationTab';
@@ -24,10 +23,6 @@ export const ConfigPage: React.FC = () => {
 
   return (
     <div className="config-page">
-      <AppHeader
-        title="Paramètres"
-        description="Affinez votre hub familial, les rotations et vos intégrations en quelques clics."
-      />
       <div className="config-hero">
         <div className="config-hero-text">
           <p className="config-kicker">Paramètres & personnalisation</p>

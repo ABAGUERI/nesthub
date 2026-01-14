@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { supabase } from '@/shared/utils/supabase';
 import { getChildrenWithProgress } from '@/shared/utils/children.service';
@@ -28,11 +28,16 @@ interface CompletedTask {
 
 type DailyTasksWidgetProps = {
   onMilestone?: () => void;
+  onCompletedTodayCountChange?: (count: number) => void;
 };
 
-export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone }) => {
+export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
+  onMilestone,
+  onCompletedTodayCountChange,
+}) => {
   const { user } = useAuth();
   const { selectedChildIndex } = useChildSelection();
+
   const [children, setChildren] = useState<Child[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
@@ -44,6 +49,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -57,6 +63,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
         });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChildIndex, children]);
 
   useEffect(() => {
@@ -245,65 +252,81 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
   };
 
   const completeTask = async (task: Task) => {
-  const activeChild = children[selectedChildIndex];
-  if (!activeChild) return;
+    const activeChild = children[selectedChildIndex];
+    if (!activeChild) return;
 
-  try {
-    // Vérifier si la tâche est déjà complétée
-    const alreadyCompleted = completedTasks.find(
-      (ct) => ct.taskId === task.id && ct.childId === activeChild.id
-    );
+    try {
+      // Vérifier si la tâche est déjà complétée
+      const alreadyCompleted = completedTasks.find(
+        (ct) => ct.taskId === task.id && ct.childId === activeChild.id
+      );
 
-    if (alreadyCompleted) {
-      // DÉCOCHER : Supprimer la tâche complétée
-      const { error: deleteError } = await supabase
-        .from('completed_tasks')
-        .delete()
-        .eq('id', alreadyCompleted.id);
+      if (alreadyCompleted) {
+        // DÉCOCHER : Supprimer la tâche complétée
+        const { error: deleteError } = await supabase
+          .from('completed_tasks')
+          .delete()
+          .eq('id', alreadyCompleted.id);
 
-      if (deleteError) throw deleteError;
-    } else {
-      // COCHER : Créer la tâche complétée
-      const { data: taskData, error: taskError } = await supabase
-        .from('available_tasks')
-        .select('id, name, points')
-        .eq('id', task.id)
-        .single();
+        if (deleteError) throw deleteError;
+      } else {
+        // COCHER : Créer la tâche complétée
+        const { data: taskData, error: taskError } = await supabase
+          .from('available_tasks')
+          .select('id, name, points')
+          .eq('id', task.id)
+          .single();
 
-      if (taskError) throw taskError;
+        if (taskError) throw taskError;
 
-      const resolvedTask = taskData
-        ? {
-            id: taskData.id,
-            name: taskData.name,
-            points: Number(taskData.points) || 0,
-          }
-        : {
-            id: task.id,
-            name: task.name,
-            points: task.points,
-          };
+        const resolvedTask = taskData
+          ? {
+              id: taskData.id,
+              name: taskData.name,
+              points: Number(taskData.points) || 0,
+            }
+          : {
+              id: task.id,
+              name: task.name,
+              points: task.points,
+            };
 
-      const { error: completedError } = await supabase.from('completed_tasks').insert({
-        id: crypto.randomUUID(),
-        child_id: activeChild.id,
-        task_id: resolvedTask.id,
-        task_name: resolvedTask.name,
-        points_earned: resolvedTask.points,
-        completed_at: new Date().toISOString(),
-      });
+        const { error: completedError } = await supabase.from('completed_tasks').insert({
+          id: crypto.randomUUID(),
+          child_id: activeChild.id,
+          task_id: resolvedTask.id,
+          task_name: resolvedTask.name,
+          points_earned: resolvedTask.points,
+          completed_at: new Date().toISOString(),
+        });
 
-      if (completedError) throw completedError;
+        if (completedError) throw completedError;
+      }
+
+      // Recalculer la progression dans les deux cas
+      await syncMonthlyProgress(activeChild.id);
+      await loadCompletedTasks();
+    } catch (error) {
+      console.error('Error completing/uncompleting task:', error);
     }
+  };
 
-    // Recalculer la progression dans les deux cas
-    await syncMonthlyProgress(activeChild.id);
-    await loadCompletedTasks();
-  } catch (error) {
-    console.error('Error completing/uncompleting task:', error);
-  }
-};
+  /**
+   * IMPORTANT: Hooks toujours appelés, même si on "return" plus bas.
+   * Sinon: "Rendered more hooks than during the previous render."
+   */
+  const activeChild = children[selectedChildIndex] ?? null;
 
+  const completedTodayCount = useMemo(() => {
+    if (!activeChild) return 0;
+    return completedTasks.filter((ct) => ct.childId === activeChild.id).length;
+  }, [activeChild, completedTasks]);
+
+  useEffect(() => {
+    onCompletedTodayCountChange?.(completedTodayCount);
+  }, [completedTodayCount, onCompletedTodayCountChange]);
+
+  // RENDUS CONDITIONNELS (après tous les hooks)
   if (loading) {
     return (
       <div className="widget">
@@ -313,7 +336,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
         <div className="loading-message">Chargement...</div>
       </div>
     );
-  }
+  }  
 
   if (children.length === 0) {
     return (
@@ -326,7 +349,6 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
     );
   }
 
-  const activeChild = children[selectedChildIndex];
   if (!activeChild) {
     return (
       <div className="widget daily-tasks-widget">
@@ -347,9 +369,9 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
   const paginatedTasks = safeTasks.slice(pageIndex * tasksPerPage, pageIndex * tasksPerPage + tasksPerPage);
   const showPagination = safeTasks.length > tasksPerPage;
 
-  const completedTodayCount = completedTasks.filter((ct) => ct.childId === activeChild.id).length;
-
   const handleTaskClick = (task: Task, isCompleted: boolean) => {
+    // "moment magique" déclenché quand l'enfant vient de valider sa 2e tâche du jour
+    // (donc il avait 1 tâche complétée, et clique sur une nouvelle tâche non complétée)
     if (!isCompleted && completedTodayCount === 1) {
       onMilestone?.();
     }
@@ -360,7 +382,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
     <div className="widget daily-tasks-widget">
       <div className="widget-header">
         <div className="widget-title">⭐ Tâches du jour</div>
-        <span className="refresh-btn" onClick={loadData}>
+        <span className="refresh-btn" onClick={loadData} role="button" tabIndex={0}>
           🔄
         </span>
       </div>
@@ -375,7 +397,9 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
               return (
                 <div
                   key={task.id}
-                  className={`task-row ${isCompleted ? 'completed is-done' : ''} ${getCategoryTone(task.category)}`}
+                  className={`task-row ${isCompleted ? 'completed is-done' : ''} ${getCategoryTone(
+                    task.category
+                  )}`}
                   onClick={() => handleTaskClick(task, isCompleted)}
                   aria-label={`${task.name}${isCompleted ? ' (validée)' : ''}`}
                 >
@@ -399,20 +423,22 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({ onMilestone 
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
             disabled={pageIndex === 0}
-            aria-label="Page de tâches précédente"
-            title="Page de tâches précédente"
+            aria-label="Tâches précédentes"
+            title="Tâches précédentes"
           >
             ‹
           </button>
+
           <div className="tasks-nav-indicator">
             Tâches {pageIndex + 1} / {totalPages}
           </div>
+
           <button
             className="tasks-nav-btn"
             onClick={() => setPageIndex((prev) => Math.min(prev + 1, totalPages - 1))}
             disabled={pageIndex >= totalPages - 1}
-            aria-label="Page de tâches suivante"
-            title="Page de tâches suivante"
+            aria-label="Tâches suivantes"
+            title="Tâches suivantes"
           >
             ›
           </button>

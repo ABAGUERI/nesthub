@@ -21,6 +21,7 @@ interface ChildForm {
   icon: ChildIcon;
   role: FamilyRole;
   avatar_url?: string;
+  birthDate?: string | null;
   createdAt: string;
 }
 
@@ -55,6 +56,12 @@ export const FamilyTab: React.FC = () => {
 
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
+  const today = new Date();
+  const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(
+    today.getDate()
+  ).padStart(2, '0')}`;
+  const minBirthDate = '1900-01-01';
+
   useEffect(() => {
     loadChildren();
   }, [user]);
@@ -73,6 +80,7 @@ export const FamilyTab: React.FC = () => {
           icon: c.icon as ChildIcon,
           role: c.role ?? 'child',
           avatar_url: c.avatarUrl,
+          birthDate: c.birthDate ?? null,
           createdAt: c.createdAt,
         }))
       );
@@ -83,7 +91,13 @@ export const FamilyTab: React.FC = () => {
       setLoading(false);
     }
   };
-  console.log('children', children)
+
+  const getBirthDateError = (birthDate: string | null | undefined) => {
+    if (!birthDate) return null;
+    if (birthDate > todayString) return 'La date ne peut pas être dans le futur.';
+    if (birthDate < minBirthDate) return 'La date doit être postérieure au 01/01/1900.';
+    return null;
+  };
 
   const updateLocalChild = (childId: string, updates: Partial<ChildForm>) => {
     setChildren((prev) => prev.map((c) => (c.id === childId ? { ...c, ...updates } : c)));
@@ -99,6 +113,7 @@ export const FamilyTab: React.FC = () => {
         firstName: child.name.trim(),
         icon: child.icon,
         role: child.role,
+        birthDate: child.birthDate ?? null,
       });
       setSuccessMessage('Membre mis à jour');
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -284,6 +299,7 @@ export const FamilyTab: React.FC = () => {
           <div className="family-members-grid">
             {sortedChildren.map((child) => {
               const childColor = DEFAULT_COLORS[child.icon] || '#64748b';
+              const birthDateError = getBirthDateError(child.birthDate);
               
               return (
                 <div key={child.id} className="family-member-card">
@@ -352,6 +368,21 @@ export const FamilyTab: React.FC = () => {
                       placeholder="Prénom"
                     />
 
+                    <Input
+                      label="Date de naissance"
+                      type="date"
+                      value={child.birthDate ?? ''}
+                      onChange={(e) =>
+                        updateLocalChild(child.id, {
+                          birthDate: e.target.value ? e.target.value : null,
+                        })
+                      }
+                      placeholder=""
+                      min={minBirthDate}
+                      max={todayString}
+                      error={birthDateError ?? undefined}
+                    />
+
                     <label className="input-label">Icône de fallback</label>
                     <div className="icon-options-compact">
                       {ICON_OPTIONS.map((icon) => (
@@ -390,7 +421,7 @@ export const FamilyTab: React.FC = () => {
                       <Button
                         onClick={() => handleUpdateChild(child)}
                         isLoading={saving}
-                        disabled={saving || !child.name.trim()}
+                        disabled={saving || !child.name.trim() || Boolean(birthDateError)}
                         size="small"
                       >
                         Sauvegarder

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Chart, ArcElement, DoughnutController } from 'chart.js';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
@@ -48,6 +49,7 @@ export const ChildrenWidget: React.FC = () => {
   const { user } = useAuth();
   const { config } = useClientConfig();
   const { selectedChildIndex, setSelectedChildIndex, setTotalChildren } = useChildSelection();
+  const navigate = useNavigate();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const chartRef = useRef<Chart | null>(null);
@@ -432,6 +434,12 @@ export const ChildrenWidget: React.FC = () => {
           aria-label="Enfant suivant"
         >
           ›
+        </button>
+      </div>
+
+      <div className="children-widget-footer">
+        <button type="button" className="finance-cta piggy-cta" onClick={() => navigate('/finances')}>
+          🐷 Ma tirelire
         </button>
       </div>
     </div>

@@ -43,17 +43,19 @@
   --timeline-badge-border: rgba(255, 255, 255, 0.85);
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100%;
+  height: 100%;
   width: 100%;
   padding: 12px 16px;
   background: var(--dashboard-bg);
   color: var(--dashboard-text);
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .dashboard-body {
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .dashboard-container.carousel-mode {
@@ -65,7 +67,7 @@
   position: relative;
   flex: 1;
   min-height: 0;
-  height: calc(100% - 4px);
+  height: auto;
   border-radius: var(--radius-carousel);
   overflow: hidden;
   border: 1px solid var(--glass-border);
@@ -79,18 +81,18 @@
 .dashboard-carousel-track {
   display: flex;
   width: 100%;
-  height: 100%;
+  height: auto;
   transition: transform 0.45s ease;
 }
 
 .dashboard-screen {
   flex: 0 0 100%;
   width: 100%;
-  height: 100%;
+  height: auto;
   padding: 16px;
   box-sizing: border-box;
   display: flex;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
   background: radial-gradient(circle at 30% 25%, rgba(34, 211, 238, 0.06), transparent 45%),
     radial-gradient(circle at 80% 60%, rgba(168, 85, 247, 0.08), transparent 50%),
@@ -106,16 +108,32 @@
   max-height: 100%;
 }
 
-.screen-grid.kids-screen {
+.kids-layout {
+  display: grid;
+  gap: 16px;
+  width: 100%;
   align-items: stretch;
-  align-content: start;
-  grid-template-columns: 1.2fr 0.9fr;
-  grid-template-rows: minmax(400px, 1fr) auto;
+  grid-template-columns: 7fr 3fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    'goal tasks'
+    'timeline timeline';
 }
 
-.screen-grid.kids-screen .kids-timeline-anchor {
-  grid-column: 1 / -1;
-  grid-row: 2;
+.kids-top {
+  min-height: 0;
+}
+
+.kids-goal {
+  grid-area: goal;
+}
+
+.kids-tasks {
+  grid-area: tasks;
+}
+
+.kids-timeline {
+  grid-area: timeline;
   width: 100%;
 }
 
@@ -146,6 +164,35 @@
 
 .kids-celebration {
   position: relative;
+}
+
+.kids-magic-badge {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.72);
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  box-shadow:
+    0 12px 26px rgba(14, 165, 233, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  z-index: 2;
+  animation: kids-magic-pulse 2s ease-in-out infinite;
+}
+
+.kids-magic-badge::before {
+  content: '';
+  position: absolute;
+  inset: -18px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.22), transparent 65%);
+  opacity: 0.65;
+  z-index: -1;
 }
 
 .kids-celebration-toast {
@@ -209,9 +256,8 @@
 @media (max-width: 1024px) {
   .dashboard-container {
     padding: 12px;
-    height: auto;
-    min-height: 100vh;
-    overflow: visible;
+    min-height: 100dvh;
+    overflow-y: auto;
   }
 
   .dashboard-body {
@@ -234,33 +280,18 @@
   }
 
   .screen-grid,
-  .screen-grid.kids-screen,
   .screen-grid.agenda-screen,
-  .screen-grid.mobility-screen {
+  .screen-grid.mobility-screen,
+  .kids-layout {
     grid-template-columns: 1fr;
   }
 
-  .screen-grid.kids-screen {
+  .kids-layout {
     grid-template-rows: auto auto auto;
-  }
-
-  .screen-grid.kids-screen > :nth-child(1) {
-    order: 1;
-  }
-
-  .screen-grid.kids-screen > :nth-child(2) {
-    order: 2;
-  }
-
-  .screen-grid.kids-screen .kids-timeline-anchor {
-    order: 3;
-    grid-column: 1 / -1;
-    grid-row: auto;
-  }
-
-  .screen-grid.kids-screen .child-timeline {
-    grid-column: 1 / -1;
-    grid-row: auto;
+    grid-template-areas:
+      'goal'
+      'tasks'
+      'timeline';
   }
 
   .screen-card.narrow,
@@ -275,14 +306,8 @@
 }
 
 @media (min-width: 1025px) {
-  .screen-grid.kids-screen {
-    grid-template-rows: minmax(360px, 1fr) minmax(120px, 150px);
-  }
-}
-
-@media (min-width: 1025px) {
-  .screen-grid.kids-screen {
-    grid-template-rows: minmax(360px, 1fr) minmax(120px, 150px);
+  .kids-layout {
+    grid-template-rows: minmax(360px, 1fr) minmax(130px, 160px);
   }
 }
 
@@ -290,12 +315,12 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 56px;
-  min-height: 56px;
-  border-radius: 28px;
-  border: 1px solid var(--glass-border-strong);
-  background: var(--glass-bg-light);
-  color: var(--text-secondary);
+  width: 68px;
+  min-height: 68px;
+  border-radius: 22px;
+  border: 1px solid rgba(120, 170, 255, 0.45);
+  background: linear-gradient(145deg, rgba(34, 211, 238, 0.18), rgba(59, 130, 246, 0.12));
+  color: #f8fafc;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -304,6 +329,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   z-index: 2;
+  box-shadow: 0 16px 40px rgba(14, 165, 233, 0.22);
 }
 
 .screen-arrow:hover:not(:disabled) {
@@ -318,16 +344,20 @@
 }
 
 .screen-arrow-icon {
-  font-size: 28px;
+  font-size: 30px;
   line-height: 1;
 }
 
 .screen-arrow-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: rgba(226, 232, 240, 0.7);
+  letter-spacing: 0.6px;
+  color: rgba(248, 250, 252, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
 }
 
 .screen-arrow.left {
@@ -451,8 +481,8 @@
   }
 
   .screen-arrow {
-    width: 52px;
-    min-height: 52px;
+    width: 58px;
+    min-height: 58px;
   }
 
   .widget {
@@ -461,6 +491,33 @@
 
   .kids-screen-actions {
     display: flex;
+  }
+}
+
+@keyframes kids-magic-pulse {
+  0% {
+    box-shadow:
+      0 12px 26px rgba(14, 165, 233, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transform: translateY(0);
+  }
+  50% {
+    box-shadow:
+      0 18px 32px rgba(168, 85, 247, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+  }
+  100% {
+    box-shadow:
+      0 12px 26px rgba(14, 165, 233, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kids-magic-badge {
+    animation: none;
   }
 }
 

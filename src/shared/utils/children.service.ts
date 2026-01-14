@@ -11,6 +11,7 @@ interface FamilyMemberRow {
   created_at: string;
   role?: FamilyRole | null;
   avatar_url: string | null; // <- important: nullable
+  birth_date: string | null;
 }
 
 const mapRowToChild = (row: FamilyMemberRow): Child => ({
@@ -20,6 +21,7 @@ const mapRowToChild = (row: FamilyMemberRow): Child => ({
   icon: row.icon,
   role: row.role ?? 'child',
   avatarUrl: row.avatar_url ?? undefined, // <- FIX
+  birthDate: row.birth_date ?? null,
   createdAt: row.created_at,
 });
 
@@ -172,12 +174,13 @@ export const deleteChild = async (childId: string): Promise<void> => {
 // Mettre à jour un enfant (nom, icône)
 export const updateChild = async (
   childId: string,
-  updates: Partial<Pick<Child, 'firstName' | 'icon' | 'role'>>
+  updates: Partial<Pick<Child, 'firstName' | 'icon' | 'role' | 'birthDate'>>
 ): Promise<void> => {
   const dbUpdates: any = {};
   if (updates.firstName !== undefined) dbUpdates.first_name = updates.firstName;
   if (updates.icon !== undefined) dbUpdates.icon = updates.icon;
   if (updates.role !== undefined) dbUpdates.role = updates.role;
+  if (updates.birthDate !== undefined) dbUpdates.birth_date = updates.birthDate;
 
   const useFamily = await canUseFamilyTable();
 
