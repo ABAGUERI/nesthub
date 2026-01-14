@@ -4,6 +4,8 @@ import { supabase } from '@/shared/utils/supabase';
 import { ProjectCard } from './ProjectCard';
 import { CreateProjectModal } from './CreateProjectModal';
 import { AddMoneyModal } from './AddMoneyModal';
+import { EditProjectModal } from './EditProjectModal';
+import { ProjectHistoryModal } from './ProjectHistoryModal';
 import './SavingsProjectsPanel.css';
 
 export type SavingsProjectProgress = {
@@ -11,6 +13,7 @@ export type SavingsProjectProgress = {
   family_member_id: string;
   name: string;
   target_amount: number;
+  emoji: string | null;
   image_url: string | null;
   priority: number;
   status: string;
@@ -46,6 +49,10 @@ export const SavingsProjectsPanel: React.FC<SavingsProjectsPanelProps> = ({
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<SavingsProjectProgress | null>(null);
+  const [editingProject, setEditingProject] = useState<SavingsProjectProgress | null>(null);
+  const [historyProject, setHistoryProject] = useState<SavingsProjectProgress | null>(null);
+  const [view, setView] = useState<'active' | 'archived'>('active');
+  const [activeCount, setActiveCount] = useState(0);
   const [toast, setToast] = useState<ToastState | null>(null);
 
   const showToast = useCallback((message: string, variant: ToastState['variant']) => {
@@ -67,7 +74,7 @@ export const SavingsProjectsPanel: React.FC<SavingsProjectsPanelProps> = ({
         .from('v_savings_project_progress')
         .select('*')
         .eq('family_member_id', childId)
-        .eq('status', 'active')
+        .eq('status', view)
         .order('priority', { ascending: false })
         .order('created_at', { ascending: true });
 
@@ -79,6 +86,27 @@ export const SavingsProjectsPanel: React.FC<SavingsProjectsPanelProps> = ({
       setProjectsError('Impossible de charger les projets pour le moment.');
     } finally {
       setLoadingProjects(false);
+    }
+  }, [childId, view]);
+
+  const loadActiveCount = useCallback(async () => {
+    if (!childId) {
+      setActiveCount(0);
+      return;
+    }
+
+    try {
+      const { count, error } = await supabase
+        .from('v_savings_project_progress')
+        .select('id', { count: 'exact', head: true })
+        .eq('family_member_id', childId)
+        .eq('status', 'active');
+
+      if (error) throw error;
+      setActiveCount(count ?? 0);
+    } catch (err) {
+      console.error('Error loading active projects count:', err);
+      setActiveCount(0);
     }
   }, [childId]);
 
@@ -109,20 +137,53 @@ export const SavingsProjectsPanel: React.FC<SavingsProjectsPanelProps> = ({
   useEffect(() => {
     void loadProjects();
     void loadBalance();
-  }, [loadProjects, loadBalance]);
+    void loadActiveCount();
+  }, [loadProjects, loadBalance, loadActiveCount]);
 
   const handleProjectCreated = useCallback(() => {
     showToast('Projet créé avec succès.', 'success');
     setIsCreateOpen(false);
     void loadProjects();
-  }, [loadProjects, showToast]);
+    void loadActiveCount();
+  }, [loadProjects, showToast, loadActiveCount]);
 
   const handleContributionAdded = useCallback(() => {
     showToast('Contribution ajoutée.', 'success');
     setSelectedProject(null);
     void loadProjects();
     void loadBalance();
-  }, [loadBalance, loadProjects, showToast]);
+    void loadActiveCount();
+  }, [loadBalance, loadProjects, showToast, loadActiveCount]);
+
+  const handleProjectUpdated = useCallback(() => {
+    showToast('Projet mis à jour.', 'success');
+    setEditingProject(null);
+    void loadProjects();
+    void loadActiveCount();
+  }, [loadProjects, showToast, loadActiveCount]);
+
+  const handleProjectStatusChange = useCallback(
+    async (projectId: string, status: 'active' | 'archived') => {
+      try {
+        const { error } = await supabase.from('savings_projects').update({ status }).eq('id', projectId);
+
+        if (error) throw error;
+
+        showToast(status === 'archived' ? 'Projet archivé.' : 'Projet restauré.', 'success');
+        void loadProjects();
+        void loadActiveCount();
+      } catch (err) {
+        console.error('Error updating project status:', err);
+        const rawMessage = err instanceof Error ? err.message : '';
+        const message =
+          status === 'active' && rawMessage.includes('LIMIT_ACTIVE_PROJECTS_REACHED')
+            ? 'Tu as déjà 8 projets actifs. Archive-en un avant de restaurer celui-ci.'
+            : 'Impossible de mettre à jour le projet pour le moment.';
+        showToast(message, 'error');
+      }
+    },
+    [loadProjects, showToast, loadActiveCount]
+  );
 
   const panelStatus = useMemo(() => {
     if (loadingChildren) return 'Chargement des enfants...';
@@ -131,6 +192,8 @@ export const SavingsProjectsPanel: React.FC<SavingsProjectsPanelProps> = ({
     return null;
   }, [loadingChildren, childrenError, childId]);
 
+  const isLimitReached = activeCount >= 8;
+
   return (
     <section className="finance-panel savings-panel">
       <div className="savings-panel-header">
@@ -138,6 +201,22 @@ export const SavingsProjectsPanel: React.FC<SavingsProjectsPanelProps> = ({
           <p className="panel-kicker">Épargne projets</p>
           <h2>Objectifs {childName ? `pour ${childName}` : 'familiaux'}</h2>
           <p className="panel-subtitle">Priorisez les projets, suivez la progression et ajoutez des contributions.</p>
+          <div className="panel-toggle">
+            <button
+              type="button"
+              className={`panel-toggle-btn${view === 'active' ? ' active' : ''}`}
+              onClick={() => setView('active')}
+            >
+              Actifs
+            </button>
+            <button
+              type="button"
+              className={`panel-toggle-btn${view === 'archived' ? ' active' : ''}`}
+              onClick={() => setView('archived')}
+            >
+              Archives
+            </button>
+          </div>
         </div>
         <div className="panel-actions">
           <div className="balance-pill">
@@ -146,9 +225,14 @@ export const SavingsProjectsPanel: React.FC<SavingsProjectsPanelProps> = ({
               {balanceError ? balanceError : balance !== null ? `${balance.toLocaleString('fr-CA')} $` : '--'}
             </span>
           </div>
-          <Button onClick={() => setIsCreateOpen(true)} size="small">
-            + Nouveau projet
-          </Button>
+          <div className="panel-action-group">
+            <Button onClick={() => setIsCreateOpen(true)} size="small" disabled={isLimitReached}>
+              + Nouveau projet
+            </Button>
+            {isLimitReached && (
+              <span className="panel-limit">Limite atteinte : 8 projets actifs max.</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -161,11 +245,21 @@ export const SavingsProjectsPanel: React.FC<SavingsProjectsPanelProps> = ({
       ) : projectsError ? (
         <div className="panel-empty error">{projectsError}</div>
       ) : projects.length === 0 ? (
-        <div className="panel-empty">Aucun projet actif. Lancez un nouvel objectif !</div>
+        <div className="panel-empty">
+          {view === 'active' ? 'Aucun projet actif. Lancez un nouvel objectif !' : 'Aucun projet archivé.'}
+        </div>
       ) : (
         <div className="projects-grid">
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} onAddMoney={() => setSelectedProject(project)} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onAddMoney={() => setSelectedProject(project)}
+              onEdit={() => setEditingProject(project)}
+              onArchive={() => handleProjectStatusChange(project.id, 'archived')}
+              onRestore={() => handleProjectStatusChange(project.id, 'active')}
+              onHistory={() => setHistoryProject(project)}
+            />
           ))}
         </div>
       )}
@@ -185,6 +279,21 @@ export const SavingsProjectsPanel: React.FC<SavingsProjectsPanelProps> = ({
         childId={childId}
         onAdded={handleContributionAdded}
         onError={(message) => showToast(message, 'error')}
+      />
+
+      <EditProjectModal
+        isOpen={Boolean(editingProject)}
+        onClose={() => setEditingProject(null)}
+        project={editingProject}
+        onUpdated={handleProjectUpdated}
+        onError={(message) => showToast(message, 'error')}
+      />
+
+      <ProjectHistoryModal
+        isOpen={Boolean(historyProject)}
+        onClose={() => setHistoryProject(null)}
+        projectId={historyProject?.id ?? null}
+        projectName={historyProject?.name}
       />
     </section>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/shared/components/AppHeader';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { supabase } from '@/shared/utils/supabase';
@@ -10,11 +11,38 @@ import './FinancePage.css';
 type ChildRow = {
   id: string;
   first_name: string;
+  icon: string | null;
+  avatar_url: string | null;
+};
+
+const CHILD_ICONS: Record<string, string> = {
+  bee: '🐝',
+  ladybug: '🐞',
+  butterfly: '🦋',
+  caterpillar: '🐛',
+  dragon: '🐉',
+  unicorn: '🦄',
+  dinosaur: '🦖',
+  robot: '🤖',
+  default: '👤',
+};
+
+const CHILD_COLORS: Record<string, string> = {
+  bee: '#fbbf24',
+  ladybug: '#f87171',
+  butterfly: '#a78bfa',
+  caterpillar: '#34d399',
+  dragon: '#ef4444',
+  unicorn: '#ec4899',
+  dinosaur: '#10b981',
+  robot: '#6b7280',
+  default: '#8b5cf6',
 };
 
 export const FinancePage: React.FC = () => {
   const { user } = useAuth();
   const { selectedChildIndex } = useChildSelection();
+  const navigate = useNavigate();
 
   const [children, setChildren] = useState<ChildRow[]>([]);
   const [loadingChildren, setLoadingChildren] = useState(true);
@@ -29,7 +57,7 @@ export const FinancePage: React.FC = () => {
       try {
         const { data, error } = await supabase
           .from('family_members')
-          .select('id, first_name')
+          .select('id, first_name, icon, avatar_url')
           .eq('user_id', user.id)
           .eq('role', 'child')
           .order('created_at', { ascending: true });
@@ -49,6 +77,9 @@ export const FinancePage: React.FC = () => {
   }, [user]);
 
   const selectedChild = useMemo(() => children[selectedChildIndex] ?? null, [children, selectedChildIndex]);
+  const childIcon = selectedChild?.icon ? CHILD_ICONS[selectedChild.icon] || CHILD_ICONS.default : CHILD_ICONS.default;
+  const childColor = selectedChild?.icon ? CHILD_COLORS[selectedChild.icon] || CHILD_COLORS.default : CHILD_COLORS.default;
+  const childDisplayName = selectedChild?.first_name || (loadingChildren ? 'Chargement...' : 'Aucun enfant');
 
   return (
     <div className="finance-page">
@@ -57,6 +88,29 @@ export const FinancePage: React.FC = () => {
         description="Épargne projets et premiers réflexes d'investissement pour vos enfants."
       />
 
+      <div className="finance-header">
+        <button type="button" className="finance-back-button" onClick={() => navigate('/dashboard')}>
+          ← Dashboard
+        </button>
+        <div className="finance-child-card">
+          <div
+            className="finance-child-avatar"
+            style={{ backgroundColor: childColor }}
+            aria-label="Avatar enfant"
+          >
+            {selectedChild?.avatar_url ? (
+              <img src={selectedChild.avatar_url} alt={`Avatar de ${childDisplayName}`} />
+            ) : (
+              <span>{childIcon}</span>
+            )}
+          </div>
+          <div className="finance-child-info">
+            <span className="finance-child-label">Enfant sélectionné</span>
+            <span className="finance-child-name">{childDisplayName}</span>
+          </div>
+        </div>
+      </div>
+
       <div className="finance-hero">
         <div>
           <p className="finance-kicker">Épargne & projets</p>
@@ -64,12 +118,6 @@ export const FinancePage: React.FC = () => {
           <p className="finance-subtitle">
             Suivez les objectifs d&apos;épargne des enfants, ajoutez des contributions, et préparez l&apos;avenir.
           </p>
-        </div>
-        <div className="finance-active-child">
-          <span className="finance-active-label">Enfant actif</span>
-          <span className="finance-active-value">
-            {selectedChild?.first_name || (loadingChildren ? 'Chargement...' : 'Aucun enfant')}
-          </span>
         </div>
       </div>
 
