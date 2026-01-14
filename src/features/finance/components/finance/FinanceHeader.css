@@ -1,0 +1,127 @@
+.finance-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.75) 100%);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  transition: padding 0.3s ease, box-shadow 0.3s ease;
+}
+
+.finance-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 48px;
+  transition: padding 0.3s ease;
+}
+
+.finance-header.is-compact .finance-header-inner {
+  padding: 12px 48px;
+}
+
+.finance-back-button {
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.7);
+  color: #e2e8f0;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 44px;
+  min-width: 140px;
+  transition: transform 0.2s ease, border 0.2s ease;
+}
+
+.finance-back-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+.finance-header-profile {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.finance-header-avatar {
+  width: 86px;
+  height: 86px;
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 38px;
+  color: #0f172a;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.4);
+  transition: width 0.3s ease, height 0.3s ease, border-radius 0.3s ease, transform 0.3s ease;
+}
+
+.finance-header-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.finance-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.finance-header-name {
+  font-size: 28px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.finance-header-subtitle {
+  font-size: 14px;
+  color: #cbd5f5;
+}
+
+.finance-header.is-compact .finance-header-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  transform: scale(0.95);
+}
+
+.finance-header.is-compact .finance-header-name {
+  font-size: 18px;
+}
+
+.finance-header.is-compact .finance-header-subtitle {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .finance-header-inner {
+    padding: 16px 24px;
+  }
+
+  .finance-header.is-compact .finance-header-inner {
+    padding: 12px 24px;
+  }
+
+  .finance-header-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 22px;
+    font-size: 30px;
+  }
+
+  .finance-header-name {
+    font-size: 22px;
+  }
+
+  .finance-back-button {
+    min-width: unset;
+    padding: 8px 14px;
+  }
+}

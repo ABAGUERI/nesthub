@@ -1,11 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppHeader } from '@/shared/components/AppHeader';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { supabase } from '@/shared/utils/supabase';
 import { useChildSelection } from '@/features/dashboard/contexts/ChildSelectionContext';
-import { SavingsProjectsPanel } from './components/finance/SavingsProjectsPanel';
-import { InvestingPlaceholderPanel } from './components/finance/InvestingPlaceholderPanel';
+import { FinanceHeader } from './components/finance/FinanceHeader';
+import { PiggyBankCard } from './components/finance/PiggyBankCard';
+import { ProjectsSection } from './components/finance/ProjectsSection';
+import { NextLevelCard } from './components/finance/NextLevelCard';
 import './FinancePage.css';
 
 type ChildRow = {
@@ -47,6 +48,12 @@ export const FinancePage: React.FC = () => {
   const [children, setChildren] = useState<ChildRow[]>([]);
   const [loadingChildren, setLoadingChildren] = useState(true);
   const [childrenError, setChildrenError] = useState<string | null>(null);
+  const [isHeaderCompact, setIsHeaderCompact] = useState(false);
+  const [balance, setBalance] = useState<number | null>(null);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [createSignal, setCreateSignal] = useState(0);
+  const [piggyAnimate, setPiggyAnimate] = useState(false);
 
   useEffect(() => {
     const loadChildren = async () => {
@@ -81,55 +88,97 @@ export const FinancePage: React.FC = () => {
   const childColor = selectedChild?.icon ? CHILD_COLORS[selectedChild.icon] || CHILD_COLORS.default : CHILD_COLORS.default;
   const childDisplayName = selectedChild?.first_name || (loadingChildren ? 'Chargement...' : 'Aucun enfant');
 
+  const loadBalance = useCallback(async () => {
+    if (!selectedChild?.id) {
+      setBalance(null);
+      return;
+    }
+
+    setBalanceLoading(true);
+    setBalanceError(null);
+    try {
+      const { data, error } = await supabase
+        .from('allowance_transactions')
+        .select('amount')
+        .eq('family_member_id', selectedChild.id);
+
+      if (error) throw error;
+
+      const total = (data || []).reduce((sum, row) => sum + (row.amount ?? 0), 0);
+      setBalance(total);
+    } catch (err) {
+      console.error('Error loading balance:', err);
+      setBalance(null);
+      setBalanceError('Solde indisponible');
+    } finally {
+      setBalanceLoading(false);
+    }
+  }, [selectedChild?.id]);
+
+  useEffect(() => {
+    void loadBalance();
+  }, [loadBalance]);
+
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsHeaderCompact(window.scrollY > 80);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleNewProject = useCallback(() => {
+    setCreateSignal((prev) => prev + 1);
+  }, []);
+
+  const handleContributionAdded = useCallback(() => {
+    setPiggyAnimate(true);
+    window.setTimeout(() => setPiggyAnimate(false), 700);
+  }, []);
+
   return (
     <div className="finance-page">
-      <AppHeader
-        title="Finances"
-        description="Épargne projets et premiers réflexes d'investissement pour vos enfants."
+      <div className="finance-background" aria-hidden="true"></div>
+      <FinanceHeader
+        childName={childDisplayName}
+        childIcon={childIcon}
+        childColor={childColor}
+        avatarUrl={selectedChild?.avatar_url ?? null}
+        onBack={() => navigate('/dashboard')}
+        isCompact={isHeaderCompact}
       />
 
-      <div className="finance-header">
-        <button type="button" className="finance-back-button" onClick={() => navigate('/dashboard')}>
-          ← Dashboard
-        </button>
-        <div className="finance-child-card">
-          <div
-            className="finance-child-avatar"
-            style={{ backgroundColor: childColor }}
-            aria-label="Avatar enfant"
-          >
-            {selectedChild?.avatar_url ? (
-              <img src={selectedChild.avatar_url} alt={`Avatar de ${childDisplayName}`} />
-            ) : (
-              <span>{childIcon}</span>
-            )}
-          </div>
-          <div className="finance-child-info">
-            <span className="finance-child-label">Enfant sélectionné</span>
-            <span className="finance-child-name">{childDisplayName}</span>
-          </div>
-        </div>
-      </div>
+      <main className="finance-content">
+        <PiggyBankCard
+          balance={balance}
+          balanceError={balanceError}
+          isLoading={balanceLoading}
+          onNewProject={handleNewProject}
+          isAnimating={piggyAnimate}
+        />
 
-      <div className="finance-hero">
-        <div>
-          <p className="finance-kicker">Épargne & projets</p>
-          <h1>Construisez des projets motivants</h1>
-          <p className="finance-subtitle">
-            Suivez les objectifs d&apos;épargne des enfants, ajoutez des contributions, et préparez l&apos;avenir.
-          </p>
-        </div>
-      </div>
-
-      <div className="finance-columns">
-        <SavingsProjectsPanel
+        <ProjectsSection
           childId={selectedChild?.id}
           childName={selectedChild?.first_name || ''}
           loadingChildren={loadingChildren}
           childrenError={childrenError}
+          createSignal={createSignal}
+          onContributionAdded={handleContributionAdded}
+          onBalanceRefresh={loadBalance}
         />
-        <InvestingPlaceholderPanel />
-      </div>
+
+        <NextLevelCard />
+      </main>
     </div>
   );
 };
