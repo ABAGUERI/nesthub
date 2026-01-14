@@ -62,6 +62,10 @@ export const ChildrenWidget: React.FC = () => {
   } | null>(null);
   const chartRef = useRef<Chart | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [lastTurnedOffIndex, setLastTurnedOffIndex] = useState<number | null>(null);
+  const prevHeartsOnRef = useRef<number>(0);
+  const turnOffTimeoutRef = useRef<number | null>(null);
+  const didInitHeartsRef = useRef(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -397,6 +401,47 @@ export const ChildrenWidget: React.FC = () => {
     setTouchStart(null);
   };
 
+  const heartsTotal = screenTimeStatus?.heartsTotal ?? 5;
+  const usedMinutes = screenTimeStatus?.usedMinutes ?? 0;
+  const totalMinutes = screenTimeStatus?.allowance ?? 0;
+  const remainingMinutes = Math.max(0, totalMinutes - usedMinutes);
+  const ratioRemaining = totalMinutes > 0 ? Math.min(1, Math.max(0, remainingMinutes / totalMinutes)) : 0;
+  const heartsOn = totalMinutes > 0 ? Math.round(ratioRemaining * heartsTotal) : 0;
+
+  useEffect(() => {
+    if (!didInitHeartsRef.current) {
+      prevHeartsOnRef.current = heartsOn;
+      didInitHeartsRef.current = true;
+      return;
+    }
+
+    const previousHeartsOn = prevHeartsOnRef.current;
+    if (heartsOn < previousHeartsOn) {
+      const turnedOffIndex = heartsOn;
+      setLastTurnedOffIndex(turnedOffIndex);
+      if (turnOffTimeoutRef.current !== null) {
+        window.clearTimeout(turnOffTimeoutRef.current);
+      }
+      turnOffTimeoutRef.current = window.setTimeout(() => {
+        setLastTurnedOffIndex(null);
+      }, 650);
+    } else if (heartsOn > previousHeartsOn && lastTurnedOffIndex !== null) {
+      if (turnOffTimeoutRef.current !== null) {
+        window.clearTimeout(turnOffTimeoutRef.current);
+      }
+      setLastTurnedOffIndex(null);
+    }
+    prevHeartsOnRef.current = heartsOn;
+  }, [heartsOn, lastTurnedOffIndex]);
+
+  useEffect(() => {
+    return () => {
+      if (turnOffTimeoutRef.current !== null) {
+        window.clearTimeout(turnOffTimeoutRef.current);
+      }
+    };
+  }, []);
+
   if (loading) {
     return (
       <div className="widget children-widget">
@@ -422,11 +467,6 @@ export const ChildrenWidget: React.FC = () => {
   const percentage = getPercentage(selectedChild);
   const hasReachedGoal = percentage >= 100;
   const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
-
-  const heartsTotal = screenTimeStatus?.heartsTotal ?? 5;
-  const heartsUsed = screenTimeStatus?.usedHearts ?? 0;
-  const usedMinutes = screenTimeStatus?.usedMinutes ?? 0;
-  const totalMinutes = screenTimeStatus?.allowance ?? 0;
 
   return (
     <div className="widget children-widget">
@@ -496,11 +536,20 @@ export const ChildrenWidget: React.FC = () => {
               <div className="screen-time-hearts">
                 <div className="hearts-label">Temps d'écran</div>
                 <div className="hearts-column">
-                  {Array.from({ length: heartsTotal }).map((_, index) => (
-                    <span key={index} className={`heart ${index < heartsUsed ? 'used' : ''}`}>
-                      ❤️
-                    </span>
-                  ))}
+                  {Array.from({ length: heartsTotal }).map((_, index) => {
+                    const isActive = index < heartsOn;
+                    const isTurningOff = index === lastTurnedOffIndex;
+                    return (
+                      <span
+                        key={index}
+                        className={`heart ${isActive ? 'heart--on' : 'heart--off'} ${
+                          isTurningOff ? 'heart--turning-off' : ''
+                        }`}
+                      >
+                        ❤️
+                      </span>
+                    );
+                  })}
                 </div>
                 <div className="hearts-meta">
                   {config?.moduleScreenTime ? `${usedMinutes} / ${totalMinutes} min` : 'Module désactivé'}
