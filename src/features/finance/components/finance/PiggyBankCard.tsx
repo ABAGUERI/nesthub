@@ -26,7 +26,7 @@ export const PiggyBankCard: React.FC<PiggyBankCardProps> = ({
       <div className="piggy-card-content">
         <div>
           <p className="piggy-card-kicker">🪙 Ma tirelire</p>
-          <h2 className="piggy-card-title">{isLoading ? 'On compte tes pièces...' : `Tu as ${displayBalance}`}</h2>
+          <h2 className="piggy-card-title">{isLoading ? 'On compte tes pièces...' : 'Ta tirelire grandit'}</h2>
           <p className="piggy-card-highlight">
             {balanceError
               ? balanceError
@@ -42,10 +42,16 @@ export const PiggyBankCard: React.FC<PiggyBankCardProps> = ({
           </Button>
         </div>
       </div>
-      <div className={`piggy-visual ${isAnimating ? 'is-animated' : ''}`} aria-hidden="true">
-        <div className="piggy-glow"></div>
-        <div className="piggy-icon">🐷</div>
-        <div className="piggy-coins">✨</div>
+      <div className={`piggy-visual ${isAnimating ? 'is-animated' : ''}`}>
+        <div className="piggy-amount-pill">
+          <div className="piggy-icon-wrap" aria-hidden="true">
+            <span className="piggy-icon">🐷</span>
+          </div>
+          <div className="piggy-amount" aria-label={`Solde ${displayBalance}`}>
+            {displayBalance}
+          </div>
+          <div className="piggy-sparkles" aria-hidden="true"></div>
+        </div>
       </div>
     </section>
   );
