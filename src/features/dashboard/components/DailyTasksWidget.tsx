@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import { supabase } from '@/shared/utils/supabase';
 import { getChildrenWithProgress } from '@/shared/utils/children.service';
 import { useChildSelection } from '../contexts/ChildSelectionContext';
+import { addManualUsage } from '@/shared/utils/screenTimeService';
 import './DailyTasksWidget.css';
 
 interface Child {
@@ -36,6 +38,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
   onCompletedTodayCountChange,
 }) => {
   const { user } = useAuth();
+  const { config } = useClientConfig();
   const { selectedChildIndex } = useChildSelection();
 
   const [children, setChildren] = useState<Child[]>([]);
@@ -43,6 +46,10 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
   const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
+  const [screenTimeModalOpen, setScreenTimeModalOpen] = useState(false);
+  const [screenTimeMinutes, setScreenTimeMinutes] = useState(15);
+  const [screenTimeError, setScreenTimeError] = useState<string | null>(null);
+  const [screenTimeSaving, setScreenTimeSaving] = useState(false);
 
   // 3 colonnes x 2 lignes
   const tasksPerPage = 6;
@@ -68,7 +75,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
 
   useEffect(() => {
     setPageIndex(0);
-  }, [selectedChildIndex, tasks.length]);
+  }, [selectedChildIndex, tasks.length, config?.moduleScreenTime]);
 
   const loadData = async () => {
     if (!user) return;
@@ -209,6 +216,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
       hygiene: 'tone-green',
       sport: 'tone-orange',
       autre: 'tone-cyan',
+      'screen-time': 'tone-cyan',
     };
     return tones[category] || 'tone-cyan';
   };
@@ -360,22 +368,74 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
     );
   }
 
-  const safeTasks = tasks.map((task) => ({
-    ...task,
-    points: Number.isFinite(task.points) ? task.points : Number(task.points) || 0,
-  }));
+  const screenTimeTask = config?.moduleScreenTime
+    ? {
+        id: 'screen-time',
+        name: "Temps d'écran",
+        points: 0,
+        category: 'screen-time',
+        icon: '⏱️',
+        isScreenTime: true,
+      }
+    : null;
+
+  const safeTasks = [
+    ...(screenTimeTask ? [screenTimeTask] : []),
+    ...tasks.map((task) => ({
+      ...task,
+      points: Number.isFinite(task.points) ? task.points : Number(task.points) || 0,
+      isScreenTime: false,
+    })),
+  ];
 
   const totalPages = Math.max(1, Math.ceil(safeTasks.length / tasksPerPage));
   const paginatedTasks = safeTasks.slice(pageIndex * tasksPerPage, pageIndex * tasksPerPage + tasksPerPage);
   const showPagination = safeTasks.length > tasksPerPage;
 
-  const handleTaskClick = (task: Task, isCompleted: boolean) => {
+  const handleTaskClick = (task: Task & { isScreenTime?: boolean }, isCompleted: boolean) => {
+    if (task.isScreenTime) {
+      setScreenTimeError(null);
+      setScreenTimeMinutes(15);
+      setScreenTimeModalOpen(true);
+      return;
+    }
+
     // "moment magique" déclenché quand l'enfant vient de valider sa 2e tâche du jour
     // (donc il avait 1 tâche complétée, et clique sur une nouvelle tâche non complétée)
     if (!isCompleted && completedTodayCount === 1) {
       onMilestone?.();
     }
     void completeTask(task);
+  };
+
+  const handleScreenTimeQuickAdd = (increment: number) => {
+    setScreenTimeMinutes((prev) => Math.max(0, prev + increment));
+  };
+
+  const handleScreenTimeSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!activeChild) return;
+    const minutes = Math.floor(Number(screenTimeMinutes));
+
+    if (!Number.isFinite(minutes) || minutes <= 0) {
+      setScreenTimeError('Veuillez saisir un nombre de minutes valide.');
+      return;
+    }
+
+    setScreenTimeSaving(true);
+    setScreenTimeError(null);
+
+    try {
+      await addManualUsage(activeChild.id, minutes);
+      setScreenTimeModalOpen(false);
+      window.dispatchEvent(new CustomEvent('screen-time-updated', { detail: { childId: activeChild.id } }));
+    } catch (error) {
+      console.error('Error saving screen time session:', error);
+      setScreenTimeError('Impossible de sauvegarder pour le moment.');
+    } finally {
+      setScreenTimeSaving(false);
+    }
   };
 
   return (
@@ -393,7 +453,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
         ) : (
           <div className="tasks-list">
             {paginatedTasks.map((task) => {
-              const isCompleted = isTaskCompleted(task.id, activeChild.id);
+              const isCompleted = task.isScreenTime ? false : isTaskCompleted(task.id, activeChild.id);
               return (
                 <div
                   key={task.id}
@@ -442,6 +502,68 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
           >
             ›
           </button>
+        </div>
+      )}
+
+      {screenTimeModalOpen && (
+        <div
+          className="screen-time-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setScreenTimeModalOpen(false)}
+        >
+          <div className="screen-time-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="screen-time-modal-header">
+              <h3>Temps d'écran</h3>
+              <button
+                type="button"
+                className="screen-time-modal-close"
+                onClick={() => setScreenTimeModalOpen(false)}
+                aria-label="Fermer"
+              >
+                ×
+              </button>
+            </div>
+            <form className="screen-time-modal-body" onSubmit={handleScreenTimeSubmit}>
+              <label className="screen-time-label" htmlFor="screen-time-minutes">
+                Minutes à ajouter
+              </label>
+              <input
+                id="screen-time-minutes"
+                type="number"
+                min={1}
+                step={1}
+                className="screen-time-input"
+                value={screenTimeMinutes}
+                onChange={(event) => setScreenTimeMinutes(Number(event.target.value))}
+              />
+              <div className="screen-time-quick-actions">
+                {[5, 10, 15, 30].map((increment) => (
+                  <button
+                    key={increment}
+                    type="button"
+                    className="screen-time-quick-btn"
+                    onClick={() => handleScreenTimeQuickAdd(increment)}
+                  >
+                    +{increment}
+                  </button>
+                ))}
+              </div>
+              {screenTimeError && <div className="screen-time-error">{screenTimeError}</div>}
+              <div className="screen-time-modal-actions">
+                <button
+                  type="button"
+                  className="screen-time-secondary"
+                  onClick={() => setScreenTimeModalOpen(false)}
+                >
+                  Annuler
+                </button>
+                <button type="submit" className="screen-time-primary" disabled={screenTimeSaving}>
+                  {screenTimeSaving ? 'Enregistrement...' : 'Valider'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
