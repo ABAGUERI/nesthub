@@ -132,11 +132,15 @@ export interface CompletedTask {
 export interface ScreenTimeConfig {
   id: string;
   childId: string;
-  dailyAllowance: number;
-  livesEnabled: boolean;
-  maxLives: number;
-  minutesPerLife: number;
-  penaltyOnExceed: boolean;
+  weeklyAllowance: number | null;
+  dailyAllowance: number | null;
+  weekResetDay: number | null;
+  heartsTotal: number | null;
+  heartsMinutes: number | null;
+  livesEnabled: boolean | null;
+  maxLives: number | null;
+  minutesPerLife: number | null;
+  penaltyOnExceed: boolean | null;
   createdAt: string;
 }
 

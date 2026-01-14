@@ -419,17 +419,49 @@
 
 .heart {
   font-size: clamp(16px, 2.2vw, 22px);
-  opacity: 0.3;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0.35;
+  transition: transform 250ms ease, opacity 250ms ease, filter 250ms ease;
 }
 
-.heart.used {
+.heart--on {
   opacity: 1;
   filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6));
 }
 
-.heart.used:hover {
+.heart--off {
+  opacity: 0.35;
+  filter: none;
+}
+
+.heart--on:hover {
   transform: scale(1.1);
+}
+
+.heart--turning-off {
+  animation: heartTurnOff 600ms ease-out;
+}
+
+@keyframes heartTurnOff {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.55));
+  }
+  40% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.35;
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heart--turning-off {
+    animation: none;
+  }
 }
 
 .hearts-meta {

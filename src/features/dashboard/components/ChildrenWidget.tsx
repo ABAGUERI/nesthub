@@ -5,6 +5,7 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import { useChildSelection } from '../contexts/ChildSelectionContext';
 import { supabase } from '@/shared/utils/supabase';
+import { getOrCreateConfig, getWeekUsage, getWeekWindow } from '@/shared/utils/screenTimeService';
 import './ChildrenWidget.css';
 
 Chart.register(ArcElement, DoughnutController);
@@ -52,8 +53,19 @@ export const ChildrenWidget: React.FC = () => {
   const navigate = useNavigate();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
+  const [screenTimeStatus, setScreenTimeStatus] = useState<{
+    allowance: number;
+    usedMinutes: number;
+    heartsTotal: number;
+    heartsMinutes: number;
+    usedHearts: number;
+  } | null>(null);
   const chartRef = useRef<Chart | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [lastTurnedOffIndex, setLastTurnedOffIndex] = useState<number | null>(null);
+  const prevHeartsOnRef = useRef<number>(0);
+  const turnOffTimeoutRef = useRef<number | null>(null);
+  const didInitHeartsRef = useRef(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -93,6 +105,84 @@ export const ChildrenWidget: React.FC = () => {
       setTotalChildren(children.length);
     }
   }, [children, setTotalChildren]);
+
+  useEffect(() => {
+    if (!selectedChild || !config?.moduleScreenTime) {
+      setScreenTimeStatus(null);
+      return;
+    }
+
+    const loadScreenTime = async () => {
+      try {
+        const screenConfig = await getOrCreateConfig(selectedChild.id);
+        const allowance = resolveWeeklyAllowance(screenConfig);
+        const { weekStart, weekEnd } = getWeekWindow(screenConfig.weekResetDay);
+        const usedMinutes = await getWeekUsage(selectedChild.id, weekStart, weekEnd);
+        const heartsTotal = Math.max(1, screenConfig.heartsTotal ?? 5);
+        const heartsMinutes =
+          screenConfig.heartsMinutes && screenConfig.heartsMinutes > 0
+            ? screenConfig.heartsMinutes
+            : Math.max(1, Math.ceil(allowance / heartsTotal));
+        const usedHearts = Math.min(heartsTotal, Math.max(0, Math.floor(usedMinutes / heartsMinutes)));
+
+        setScreenTimeStatus({
+          allowance,
+          usedMinutes,
+          heartsTotal,
+          heartsMinutes,
+          usedHearts,
+        });
+      } catch (error) {
+        console.error('Error loading screen time data:', error);
+        setScreenTimeStatus(null);
+      }
+    };
+
+    void loadScreenTime();
+  }, [selectedChild, config?.moduleScreenTime, config?.screenTimeDefaultAllowance]);
+
+  useEffect(() => {
+    if (!selectedChild || !config?.moduleScreenTime) return;
+
+    const handleScreenTimeUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ childId?: string }>).detail;
+      if (detail?.childId && detail.childId !== selectedChild.id) return;
+
+      void getOrCreateConfig(selectedChild.id)
+        .then((screenConfig) => {
+          const allowance = resolveWeeklyAllowance(screenConfig);
+          const { weekStart, weekEnd } = getWeekWindow(screenConfig.weekResetDay);
+          return getWeekUsage(selectedChild.id, weekStart, weekEnd).then((usedMinutes) => ({
+            screenConfig,
+            allowance,
+            usedMinutes,
+          }));
+        })
+        .then(({ screenConfig, allowance, usedMinutes }) => {
+          const heartsTotal = Math.max(1, screenConfig.heartsTotal ?? 5);
+          const heartsMinutes =
+            screenConfig.heartsMinutes && screenConfig.heartsMinutes > 0
+              ? screenConfig.heartsMinutes
+              : Math.max(1, Math.ceil(allowance / heartsTotal));
+          const usedHearts = Math.min(heartsTotal, Math.max(0, Math.floor(usedMinutes / heartsMinutes)));
+          setScreenTimeStatus({
+            allowance,
+            usedMinutes,
+            heartsTotal,
+            heartsMinutes,
+            usedHearts,
+          });
+        })
+        .catch((error) => {
+          console.error('Error refreshing screen time data:', error);
+        });
+    };
+
+    window.addEventListener('screen-time-updated', handleScreenTimeUpdate);
+    return () => {
+      window.removeEventListener('screen-time-updated', handleScreenTimeUpdate);
+    };
+  }, [selectedChild, config?.moduleScreenTime, config?.screenTimeDefaultAllowance]);
 
   useEffect(() => {
     if (!selectedChild || !canvasRef.current) return;
@@ -207,6 +297,21 @@ export const ChildrenWidget: React.FC = () => {
     return Math.min((child.totalPoints / child.targetPoints) * 100, 100);
   };
 
+  const resolveWeeklyAllowance = (screenConfig: {
+    weeklyAllowance: number | null;
+    dailyAllowance: number | null;
+  }) => {
+    if (screenConfig.weeklyAllowance && screenConfig.weeklyAllowance > 0) {
+      return screenConfig.weeklyAllowance;
+    }
+
+    if (screenConfig.dailyAllowance && screenConfig.dailyAllowance > 0) {
+      return screenConfig.dailyAllowance * 7;
+    }
+
+    return (config?.screenTimeDefaultAllowance ?? 60) * 7;
+  };
+
   const ChildAvatar: React.FC<{
     child: Child;
     size?: 'small' | 'medium' | 'large';
@@ -296,6 +401,47 @@ export const ChildrenWidget: React.FC = () => {
     setTouchStart(null);
   };
 
+  const heartsTotal = screenTimeStatus?.heartsTotal ?? 5;
+  const usedMinutes = screenTimeStatus?.usedMinutes ?? 0;
+  const totalMinutes = screenTimeStatus?.allowance ?? 0;
+  const remainingMinutes = Math.max(0, totalMinutes - usedMinutes);
+  const ratioRemaining = totalMinutes > 0 ? Math.min(1, Math.max(0, remainingMinutes / totalMinutes)) : 0;
+  const heartsOn = totalMinutes > 0 ? Math.round(ratioRemaining * heartsTotal) : 0;
+
+  useEffect(() => {
+    if (!didInitHeartsRef.current) {
+      prevHeartsOnRef.current = heartsOn;
+      didInitHeartsRef.current = true;
+      return;
+    }
+
+    const previousHeartsOn = prevHeartsOnRef.current;
+    if (heartsOn < previousHeartsOn) {
+      const turnedOffIndex = Math.max(0, heartsTotal - heartsOn - 1);
+      setLastTurnedOffIndex(turnedOffIndex);
+      if (turnOffTimeoutRef.current !== null) {
+        window.clearTimeout(turnOffTimeoutRef.current);
+      }
+      turnOffTimeoutRef.current = window.setTimeout(() => {
+        setLastTurnedOffIndex(null);
+      }, 650);
+    } else if (heartsOn > previousHeartsOn && lastTurnedOffIndex !== null) {
+      if (turnOffTimeoutRef.current !== null) {
+        window.clearTimeout(turnOffTimeoutRef.current);
+      }
+      setLastTurnedOffIndex(null);
+    }
+    prevHeartsOnRef.current = heartsOn;
+  }, [heartsOn, heartsTotal, lastTurnedOffIndex]);
+
+  useEffect(() => {
+    return () => {
+      if (turnOffTimeoutRef.current !== null) {
+        window.clearTimeout(turnOffTimeoutRef.current);
+      }
+    };
+  }, []);
+
   if (loading) {
     return (
       <div className="widget children-widget">
@@ -321,13 +467,6 @@ export const ChildrenWidget: React.FC = () => {
   const percentage = getPercentage(selectedChild);
   const hasReachedGoal = percentage >= 100;
   const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
-
-  // Temps d'écran temporairement fixé à 0 (à gérer plus tard)
-  const heartsTotal = 5;
-  const minutesPerHeart = 20;
-  const totalMinutes = heartsTotal * minutesPerHeart;
-  const usedMinutes = 0;
-  const heartsUsed = 0;
 
   return (
     <div className="widget children-widget">
@@ -397,14 +536,23 @@ export const ChildrenWidget: React.FC = () => {
               <div className="screen-time-hearts">
                 <div className="hearts-label">Temps d'écran</div>
                 <div className="hearts-column">
-                  {Array.from({ length: heartsTotal }).map((_, index) => (
-                    <span key={index} className={`heart ${index < heartsUsed ? 'used' : ''}`}>
-                      ❤️
-                    </span>
-                  ))}
+                  {Array.from({ length: heartsTotal }).map((_, index) => {
+                    const isActive = index >= heartsTotal - heartsOn;
+                    const isTurningOff = index === lastTurnedOffIndex;
+                    return (
+                      <span
+                        key={index}
+                        className={`heart ${isActive ? 'heart--on' : 'heart--off'} ${
+                          isTurningOff ? 'heart--turning-off' : ''
+                        }`}
+                      >
+                        ❤️
+                      </span>
+                    );
+                  })}
                 </div>
                 <div className="hearts-meta">
-                  {usedMinutes} / {totalMinutes} min
+                  {config?.moduleScreenTime ? `${usedMinutes} / ${totalMinutes} min` : 'Module désactivé'}
                 </div>
               </div>
             </div>
