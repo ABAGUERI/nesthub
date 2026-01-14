@@ -30,7 +30,6 @@ export const FinanceHeader: React.FC<FinanceHeaderProps> = ({
           </div>
           <div className="finance-header-text">
             <span className="finance-header-name">{childName}</span>
-            <span className="finance-header-subtitle">Prêt à relever des défis ?</span>
           </div>
         </div>
       </div>

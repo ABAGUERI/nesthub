@@ -1,7 +1,7 @@
 .finance-header {
   position: sticky;
-  top: 0;
-  z-index: 10;
+  top: var(--app-header-height);
+  z-index: 200;
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.75) 100%);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(148, 163, 184, 0.2);
@@ -69,7 +69,7 @@
 .finance-header-text {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
@@ -77,11 +77,6 @@
   font-size: 28px;
   font-weight: 700;
   color: #f8fafc;
-}
-
-.finance-header-subtitle {
-  font-size: 14px;
-  color: #cbd5f5;
 }
 
 .finance-header.is-compact .finance-header-avatar {
@@ -93,11 +88,6 @@
 
 .finance-header.is-compact .finance-header-name {
   font-size: 18px;
-}
-
-.finance-header.is-compact .finance-header-subtitle {
-  font-size: 12px;
-  opacity: 0.8;
 }
 
 @media (max-width: 768px) {
