@@ -23,7 +23,8 @@ body,
  * ===================================================== */
 
 .kitchen-page {
-  height: 100vh;
+  height: 100%;
+  min-height: 0;
   width: 100%;
   padding: clamp(10px, 1.6vw, 18px);
   display: flex;
@@ -105,8 +106,8 @@ body,
 
   .kitchen-page {
     overflow: auto;
-    height: auto;
-    min-height: 100vh;
+    height: 100%;
+    min-height: 100%;
   }
 
   .kitchen-grid-2col {

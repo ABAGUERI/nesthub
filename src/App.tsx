@@ -10,6 +10,7 @@ import { ConfigPage } from '@/features/config/ConfigPage';
 import { KitchenPage } from '@/features/kitchen/KitchenPage';
 import { FinancePage } from '@/features/finance/FinancePage';
 import { ChildSelectionProvider } from '@/features/dashboard/contexts/ChildSelectionContext';
+import { AppLayout } from '@/shared/layouts/AppLayout';
 import '@/styles/global.css';
 
 // Composant pour protéger les routes authentifiées
@@ -121,7 +122,9 @@ function AppRoutes() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <DashboardPage />
+            <AppLayout>
+              <DashboardPage />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
@@ -130,7 +133,9 @@ function AppRoutes() {
         path="/kitchen"
         element={
           <ProtectedRoute>
-            <KitchenPage />
+            <AppLayout>
+              <KitchenPage />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
@@ -139,7 +144,9 @@ function AppRoutes() {
         path="/config"
         element={
           <ProtectedRoute>
-            <ConfigPage />
+            <AppLayout>
+              <ConfigPage />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
@@ -148,7 +155,9 @@ function AppRoutes() {
         path="/finances"
         element={
           <ProtectedRoute>
-            <FinancePage />
+            <AppLayout>
+              <FinancePage />
+            </AppLayout>
           </ProtectedRoute>
         }
       />

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AppHeader } from '@/shared/components/AppHeader';
 import { useAuth } from '@/shared/hooks/useAuth';
 
 import { ChildrenWidget } from './components/ChildrenWidget';
@@ -146,8 +145,6 @@ const DashboardInner: React.FC = () => {
 
   return (
     <div className="dashboard-container carousel-mode">
-      <AppHeader title="Tableau de bord" description="Vue globale des missions familiales, agendas et finances." />
-
       <div className="dashboard-body">
         <section className="dashboard-carousel">
           <div className="dashboard-carousel-track" style={{ transform: `translateX(-${screenIndex * 100}%)` }}>

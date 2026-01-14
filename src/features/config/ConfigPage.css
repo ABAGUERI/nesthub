@@ -4,7 +4,7 @@
   gap: 10px;
   padding: 10px 14px 14px;
   color: #e2e8f0;
-  height: 100vh;
+  height: 100%;
   width: 100%;
   overflow: hidden;
 }
@@ -91,7 +91,7 @@
   gap: 10px;
   flex: 1;
   min-height: 0;
-  height: calc(100vh - var(--app-header-height) - 120px);
+  height: calc(100% - 120px);
 }
 
 .config-tabs {

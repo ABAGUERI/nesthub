@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { AppHeader } from '@/shared/components/AppHeader';
 import { MenuPanel } from './components/MenuPanel';
 import { GroceryPanel } from './components/GroceryPanel';
 import { RotationPanel } from './components/RotationPanel';
@@ -13,8 +12,6 @@ export const KitchenPage: React.FC = () => {
 
   return (
     <div className="kitchen-page">
-      <AppHeader title="Cuisine" description="Planifiez vos repas, courses et rotations sans perdre le fil." />
-
       {/* Layout 2 colonnes : Menu (gauche) + Rotation (droite) */}
       <div className="kitchen-grid-2col">
         

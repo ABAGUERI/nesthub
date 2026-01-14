@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { supabase } from '@/shared/utils/supabase';
@@ -54,6 +54,7 @@ export const FinancePage: React.FC = () => {
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [createSignal, setCreateSignal] = useState(0);
   const [piggyAnimate, setPiggyAnimate] = useState(false);
+  const pageRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const loadChildren = async () => {
@@ -120,12 +121,15 @@ export const FinancePage: React.FC = () => {
   }, [loadBalance]);
 
   useEffect(() => {
+    const scrollContainer = pageRef.current;
+    if (!scrollContainer) return;
+
     let ticking = false;
 
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          setIsHeaderCompact(window.scrollY > 80);
+          setIsHeaderCompact(scrollContainer.scrollTop > 80);
           ticking = false;
         });
         ticking = true;
@@ -133,8 +137,8 @@ export const FinancePage: React.FC = () => {
     };
 
     handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleNewProject = useCallback(() => {
@@ -147,7 +151,7 @@ export const FinancePage: React.FC = () => {
   }, []);
 
   return (
-    <div className="finance-page">
+    <div ref={pageRef} className="finance-page">
       <div className="finance-background" aria-hidden="true"></div>
       <FinanceHeader
         childName={childDisplayName}
