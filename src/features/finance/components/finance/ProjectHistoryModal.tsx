@@ -110,6 +110,8 @@ export const ProjectHistoryModal: React.FC<ProjectHistoryModalProps> = ({ isOpen
               ))}
             </div>
           )}
+        </div>
+        <div className="finance-modal-footer">
           <div className="finance-modal-actions">
             <button type="button" className="history-close" onClick={onClose}>
               Fermer
