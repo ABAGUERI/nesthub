@@ -65,6 +65,7 @@ export const ChildrenWidget: React.FC = () => {
   const [lastTurnedOffIndex, setLastTurnedOffIndex] = useState<number | null>(null);
   const prevHeartsOnRef = useRef<number>(0);
   const turnOffTimeoutRef = useRef<number | null>(null);
+  const didInitHeartsRef = useRef(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -400,40 +401,20 @@ export const ChildrenWidget: React.FC = () => {
     setTouchStart(null);
   };
 
-  if (loading) {
-    return (
-      <div className="widget children-widget">
-        <div className="widget-header">
-          <div className="widget-title">🏆 Vas-tu atteindre ton objectif?</div>
-        </div>
-        <div className="loading-message">Chargement...</div>
-      </div>
-    );
-  }
-
-  if (children.length === 0) {
-    return (
-      <div className="widget children-widget">
-        <div className="widget-header">
-          <div className="widget-title">🏆 Vas-tu atteindre ton objectif?</div>
-        </div>
-        <div className="empty-message">Aucun enfant configuré</div>
-      </div>
-    );
-  }
-
-  const percentage = getPercentage(selectedChild);
-  const hasReachedGoal = percentage >= 100;
-  const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
-
   const heartsTotal = screenTimeStatus?.heartsTotal ?? 5;
   const usedMinutes = screenTimeStatus?.usedMinutes ?? 0;
   const totalMinutes = screenTimeStatus?.allowance ?? 0;
   const remainingMinutes = Math.max(0, totalMinutes - usedMinutes);
   const ratioRemaining = totalMinutes > 0 ? Math.min(1, Math.max(0, remainingMinutes / totalMinutes)) : 0;
-  const heartsOn = Math.round(ratioRemaining * heartsTotal);
+  const heartsOn = totalMinutes > 0 ? Math.round(ratioRemaining * heartsTotal) : 0;
 
   useEffect(() => {
+    if (!didInitHeartsRef.current) {
+      prevHeartsOnRef.current = heartsOn;
+      didInitHeartsRef.current = true;
+      return;
+    }
+
     const previousHeartsOn = prevHeartsOnRef.current;
     if (heartsOn < previousHeartsOn) {
       const turnedOffIndex = heartsOn;
@@ -460,6 +441,32 @@ export const ChildrenWidget: React.FC = () => {
       }
     };
   }, []);
+
+  if (loading) {
+    return (
+      <div className="widget children-widget">
+        <div className="widget-header">
+          <div className="widget-title">🏆 Vas-tu atteindre ton objectif?</div>
+        </div>
+        <div className="loading-message">Chargement...</div>
+      </div>
+    );
+  }
+
+  if (children.length === 0) {
+    return (
+      <div className="widget children-widget">
+        <div className="widget-header">
+          <div className="widget-title">🏆 Vas-tu atteindre ton objectif?</div>
+        </div>
+        <div className="empty-message">Aucun enfant configuré</div>
+      </div>
+    );
+  }
+
+  const percentage = getPercentage(selectedChild);
+  const hasReachedGoal = percentage >= 100;
+  const targetPoints = Math.max(1000, selectedChild.targetPoints || 0);
 
   return (
     <div className="widget children-widget">
