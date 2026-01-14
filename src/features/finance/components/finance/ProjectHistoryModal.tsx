@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '@/shared/utils/supabase';
 import './FinanceModals.css';
 
@@ -71,13 +72,22 @@ export const ProjectHistoryModal: React.FC<ProjectHistoryModalProps> = ({ isOpen
     }
   }, [isOpen, projectId]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   const title = useMemo(() => {
     return projectName ? `Historique — ${projectName}` : 'Historique du projet';
   }, [projectName]);
 
   if (!isOpen || !projectId) return null;
 
-  return (
+  return createPortal(
     <div className="finance-modal-overlay" role="dialog" aria-modal="true">
       <div className="finance-modal finance-modal-history">
         <div className="finance-modal-header">
@@ -110,6 +120,8 @@ export const ProjectHistoryModal: React.FC<ProjectHistoryModalProps> = ({ isOpen
               ))}
             </div>
           )}
+        </div>
+        <div className="finance-modal-footer">
           <div className="finance-modal-actions">
             <button type="button" className="history-close" onClick={onClose}>
               Fermer
@@ -117,6 +129,7 @@ export const ProjectHistoryModal: React.FC<ProjectHistoryModalProps> = ({ isOpen
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

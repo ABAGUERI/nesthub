@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { supabase } from '@/shared/utils/supabase';
@@ -45,6 +46,15 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({
       setError(null);
       setIsSaving(false);
     }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
   }, [isOpen]);
 
   const title = useMemo(() => {
@@ -104,7 +114,7 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div className="finance-modal-overlay" role="dialog" aria-modal="true">
       <div className="finance-modal">
         <div className="finance-modal-header">
@@ -113,50 +123,55 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({
             ✕
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="finance-modal-body">
-          <Input
-            label="Montant"
-            type="number"
-            min="0"
-            step="1"
-            value={amount}
-            onChange={(event) => setAmount(event.target.value)}
-            placeholder="0"
-          />
-          <div className="finance-select-group">
-            <label className="finance-select-label" htmlFor="source-select">
-              Source
-            </label>
-            <select
-              id="source-select"
-              className="finance-select"
-              value={source}
-              onChange={(event) => setSource(event.target.value as AllowanceSource)}
-            >
-              {SOURCE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+        <form onSubmit={handleSubmit} className="finance-modal-form">
+          <div className="finance-modal-body">
+            <Input
+              label="Montant"
+              type="number"
+              min="0"
+              step="1"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              placeholder="0"
+            />
+            <div className="finance-select-group">
+              <label className="finance-select-label" htmlFor="source-select">
+                Source
+              </label>
+              <select
+                id="source-select"
+                className="finance-select"
+                value={source}
+                onChange={(event) => setSource(event.target.value as AllowanceSource)}
+              >
+                {SOURCE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Input
+              label="Description (optionnelle)"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Ex: Bonus devoirs, cadeau..."
+            />
+            {error && <div className="finance-modal-error">{error}</div>}
           </div>
-          <Input
-            label="Description (optionnelle)"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            placeholder="Ex: Bonus devoirs, cadeau..."
-          />
-          {error && <div className="finance-modal-error">{error}</div>}
-          <div className="finance-modal-actions">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={isSaving}>
-              Annuler
-            </Button>
-            <Button type="submit" isLoading={isSaving}>
-              Ajouter
-            </Button>
+          <div className="finance-modal-footer">
+            <div className="finance-modal-actions">
+              <Button type="button" variant="secondary" onClick={onClose} disabled={isSaving}>
+                Annuler
+              </Button>
+              <Button type="submit" isLoading={isSaving}>
+                Ajouter
+              </Button>
+            </div>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

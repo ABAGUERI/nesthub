@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { supabase } from '@/shared/utils/supabase';
@@ -36,6 +37,15 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       setError(null);
       setIsSaving(false);
     }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -89,7 +99,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div className="finance-modal-overlay" role="dialog" aria-modal="true">
       <div className="finance-modal">
         <div className="finance-modal-header">
@@ -98,40 +108,45 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             ✕
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="finance-modal-body">
-          <EmojiPicker value={emoji} onChange={setEmoji} label="Emoji du projet" />
-          <Input
-            label="Nom du projet"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Ex: Vélo, LEGO, sortie..."
-          />
-          <Input
-            label="Montant cible"
-            type="number"
-            min="0"
-            step="1"
-            value={targetAmount}
-            onChange={(event) => setTargetAmount(event.target.value)}
-            placeholder="0"
-          />
-          <Input
-            label="Image (optionnel)"
-            value={imageUrl}
-            onChange={(event) => setImageUrl(event.target.value)}
-            placeholder="URL de l'image"
-          />
-          {error && <div className="finance-modal-error">{error}</div>}
-          <div className="finance-modal-actions">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={isSaving}>
-              Annuler
-            </Button>
-            <Button type="submit" isLoading={isSaving}>
-              Créer le projet
-            </Button>
+        <form onSubmit={handleSubmit} className="finance-modal-form">
+          <div className="finance-modal-body">
+            <EmojiPicker value={emoji} onChange={setEmoji} label="Emoji du projet" />
+            <Input
+              label="Nom du projet"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Ex: Vélo, LEGO, sortie..."
+            />
+            <Input
+              label="Montant cible"
+              type="number"
+              min="0"
+              step="1"
+              value={targetAmount}
+              onChange={(event) => setTargetAmount(event.target.value)}
+              placeholder="0"
+            />
+            <Input
+              label="Image (optionnel)"
+              value={imageUrl}
+              onChange={(event) => setImageUrl(event.target.value)}
+              placeholder="URL de l'image"
+            />
+            {error && <div className="finance-modal-error">{error}</div>}
+          </div>
+          <div className="finance-modal-footer">
+            <div className="finance-modal-actions">
+              <Button type="button" variant="secondary" onClick={onClose} disabled={isSaving}>
+                Annuler
+              </Button>
+              <Button type="submit" isLoading={isSaving}>
+                Créer le projet
+              </Button>
+            </div>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
