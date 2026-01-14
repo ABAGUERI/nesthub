@@ -7,6 +7,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   border-bottom: 1px solid rgba(148, 163, 184, 0.2);
   transition: padding 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  touch-action: pan-y;
 }
 
 .finance-header::after {

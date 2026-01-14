@@ -3,6 +3,11 @@
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-user-select: none;
+  user-select: none;
   padding-bottom: 60px;
   scrollbar-gutter: stable;
 }
@@ -26,6 +31,13 @@
   flex-direction: column;
   gap: 28px;
   padding: 24px 48px 0;
+}
+
+.finance-page input,
+.finance-page textarea,
+.finance-page .selectable {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 @media (max-width: 900px) {
