@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import './AppHeader.css';
 
 interface AppHeaderProps {
@@ -14,6 +15,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, description }) => {
   const location = useLocation();
   const { signOut } = useAuth();
   const { config } = useClientConfig();
+  const isMobile = useIsMobile();
 
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState<{ temp: number; icon: string } | null>(null);
@@ -122,8 +124,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, description }) => {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
-    <header className="app-header">
-      <div className="header-core">
+    <header className={`app-header${isMobile ? ' is-mobile' : ''}`}>
+      <div className={`header-core${isMobile ? ' is-mobile' : ''}`}>
         <div className="datetime-weather-box">
           <div className="time-date-group">
             <div className="time">{formatTime()}</div>
@@ -144,37 +146,39 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, description }) => {
           {description && <p className="section-description">{description}</p>}
         </div>
 
-        <div className="header-menu">
-          <div className="nav-buttons">
-            {navItems.map((item) => (
-              <button
-                key={item.path}
-                className={`menu-btn ${isActive(item.path) ? 'active' : ''}`}
-                onClick={() => navigate(item.path)}
-                title={item.label}
-                aria-label={item.label}
-              >
-                {item.icon}
-              </button>
-            ))}
+        {!isMobile && (
+          <div className="header-menu">
+            <div className="nav-buttons">
+              {navItems.map((item) => (
+                <button
+                  key={item.path}
+                  className={`menu-btn ${isActive(item.path) ? 'active' : ''}`}
+                  onClick={() => navigate(item.path)}
+                  title={item.label}
+                  aria-label={item.label}
+                >
+                  {item.icon}
+                </button>
+              ))}
+            </div>
+            <button
+              className={`menu-btn fullscreen-btn ${isFullscreen ? 'active' : ''}`}
+              onClick={toggleFullscreen}
+              title={isFullscreen ? 'Quitter le plein écran' : 'Passer en plein écran'}
+              aria-label={isFullscreen ? 'Quitter le plein écran' : 'Passer en plein écran'}
+            >
+              {isFullscreen ? '🗗' : '🗖'}
+            </button>
+            <button
+              className="menu-btn logout-btn"
+              onClick={handleLogout}
+              title="Se déconnecter"
+              aria-label="Se déconnecter"
+            >
+              🚪
+            </button>
           </div>
-          <button
-            className={`menu-btn fullscreen-btn ${isFullscreen ? 'active' : ''}`}
-            onClick={toggleFullscreen}
-            title={isFullscreen ? 'Quitter le plein écran' : 'Passer en plein écran'}
-            aria-label={isFullscreen ? 'Quitter le plein écran' : 'Passer en plein écran'}
-          >
-            {isFullscreen ? '🗗' : '🗖'}
-          </button>
-          <button
-            className="menu-btn logout-btn"
-            onClick={handleLogout}
-            title="Se déconnecter"
-            aria-label="Se déconnecter"
-          >
-            🚪
-          </button>
-        </div>
+        )}
       </div>
     </header>
   );
