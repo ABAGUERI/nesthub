@@ -162,7 +162,7 @@ export const DashboardHeader: React.FC = () => {
         >
           🚪
         </button>
-        <button className="menu-btn" title="Paramètres" onClick={() => navigate('/config')}>
+        <button className="menu-btn settings-btn" title="Paramètres" onClick={() => navigate('/config')}>
           ⚙️
         </button>
       </div>
