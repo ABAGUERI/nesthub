@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import './DashboardHeader.css';
 
 export const DashboardHeader: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signOut } = useAuth();
   const { config } = useClientConfig();
   const [time, setTime] = useState(new Date());
@@ -122,6 +123,15 @@ export const DashboardHeader: React.FC = () => {
     }
   };
 
+  const navItems = [
+    { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
+    { path: '/kitchen', icon: '🍽️', label: 'Cuisine' },
+    { path: '/finances', icon: '💰', label: 'Finances' },
+    { path: '/config', icon: '⚙️', label: 'Paramètres' },
+  ];
+
+  const isActive = (path: string) => location.pathname.startsWith(path);
+
   return (
     <div className="dashboard-header">
       {/* Heure/Date + Météo */}
@@ -141,10 +151,28 @@ export const DashboardHeader: React.FC = () => {
       </div>
 
       {/* Titre central */}
-      <div className="header-title">Nesthub</div>
+      <div className="header-title">
+        <span className="section-title">Nesthub</span>
+        <p className="section-description">
+          Vue globale des tâches, du temps d’écran et de la progression familiale
+        </p>
+      </div>
 
       {/* Menu avec bouton déconnexion */}
       <div className="header-menu">
+        <div className="nav-buttons">
+          {navItems.map((item) => (
+            <button
+              key={item.path}
+              className={`menu-btn ${isActive(item.path) ? 'active' : ''}`}
+              onClick={() => navigate(item.path)}
+              title={item.label}
+              aria-label={item.label}
+            >
+              {item.icon}
+            </button>
+          ))}
+        </div>
         <button
           className={`menu-btn fullscreen-btn ${isFullscreen ? 'active' : ''}`}
           onClick={toggleFullscreen}
@@ -152,18 +180,12 @@ export const DashboardHeader: React.FC = () => {
         >
           {isFullscreen ? '🗗' : '🗖'}
         </button>
-        <button className="menu-btn" title="Cuisine" onClick={() => navigate('/kitchen')}>
-          🍽️
-        </button>
         <button
           className="menu-btn logout-btn"
           onClick={handleLogout}
           title="Se déconnecter"
         >
           🚪
-        </button>
-        <button className="menu-btn settings-btn" title="Paramètres" onClick={() => navigate('/config')}>
-          ⚙️
         </button>
       </div>
 
