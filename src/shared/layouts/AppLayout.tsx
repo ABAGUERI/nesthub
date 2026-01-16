@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { AppHeader } from '@/shared/components/AppHeader';
+import { DashboardHeader } from '@/features/dashboard/components/DashboardHeader';
 import './AppLayout.css';
 
 type HeaderMeta = {
@@ -47,10 +48,11 @@ const getHeaderMeta = (pathname: string): HeaderMeta => {
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const { title, description } = getHeaderMeta(location.pathname);
+  const isDashboard = /^\/dashboard/.test(location.pathname);
 
   return (
-    <div className="app-shell">
-      <AppHeader title={title} description={description} />
+    <div className={`app-shell${isDashboard ? ' app-shell--dashboard' : ''}`}>
+      {isDashboard ? <DashboardHeader /> : <AppHeader title={title} description={description} />}
       <div className="app-content">{children}</div>
     </div>
   );
