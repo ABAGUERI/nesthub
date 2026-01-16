@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import './DashboardHeader.css';
 
 export const DashboardHeader: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signOut } = useAuth();
   const { config } = useClientConfig();
+  const isMobile = useIsMobile();
   const [time, setTime] = useState(new Date());
   const [weather, setWeather] = useState<{
     temp: number;
@@ -122,8 +125,17 @@ export const DashboardHeader: React.FC = () => {
     }
   };
 
+  const navItems = [
+    { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
+    { path: '/kitchen', icon: '🍽️', label: 'Cuisine' },
+    { path: '/finances', icon: '💰', label: 'Finances' },
+    { path: '/config', icon: '⚙️', label: 'Paramètres' },
+  ];
+
+  const isActive = (path: string) => location.pathname.startsWith(path);
+
   return (
-    <div className="dashboard-header">
+    <div className={`dashboard-header${isMobile ? ' is-mobile' : ''}`}>
       {/* Heure/Date + Météo */}
       <div className="datetime-weather-box">
         <div className="time-date-group">
@@ -141,31 +153,45 @@ export const DashboardHeader: React.FC = () => {
       </div>
 
       {/* Titre central */}
-      <div className="header-title">Nesthub</div>
+      <div className="header-title">
+        <span className="section-title">Nesthub</span>
+        <p className="section-description">
+          Vue globale des tâches, du temps d’écran et de la progression familiale
+        </p>
+      </div>
 
       {/* Menu avec bouton déconnexion */}
-      <div className="header-menu">
-        <button
-          className={`menu-btn fullscreen-btn ${isFullscreen ? 'active' : ''}`}
-          onClick={toggleFullscreen}
-          title={isFullscreen ? 'Quitter le plein écran' : 'Passer en plein écran'}
-        >
-          {isFullscreen ? '🗗' : '🗖'}
-        </button>
-        <button className="menu-btn" title="Cuisine" onClick={() => navigate('/kitchen')}>
-          🍽️
-        </button>
-        <button
-          className="menu-btn logout-btn"
-          onClick={handleLogout}
-          title="Se déconnecter"
-        >
-          🚪
-        </button>
-        <button className="menu-btn settings-btn" title="Paramètres" onClick={() => navigate('/config')}>
-          ⚙️
-        </button>
-      </div>
+      {!isMobile && (
+        <div className="header-menu">
+          <div className="nav-buttons">
+            {navItems.map((item) => (
+              <button
+                key={item.path}
+                className={`menu-btn ${isActive(item.path) ? 'active' : ''}`}
+                onClick={() => navigate(item.path)}
+                title={item.label}
+                aria-label={item.label}
+              >
+                {item.icon}
+              </button>
+            ))}
+          </div>
+          <button
+            className={`menu-btn fullscreen-btn ${isFullscreen ? 'active' : ''}`}
+            onClick={toggleFullscreen}
+            title={isFullscreen ? 'Quitter le plein écran' : 'Passer en plein écran'}
+          >
+            {isFullscreen ? '🗗' : '🗖'}
+          </button>
+          <button
+            className="menu-btn logout-btn"
+            onClick={handleLogout}
+            title="Se déconnecter"
+          >
+            🚪
+          </button>
+        </div>
+      )}
 
       <div className="dashboard-header-utility" aria-hidden="true">
         <div className="utility-time">

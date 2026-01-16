@@ -64,6 +64,10 @@
   gap: 14px;
 }
 
+.finance-header.is-mobile .finance-header-profile {
+  margin-left: 0;
+}
+
 .finance-header-avatar {
   width: 86px;
   height: 86px;
