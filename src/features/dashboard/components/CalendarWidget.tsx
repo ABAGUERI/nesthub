@@ -3,6 +3,7 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import {
   getGoogleConnection,
   getCalendarEventsWithAuth,
+  initiateGoogleOAuth,
 } from '@/features/google/google.service';
 import './CalendarWidget.css';
 
@@ -22,6 +23,7 @@ export const CalendarWidget: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cta, setCta] = useState<'connect' | 'reconnect' | null>(null);
 
   useEffect(() => {
     loadEvents();
@@ -32,12 +34,14 @@ export const CalendarWidget: React.FC = () => {
 
     setLoading(true);
     setError(null);
+    setCta(null);
 
     try {
       // Récupérer la connexion Google
       const connection = await getGoogleConnection(user.id);
-      if (!connection || !connection.accessToken) {
-        setError('Connectez ou reconnectez Google pour afficher l’agenda.');
+      if (!connection) {
+        setError('Google non connecté.');
+        setCta('connect');
         setLoading(false);
         return;
       }
@@ -64,12 +68,17 @@ export const CalendarWidget: React.FC = () => {
       setEvents(withinRange);
     } catch (error: any) {
       console.error('Error loading calendar events:', error);
-      const isUnauthorized = error?.message === 'unauthorized';
-      setError(
-        isUnauthorized
-          ? 'Session Google expirée : reconnectez-vous dans Paramètres > Google.'
-          : 'Impossible de charger les événements Google'
-      );
+      const status = (error as { status?: number }).status;
+      const isUnauthorized =
+        error?.message === 'unauthorized' ||
+        error?.message?.includes?.('Reconnecter') ||
+        status === 401;
+      if (isUnauthorized) {
+        setError('Session Google expirée : reconnectez-vous dans Paramètres > Google.');
+        setCta('reconnect');
+      } else {
+        setError('Impossible de charger les événements Google');
+      }
     } finally {
       setLoading(false);
     }
@@ -192,7 +201,18 @@ export const CalendarWidget: React.FC = () => {
 
       <div className="widget-scroll timeline-container">
         {error ? (
-          <div className="empty-message">{error}</div>
+          <div className="empty-message">
+            <div>{error}</div>
+            {cta && (
+              <button
+                type="button"
+                className="ghost-btn"
+                onClick={initiateGoogleOAuth}
+              >
+                {cta === 'connect' ? 'Connecter Google' : 'Reconnecter Google'}
+              </button>
+            )}
+          </div>
         ) : events.length === 0 ? (
           <div className="empty-message">📅 Aucun événement prévu</div>
         ) : (

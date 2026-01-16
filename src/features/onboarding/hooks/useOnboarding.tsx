@@ -132,11 +132,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({
         .filter((c) => c.name.trim() !== '')
         .map((c) => c.name.trim());
 
-      await createDefaultTaskLists(
-        user.id,
-        googleConnection.accessToken,
-        childrenNames
-      );
+      await createDefaultTaskLists(user.id, childrenNames);
 
       // Sauvegarder les calendriers sélectionnés
       if (selectedCalendars.length > 0) {
