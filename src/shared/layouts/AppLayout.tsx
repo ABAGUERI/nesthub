@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { AppHeader } from '@/shared/components/AppHeader';
 import { DashboardHeader } from '@/features/dashboard/components/DashboardHeader';
+import { MobileDockNav } from '@/components/MobileDockNav';
 import './AppLayout.css';
 
 type HeaderMeta = {
@@ -54,6 +55,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     <div className={`app-shell${isDashboard ? ' app-shell--dashboard' : ''}`}>
       {isDashboard ? <DashboardHeader /> : <AppHeader title={title} description={description} />}
       <div className="app-content">{children}</div>
+      <MobileDockNav />
     </div>
   );
 };

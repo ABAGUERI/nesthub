@@ -166,6 +166,23 @@ export const DashboardHeader: React.FC = () => {
           ⚙️
         </button>
       </div>
+
+      <div className="dashboard-header-utility" aria-hidden="true">
+        <div className="utility-time">
+          <span className="utility-time-value">{formatTime()}</span>
+          <span className="utility-date">{formatDate()}</span>
+        </div>
+        <div className="utility-weather">
+          {weather ? (
+            <>
+              <span className="utility-weather-icon">{weather.icon}</span>
+              <span className="utility-weather-temp">{weather.temp}°C</span>
+            </>
+          ) : (
+            <span className="utility-weather-fallback">{weatherError || 'Météo indisponible'}</span>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

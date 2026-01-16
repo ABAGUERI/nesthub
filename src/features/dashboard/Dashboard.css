@@ -256,7 +256,7 @@
 
 @media (max-width: 1024px) {
   .dashboard-container {
-    padding: 10px 12px 96px;
+    padding: 10px 12px 120px;
     min-height: 100dvh;
     height: auto;
     overflow-y: auto;
@@ -475,7 +475,7 @@
 /* === RESPONSIVE === */
 @media (max-width: 600px) {
   .dashboard-container {
-    padding: 10px 10px 104px;
+    padding: 10px 10px 128px;
   }
 
   .dashboard-carousel {

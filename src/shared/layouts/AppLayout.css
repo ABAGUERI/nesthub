@@ -14,3 +14,9 @@
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+@media (max-width: 768px) {
+  .app-content {
+    padding-bottom: 96px;
+  }
+}
