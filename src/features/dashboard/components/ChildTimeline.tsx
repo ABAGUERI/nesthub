@@ -202,6 +202,61 @@ export default function ChildTimeline({ childName, events }: Props) {
         </div>
       </div>
 
+      <div className="timeline-mobile-controls">
+        <div className="timeline-week-label">CETTE SEMAINE ({weekLabel})</div>
+        <div className="timeline-week-actions-mobile">
+          <button
+            className="timeline-week-btn"
+            onClick={() => setWeekOffset((prev) => prev - 1)}
+            aria-label="Semaine précédente"
+          >
+            ‹
+          </button>
+          <button
+            className="timeline-week-btn"
+            onClick={() => setWeekOffset((prev) => prev + 1)}
+            aria-label="Semaine suivante"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+
+      <div className="timeline-mobile-chips" role="tablist" aria-label="Jours de la semaine">
+        {days.map((day) => {
+          const key = formatKey(day);
+          const isSelected = key === selectedKey;
+          const count = eventsByDay[key]?.length || 0;
+          return (
+            <button
+              key={key}
+              type="button"
+              className={`timeline-day-chip${isSelected ? ' is-selected' : ''}${count > 0 ? ' has-event' : ''}`}
+              onClick={() => handleDotClick(day, key)}
+              aria-pressed={isSelected}
+              aria-label={`Jour ${formatDayLabel(day)}${count ? `, ${count} événement${count > 1 ? 's' : ''}` : ''}`}
+            >
+              {formatDayLabel(day)}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="timeline-mobile-events">
+        {selectedDayEvents.length === 0 ? (
+          <div className="timeline-empty">Aucun événement cette semaine.</div>
+        ) : (
+          <ul className="timeline-mobile-event-list">
+            {selectedDayEvents.map((event) => (
+              <li key={event.id} className="timeline-mobile-event-item">
+                <span className="timeline-mobile-event-time">{formatTimeLabel(new Date(event.start))}</span>
+                <span className="timeline-mobile-event-title">{cleanTitle(event.title, childName)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="timeline-rail-zone" aria-label="Timeline de la semaine">
         <div className="timeline-rail" />
 
