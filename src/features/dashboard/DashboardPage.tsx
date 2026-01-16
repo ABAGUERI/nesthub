@@ -161,11 +161,11 @@ const DashboardInner: React.FC = () => {
               <section className="kids-layout">
                 <div className="kids-top kids-goal">
                   <div className={`kids-celebration${celebrationActive ? ' is-active' : ''}`}>
-                    {completedTodayCount >= 2 && (
+                    {/* {completedTodayCount >= 2 && (
                       <div className="kids-magic-badge" aria-live="polite">
                         Bravo — {completedTodayCount} tâches aujourd&apos;hui
                       </div>
-                    )}
+                    )} */}
                     <ChildrenWidget />
                   </div>
                 </div>
