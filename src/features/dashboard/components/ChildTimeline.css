@@ -185,6 +185,12 @@
   min-height: 120px;
 }
 
+.timeline-mobile-controls,
+.timeline-mobile-chips,
+.timeline-mobile-events {
+  display: none;
+}
+
 /* ===================================================== */
 /* Timeline Labels (dates en haut) */
 /* ===================================================== */
@@ -505,5 +511,127 @@
   
   .timeline-event-bubble::before {
     height: 12px; /* Tige plus courte sur mobile */
+  }
+}
+
+@media (max-width: 768px) {
+  .timeline-card {
+    min-height: 170px;
+  }
+
+  .timeline-info {
+    display: none;
+  }
+
+  .timeline-header-right {
+    display: none;
+  }
+
+  .timeline-mobile-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .timeline-week-actions-mobile {
+    display: flex;
+    gap: 10px;
+  }
+
+  .timeline-week-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(10, 14, 28, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 22px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .timeline-mobile-chips {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 2;
+  }
+
+  .timeline-mobile-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .timeline-day-chip {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.35);
+    color: rgba(226, 232, 240, 0.85);
+    padding: 10px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .timeline-day-chip.has-event {
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+
+  .timeline-day-chip.is-selected {
+    background: rgba(34, 211, 238, 0.18);
+    border-color: rgba(34, 211, 238, 0.6);
+    color: #e0f2fe;
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+  }
+
+  .timeline-mobile-events {
+    display: block;
+    background: rgba(10, 14, 28, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 14px 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .timeline-mobile-event-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .timeline-mobile-event-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: rgba(226, 232, 240, 0.9);
+  }
+
+  .timeline-mobile-event-time {
+    min-width: 56px;
+    font-weight: 700;
+    color: rgba(226, 232, 240, 0.75);
+  }
+
+  .timeline-mobile-event-title {
+    font-weight: 600;
+  }
+
+  .timeline-rail-zone {
+    display: none;
   }
 }
