@@ -1,32 +1,34 @@
 .mobile-dock {
   position: fixed;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: none;
-  gap: 8px;
-  padding: 8px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(8, 14, 26, 0.88);
+  gap: 10px;
+  min-height: 72px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  border-radius: 18px 18px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 14, 26, 0.92);
   backdrop-filter: blur(16px);
   z-index: 1200;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.35);
 }
 
 .mobile-dock-btn {
   flex: 1;
-  min-width: 0;
-  min-height: 48px;
+  min-width: 60px;
+  min-height: 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 10px 8px;
   border-radius: 14px;
   border: 1px solid transparent;
   background: transparent;
-  color: rgba(226, 232, 240, 0.82);
+  color: rgba(226, 232, 240, 0.72);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -38,19 +40,19 @@
 }
 
 .mobile-dock-btn.is-active {
-  background: rgba(34, 211, 238, 0.14);
-  border-color: rgba(34, 211, 238, 0.45);
+  background: rgba(34, 211, 238, 0.18);
+  border-color: rgba(34, 211, 238, 0.55);
   color: #e0f2fe;
-  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.18);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.22), 0 6px 16px rgba(34, 211, 238, 0.2);
 }
 
 .mobile-dock-icon {
-  font-size: 18px;
+  font-size: 28px;
   line-height: 1;
 }
 
 .mobile-dock-label {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1;
   letter-spacing: 0.2px;
 }
