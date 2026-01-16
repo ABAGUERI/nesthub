@@ -1,4 +1,5 @@
 import React from 'react';
+import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import './FinanceHeader.css';
 
 type FinanceHeaderProps = {
@@ -18,12 +19,16 @@ export const FinanceHeader: React.FC<FinanceHeaderProps> = ({
   onBack,
   isCompact,
 }) => {
+  const isMobile = useIsMobile();
+
   return (
-    <header className={`finance-header ${isCompact ? 'is-compact' : ''}`}>
+    <header className={`finance-header ${isCompact ? 'is-compact' : ''}${isMobile ? ' is-mobile' : ''}`}>
       <div className="finance-header-inner">
-        <button type="button" className="finance-back-button" onClick={onBack}>
-          ← Dashboard
-        </button>
+        {!isMobile && (
+          <button type="button" className="finance-back-button" onClick={onBack}>
+            ← Dashboard
+          </button>
+        )}
         <div className="finance-header-profile">
           <div className="finance-header-avatar" style={{ backgroundColor: childColor }} aria-label="Avatar enfant">
             {avatarUrl ? <img src={avatarUrl} alt={`Avatar de ${childName}`} /> : <span>{childIcon}</span>}
