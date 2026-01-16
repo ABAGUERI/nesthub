@@ -2,11 +2,15 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  padding: 10px 14px 12px;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 12px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  backdrop-filter: blur(12px);
 }
 
 /* === HEURE + DATE + MÉTÉO === */
@@ -142,6 +146,7 @@
   .dashboard-header {
     grid-template-columns: 1fr;
     gap: 12px;
+    padding: calc(8px + env(safe-area-inset-top)) 12px 10px;
   }
 
   .datetime-weather-box {
@@ -149,10 +154,16 @@
   }
 
   .header-title {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .time {
-    font-size: 32px;
+    font-size: 28px;
+  }
+
+  .menu-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
   }
 }
