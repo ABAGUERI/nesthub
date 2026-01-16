@@ -625,32 +625,90 @@
 
 /* === RESPONSIVE BREAKPOINTS === */
 @media (max-width: 768px) {
+  .child-switcher {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    padding: 4px 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .child-switcher::-webkit-scrollbar {
+    display: none;
+  }
+
+  .switcher-pill {
+    min-width: auto;
+    padding: 6px 10px;
+    border-radius: 999px;
+  }
+
+  .switcher-pill.active {
+    border-color: rgba(34, 211, 238, 0.85);
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.25), 0 8px 16px rgba(34, 211, 238, 0.25);
+  }
+
+  .carousel-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    min-height: auto;
+    padding: 0;
+  }
+
+  .carousel-content {
+    order: 1;
+    width: 100%;
+  }
+
+  .carousel-arrow {
+    display: none;
+  }
+
   .donut-and-hearts {
     grid-template-columns: 1fr;
     justify-items: center;
-    gap: clamp(16px, 3.5vw, 28px);
+    gap: clamp(12px, 3.5vw, 22px);
   }
-  
+
   .screen-time-hearts {
     order: 2;
     width: 100%;
-    max-width: 300px;
-    flex-direction: row;
-    justify-content: space-around;
-    padding: clamp(10px, 1.8vw, 14px);
+    max-width: 320px;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    padding: 12px;
   }
-  
+
   .hearts-column {
     flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  
-  .carousel-container {
-    /* Still leave room for the timeline on smaller screens */
-    min-height: min(50vh, 380px);
-  }
-  
+
   .donut-stack {
-    width: min(74vw, 260px);
+    width: min(82vw, 280px);
+  }
+
+  .donut-avatar-large {
+    width: clamp(150px, 52vw, 230px);
+    height: clamp(150px, 52vw, 230px);
+  }
+
+  .progress-track {
+    max-width: min(88vw, 360px);
+    text-align: center;
+  }
+
+  .progress-label {
+    justify-content: center;
+    gap: 8px;
   }
 }
 
@@ -658,11 +716,7 @@
   .children-widget {
     padding: 16px !important;
   }
-  
-  .child-switcher {
-    grid-template-columns: repeat(auto-fit, minmax(min(100px, 40vw), 1fr));
-  }
-  
+
   .carousel-arrow {
     width: 32px;
     height: 32px;
