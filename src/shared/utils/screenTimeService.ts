@@ -37,6 +37,7 @@ const mapConfigRow = (row: ScreenTimeConfigRow): ScreenTimeConfigData => ({
 });
 
 export const getOrCreateConfig = async (childId: string): Promise<ScreenTimeConfigData> => {
+  // 1) Try read existing config
   const { data, error } = await supabase
     .from('screen_time_config')
     .select('*')
@@ -46,6 +47,7 @@ export const getOrCreateConfig = async (childId: string): Promise<ScreenTimeConf
   if (error) throw error;
   if (data) return mapConfigRow(data as ScreenTimeConfigRow);
 
+  // 2) No config yet -> build defaults from client_config
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
 
@@ -63,23 +65,27 @@ export const getOrCreateConfig = async (childId: string): Promise<ScreenTimeConf
   const defaultDaily = clientConfig?.screen_time_default_allowance ?? 60;
   const weeklyAllowance = defaultDaily * 7;
 
-  const { data: inserted, error: insertError } = await supabase
+  // 3) IMPORTANT: use UPSERT to avoid race condition (409 unique child_id)
+  const { data: upserted, error: upsertError } = await supabase
     .from('screen_time_config')
-    .insert({
-      child_id: childId,
-      weekly_allowance: weeklyAllowance,
-      week_reset_day: 1,
-      hearts_total: 5,
-      hearts_minutes: null,
-      lives_enabled: true,
-      daily_allowance: Math.ceil(weeklyAllowance / 7),
-    })
+    .upsert(
+      {
+        child_id: childId,
+        weekly_allowance: weeklyAllowance,
+        week_reset_day: 1,
+        hearts_total: 5,
+        hearts_minutes: null,
+        lives_enabled: true,
+        daily_allowance: Math.ceil(weeklyAllowance / 7),
+      },
+      { onConflict: 'child_id' }
+    )
     .select('*')
     .single();
 
-  if (insertError) throw insertError;
+  if (upsertError) throw upsertError;
 
-  return mapConfigRow(inserted as ScreenTimeConfigRow);
+  return mapConfigRow(upserted as ScreenTimeConfigRow);
 };
 
 export const upsertConfig = async (
@@ -92,7 +98,8 @@ export const upsertConfig = async (
 
   if (payload.weeklyAllowance !== undefined) {
     dbPayload.weekly_allowance = payload.weeklyAllowance;
-    dbPayload.daily_allowance = Math.ceil((payload.weeklyAllowance ?? 0) / 7);
+    dbPayload.daily_allowance =
+      payload.weeklyAllowance == null ? null : Math.ceil(payload.weeklyAllowance / 7);
   }
   if (payload.weekResetDay !== undefined) dbPayload.week_reset_day = payload.weekResetDay;
   if (payload.heartsTotal !== undefined) dbPayload.hearts_total = payload.heartsTotal;
@@ -109,8 +116,8 @@ export const upsertConfig = async (
 
 export const getWeekWindow = (weekResetDay?: number | null) => {
   const now = new Date();
-  const resetDay = weekResetDay ?? 1;
-  const resetIndex = resetDay === 7 ? 0 : resetDay;
+  const resetDay = weekResetDay ?? 1; // 1..7 (Mon..Sun)
+  const resetIndex = resetDay === 7 ? 0 : resetDay; // JS: 0=Sun..6=Sat, so map 7->0
   const currentIndex = now.getDay();
   const diff = (currentIndex - resetIndex + 7) % 7;
 
