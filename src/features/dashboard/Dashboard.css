@@ -256,7 +256,7 @@
 
 @media (max-width: 1024px) {
   .dashboard-container {
-    padding: 10px 12px calc(120px + env(safe-area-inset-bottom));
+    padding: 10px 12px calc(140px + env(safe-area-inset-bottom));
     min-height: 100dvh;
     height: auto;
     overflow-y: auto;
@@ -475,7 +475,7 @@
 /* === RESPONSIVE === */
 @media (max-width: 600px) {
   .dashboard-container {
-    padding: 10px 10px calc(128px + env(safe-area-inset-bottom));
+    padding: 10px 10px calc(148px + env(safe-area-inset-bottom));
   }
 
   .dashboard-carousel {
@@ -483,8 +483,7 @@
   }
 
   .screen-arrow {
-    width: 52px;
-    min-height: 52px;
+    display: none;
   }
 
   .screen-arrow-icon {
