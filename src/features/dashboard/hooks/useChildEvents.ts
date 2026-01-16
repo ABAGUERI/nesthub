@@ -32,9 +32,9 @@ export const useChildEvents = (userId: string | undefined, rangeDays: number): U
 
       try {
         const connection = await getGoogleConnection(userId);
-        if (!connection || !connection.accessToken) {
+        if (!connection) {
           if (!isActive) return;
-          setError('Connectez ou reconnectez Google pour afficher la timeline.');
+          setError('Connecter Google pour afficher la timeline.');
           setEvents([]);
           return;
         }
@@ -61,7 +61,10 @@ export const useChildEvents = (userId: string | undefined, rangeDays: number): U
       } catch (loadError: any) {
         if (!isActive) return;
         console.error('Error loading calendar events (timeline):', loadError);
-        const isUnauthorized = loadError?.message === 'unauthorized';
+        const isUnauthorized =
+          loadError?.message === 'unauthorized' ||
+          loadError?.message === 'google_disconnected' ||
+          loadError?.message?.includes?.('Reconnecter');
         setError(
           isUnauthorized
             ? 'Session Google expirée : reconnectez-vous dans Paramètres > Google.'

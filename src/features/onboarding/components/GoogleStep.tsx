@@ -4,7 +4,6 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
 import {
   getGoogleConnection,
-  getCalendars,
 } from '@/features/google/google.service';
 import './GoogleStep.css';
 
@@ -41,34 +40,27 @@ export const GoogleStep: React.FC = () => {
   const checkGoogleConnection = async () => {
     if (!user) return;
 
+    setLoadingCalendars(true);
     try {
       const connection = await getGoogleConnection(user.id);
-      
+
       if (connection) {
         setGoogleConnected(true);
-        await loadCalendars(connection.accessToken);
+        const calendarId = connection.selectedCalendarId || 'primary';
+        const calendarName = connection.selectedCalendarName || 'Calendrier principal';
+        setCalendars([
+          {
+            id: calendarId,
+            name: calendarName,
+            description: '',
+            backgroundColor: '#3b82f6',
+            primary: calendarId === 'primary',
+          },
+        ]);
+        setSelectedCalendars([calendarId]);
       }
     } catch (err) {
       console.error('Error checking Google connection:', err);
-    }
-  };
-
-  const loadCalendars = async (accessToken: string) => {
-    setLoadingCalendars(true);
-    setGoogleError(null);
-
-    try {
-      const cals = await getCalendars(accessToken);
-      setCalendars(cals);
-
-      // Pré-sélectionner le calendrier principal
-      const primary = cals.find((calendar: Calendar) => calendar.primary);
-      if (primary) {
-        setSelectedCalendars([primary.id]);
-      }
-    } catch (err: any) {
-      setGoogleError('Erreur lors du chargement des calendriers');
-      console.error('Error loading calendars:', err);
     } finally {
       setLoadingCalendars(false);
     }

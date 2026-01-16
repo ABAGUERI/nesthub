@@ -1,4 +1,12 @@
 import { supabase } from '@/shared/utils/supabase';
+import {
+  createTaskInList,
+  createTaskList as createTaskListViaEdge,
+  fetchCalendarEvents,
+  fetchTasksList,
+  getGoogleConnectionSafe,
+  updateTaskInList,
+} from './google-edge.service';
 
 /**
  * Service Google OAuth et API
@@ -96,147 +104,21 @@ export const saveGoogleConnection = async (
 };
 
 /**
- * Refresh le access token si expiré
- */
-export const refreshAccessToken = async (refreshToken: string) => {
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      client_id: GOOGLE_CLIENT_ID,
-      client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
-      refresh_token: refreshToken,
-      grant_type: 'refresh_token',
-    }),
-  });
-
-  if (!response.ok) {
-    console.warn('Failed to refresh access token', response.status);
-    return null;
-  }
-
-  const data = await response.json();
-  
-  return {
-    accessToken: data.access_token,
-    expiresIn: data.expires_in,
-  };
-};
-
-/**
- * Vérifier si le token a expiré et le refresher si nécessaire
- */
-export const ensureValidToken = async (userId: string): Promise<string | null> => {
-  const { data: connection, error } = await supabase
-    .from('google_connections')
-    .select(`
-      id,
-      user_id,
-      access_token,
-      refresh_token,
-      token_expires_at
-    `)
-    .eq('user_id', userId)
-    .single();
-
-  if (error || !connection) {
-    console.warn('No Google connection found or error retrieving connection.');
-    return null;
-  }
-
-  try {
-    // Vérifier si le token a expiré (avec marge de 5 minutes)
-    const expiresAt = new Date(connection.token_expires_at);
-    const now = new Date();
-    const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
-
-    if (expiresAt < fiveMinutesFromNow) {
-      console.log('🔄 Access token expiré, refresh en cours...');
-      
-      // Refresher le token
-      const refreshed = await refreshAccessToken(connection.refresh_token);
-      if (!refreshed) return null;
-      const { accessToken, expiresIn } = refreshed;
-      
-      // Sauvegarder le nouveau token
-      const newExpiresAt = new Date(Date.now() + expiresIn * 1000);
-      
-      const { error: updateError } = await supabase
-      .from('google_connections')
-      .update({
-        access_token: accessToken,
-        token_expires_at: newExpiresAt.toISOString(),
-        expires_at: newExpiresAt.toISOString(),  // ← AJOUTER CETTE LIGNE
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', userId);
-
-      if (updateError) throw updateError;
-
-      console.log('✅ Access token refreshé avec succès');
-      
-      return accessToken;
-    }
-
-    return connection.access_token;
-  } catch (err) {
-    console.error('Error ensuring valid Google token:', err);
-    return null;
-  }
-};
-
-/**
- * Obtenir un access token valide ou lever une erreur "unauthorized"
- */
-export const getAccessTokenOrThrow = async (userId: string): Promise<string> => {
-  const token = await ensureValidToken(userId);
-  if (!token) {
-    throw new Error('unauthorized');
-  }
-  return token;
-};
-
-/**
  * Récupérer la connexion Google de l'utilisateur
  */
 export const getGoogleConnection = async (userId: string) => {
-  // Assurer que le token est valide (refresh automatique si expiré)
-  const accessToken = await ensureValidToken(userId);
-  if (!accessToken) return null;
-  
-  const { data, error } = await supabase
-    .from('google_connections')
-    .select(`
-      id,
-      user_id,
-      gmail_address,
-      access_token,
-      refresh_token,
-      token_expires_at,
-      selected_calendar_id,
-      selected_calendar_name,
-      grocery_list_id,
-      grocery_list_name
-    `)
-    .eq('user_id', userId)
-    .single();
+  const connection = await getGoogleConnectionSafe(userId);
+  if (!connection) return null;
 
-  if (error && error.code !== 'PGRST116') throw error;
-  
-  return data ? {
-    id: data.id,
-    userId: data.user_id,
-    gmailAddress: data.gmail_address,
-    accessToken: accessToken,
-    refreshToken: data.refresh_token,
-    tokenExpiresAt: data.token_expires_at,
-    selectedCalendarId: data.selected_calendar_id,
-    selectedCalendarName: data.selected_calendar_name,
-    groceryListId: data.grocery_list_id,
-    groceryListName: data.grocery_list_name,
-  } : null;
+  return {
+    id: connection.id,
+    userId: connection.userId,
+    gmailAddress: connection.gmailAddress,
+    selectedCalendarId: connection.selectedCalendarId,
+    selectedCalendarName: connection.selectedCalendarName,
+    groceryListId: connection.groceryListId,
+    groceryListName: connection.groceryListName,
+  };
 };
 
 export interface GoogleTaskList {
@@ -262,67 +144,17 @@ export const getGoogleUserInfo = async (accessToken: string) => {
   return data.email;
 };
 
-/**
- * Récupérer tous les calendriers Google de l'utilisateur
- */
-export const getCalendars = async (accessToken: string) => {
-  const response = await fetch(
-    'https://www.googleapis.com/calendar/v3/users/me/calendarList',
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      throw new Error('unauthorized');
-    }
-    throw new Error('Failed to fetch calendars');
-  }
-
-  const data = await response.json();
-  
-  return data.items.map((cal: any) => ({
-    id: cal.id,
-    name: cal.summary,
-    description: cal.description || '',
-    backgroundColor: cal.backgroundColor,
-    primary: cal.primary || false,
-  }));
-};
-
-/**
- * Récupérer tous les calendriers avec rafraîchissement automatique du token
- */
-export const getCalendarsWithAuth = async (userId: string) => {
-  const token = await getAccessTokenOrThrow(userId);
-  return getCalendars(token);
-};
-
-export const getTaskLists = async (accessToken: string): Promise<GoogleTaskList[]> => {
-  const response = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      throw new Error('unauthorized');
-    }
-    throw new Error('Failed to fetch task lists');
-  }
-
-  const data = await response.json();
-  const items = Array.isArray(data.items) ? data.items : [];
-  return items.map((item: any) => ({ id: item.id, title: item.title }));
-};
-
 export const getTaskListsWithAuth = async (userId: string): Promise<GoogleTaskList[]> => {
-  const token = await getAccessTokenOrThrow(userId);
-  return getTaskLists(token);
+  const { data, error } = await supabase
+    .from('task_lists')
+    .select('google_task_list_id, name')
+    .eq('user_id', userId);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data || []).map((item) => ({ id: item.google_task_list_id, title: item.name }));
 };
 
 export const updateGroceryListSelection = async (
@@ -348,24 +180,9 @@ export const updateGroceryListSelection = async (
 /**
  * Créer une liste de tâches Google
  */
-export const createTaskList = async (accessToken: string, title: string) => {
-  const response = await fetch('https://tasks.googleapis.com/tasks/v1/users/@me/lists', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      title,
-    }),
-  });
+export const createTaskList = async (title: string) => {
+  const data = await createTaskListViaEdge(title);
 
-  if (!response.ok) {
-    throw new Error(`Failed to create task list: ${title}`);
-  }
-
-  const data = await response.json();
-  
   return {
     id: data.id,
     title: data.title,
@@ -381,7 +198,6 @@ export const createTaskList = async (accessToken: string, title: string) => {
  */
 export const createDefaultTaskLists = async (
   userId: string,
-  accessToken: string,
   childrenNames: string[]
 ) => {
   const listsToCreate = [
@@ -404,7 +220,7 @@ export const createDefaultTaskLists = async (
   // Créer chaque liste dans Google Tasks
   for (const list of listsToCreate) {
     try {
-      const googleList = await createTaskList(accessToken, list.name);
+      const googleList = await createTaskList(list.name);
       
       // Sauvegarder dans Supabase
       const { error } = await supabase.from('task_lists').insert({
@@ -466,65 +282,39 @@ export const saveSelectedCalendars = async (
 /**
  * Récupérer les événements de plusieurs calendriers
  */
-export const getCalendarEvents = async (
-  accessToken: string,
+export const getCalendarEventsWithAuth = async (
+  userId: string,
   calendarIds: string[],
   maxResults: number = 20,
   windowDays: number = 7
 ) => {
-  const now = new Date();
-  const timeMin = now.toISOString();
-  const timeMax = new Date(now.getTime() + windowDays * 24 * 60 * 60 * 1000).toISOString();
-
-  const allEvents: any[] = [];
-
-  // Fetch événements de chaque calendrier
-  for (const calendarId of calendarIds) {
-    try {
-      const response = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(
-          calendarId
-        )}/events?` +
-          new URLSearchParams({
-            timeMin,
-            timeMax,
-            singleEvents: 'true',
-            orderBy: 'startTime',
-            maxResults: maxResults.toString(),
-          }),
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          throw new Error('unauthorized');
-        }
-        console.error(`Failed to fetch events for calendar ${calendarId}`);
-        continue;
-      }
-
-      const data = await response.json();
-      const events = data.items || [];
-
-      // Ajouter le nom du calendrier à chaque événement
-      events.forEach((event: any) => {
-        allEvents.push({
-          ...event,
-          calendarId,
-          calendarName: data.summary || 'Calendrier', // Nom du calendrier
-        });
-      });
-    } catch (error) {
-      console.error(`Error fetching calendar ${calendarId}:`, error);
-    }
+  const connection = await getGoogleConnectionSafe(userId);
+  if (!connection) {
+    throw new Error('google_disconnected');
   }
 
-  // Trier tous les événements par date
-  allEvents.sort((a, b) => {
+  const now = new Date();
+  const alignedNow = new Date(Math.floor(now.getTime() / 60000) * 60000);
+  const timeMin = alignedNow.toISOString();
+  const timeMax = new Date(alignedNow.getTime() + windowDays * 24 * 60 * 60 * 1000).toISOString();
+
+  const ids = calendarIds.length ? calendarIds : [connection.selectedCalendarId || 'primary'];
+  const eventResponses = await Promise.all(
+    ids.map((calendarId) =>
+      fetchCalendarEvents({ timeMin, timeMax, maxResults, calendarId: calendarId || 'primary' })
+    )
+  );
+
+  const allEvents = eventResponses.flatMap((response, index) => {
+    const calendarId = ids[index] || 'primary';
+    return (response.items || []).map((event: any) => ({
+      ...event,
+      calendarId,
+      calendarName: response.summary || 'Calendrier',
+    }));
+  });
+
+  allEvents.sort((a: any, b: any) => {
     const dateA = new Date(a.start.dateTime || a.start.date);
     const dateB = new Date(b.start.dateTime || b.start.date);
     return dateA.getTime() - dateB.getTime();
@@ -533,50 +323,14 @@ export const getCalendarEvents = async (
   return allEvents.slice(0, maxResults);
 };
 
-/**
- * Récupérer les événements en rafraîchissant le token au besoin
- */
-export const getCalendarEventsWithAuth = async (
-  userId: string,
-  calendarIds: string[],
-  maxResults: number = 20,
-  windowDays: number = 7
-) => {
-  const token = await getAccessTokenOrThrow(userId);
-  return getCalendarEvents(token, calendarIds, maxResults, windowDays);
-};
-
-/**
- * Récupérer les tâches d'une liste
- */
-export const getTasks = async (accessToken: string, taskListId: string) => {
-  const response = await fetch(
-    `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      throw new Error('unauthorized');
-    }
-    throw new Error('Failed to fetch tasks');
+export const getTasksWithAuth = async (userId: string, taskListId: string) => {
+  const connection = await getGoogleConnectionSafe(userId);
+  if (!connection) {
+    throw new Error('google_disconnected');
   }
 
-  const data = await response.json();
-  
+  const data = await fetchTasksList(taskListId);
   return data.items || [];
-};
-
-/**
- * Récupérer les tâches d'une liste avec rafraîchissement automatique
- */
-export const getTasksWithAuth = async (userId: string, taskListId: string) => {
-  const token = await getAccessTokenOrThrow(userId);
-  return getTasks(token, taskListId);
 };
 
 export type GoogleTaskStatus = 'needsAction' | 'completed';
@@ -589,27 +343,10 @@ export interface GoogleTaskItem {
 }
 
 export const createTask = async (
-  accessToken: string,
   taskListId: string,
   title: string
 ): Promise<GoogleTaskItem> => {
-  const response = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ title }),
-  });
-
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      throw new Error('unauthorized');
-    }
-    throw new Error('Failed to create task');
-  }
-
-  const data = await response.json();
+  const data = await createTaskInList(taskListId, title);
   return {
     id: data.id,
     title: data.title,
@@ -623,39 +360,20 @@ export const createTaskWithAuth = async (
   taskListId: string,
   title: string
 ): Promise<GoogleTaskItem> => {
-  const token = await getAccessTokenOrThrow(userId);
-  return createTask(token, taskListId, title);
+  const connection = await getGoogleConnectionSafe(userId);
+  if (!connection) {
+    throw new Error('google_disconnected');
+  }
+
+  return createTask(taskListId, title);
 };
 
 export const updateTaskStatus = async (
-  accessToken: string,
   taskListId: string,
   taskId: string,
   status: GoogleTaskStatus
 ): Promise<GoogleTaskItem> => {
-  const response = await fetch(
-    `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks/${taskId}`,
-    {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        status,
-        completed: status === 'completed' ? new Date().toISOString() : null,
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      throw new Error('unauthorized');
-    }
-    throw new Error('Failed to update task');
-  }
-
-  const data = await response.json();
+  const data = await updateTaskInList(taskListId, taskId, status);
   return {
     id: data.id,
     title: data.title,
@@ -670,6 +388,10 @@ export const updateTaskStatusWithAuth = async (
   taskId: string,
   status: GoogleTaskStatus
 ): Promise<GoogleTaskItem> => {
-  const token = await getAccessTokenOrThrow(userId);
-  return updateTaskStatus(token, taskListId, taskId, status);
+  const connection = await getGoogleConnectionSafe(userId);
+  if (!connection) {
+    throw new Error('google_disconnected');
+  }
+
+  return updateTaskStatus(taskListId, taskId, status);
 };
