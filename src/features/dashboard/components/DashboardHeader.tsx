@@ -141,7 +141,7 @@ export const DashboardHeader: React.FC = () => {
       </div>
 
       {/* Titre central */}
-      <div className="header-title">HUB FAMILIAL</div>
+      <div className="header-title">Nesthub</div>
 
       {/* Menu avec bouton déconnexion */}
       <div className="header-menu">
