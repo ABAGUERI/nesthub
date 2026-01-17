@@ -4,6 +4,7 @@ import { supabase } from '@/shared/utils/supabase';
 import {
   getGoogleConnection,
   getTasksWithAuth,
+  initiateGoogleOAuth,
 } from '@/features/google/google.service';
 import './GoogleTasksWidget.css';
 
@@ -31,6 +32,7 @@ export const GoogleTasksWidget: React.FC = () => {
   const [taskLists, setTaskLists] = useState<TaskListWithTasks[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cta, setCta] = useState<'connect' | 'reconnect' | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -41,12 +43,14 @@ export const GoogleTasksWidget: React.FC = () => {
 
     setLoading(true);
     setError(null);
+    setCta(null);
 
     try {
       // Récupérer la connexion Google
       const connection = await getGoogleConnection(user.id);
-      if (!connection || !connection.accessToken) {
-        setError('Connectez ou reconnectez Google pour afficher vos tâches.');
+      if (!connection) {
+        setError('Google non connecté.');
+        setCta('connect');
         setLoading(false);
         return;
       }
@@ -75,9 +79,14 @@ export const GoogleTasksWidget: React.FC = () => {
               isOpen: true, // Ouvrir par défaut
             };
           } catch (error: any) {
-            const isUnauthorized = error?.message === 'unauthorized';
+            const status = (error as { status?: number }).status;
+            const isUnauthorized =
+              error?.message === 'unauthorized' ||
+              error?.message?.includes?.('Reconnecter') ||
+              status === 401;
             if (isUnauthorized) {
               setError('Session Google expirée : reconnectez-vous dans Paramètres > Google.');
+              setCta('reconnect');
             }
             console.error(`Error loading tasks for list ${list.name}:`, error);
             return {
@@ -92,12 +101,17 @@ export const GoogleTasksWidget: React.FC = () => {
       setTaskLists(listsWithTasks);
     } catch (error: any) {
       console.error('Error loading tasks:', error);
-      const isUnauthorized = error?.message === 'unauthorized';
-      setError(
-        isUnauthorized
-          ? 'Session Google expirée : reconnectez-vous dans Paramètres > Google.'
-          : 'Impossible de charger les tâches Google'
-      );
+      const status = (error as { status?: number }).status;
+      const isUnauthorized =
+        error?.message === 'unauthorized' ||
+        error?.message?.includes?.('Reconnecter') ||
+        status === 401;
+      if (isUnauthorized) {
+        setError('Session Google expirée : reconnectez-vous dans Paramètres > Google.');
+        setCta('reconnect');
+      } else {
+        setError('Impossible de charger les tâches Google');
+      }
     } finally {
       setLoading(false);
     }
@@ -143,7 +157,18 @@ export const GoogleTasksWidget: React.FC = () => {
 
       <div className="widget-scroll">
         {error ? (
-          <div className="empty-message">{error}</div>
+          <div className="empty-message">
+            <div>{error}</div>
+            {cta && (
+              <button
+                type="button"
+                className="ghost-btn"
+                onClick={initiateGoogleOAuth}
+              >
+                {cta === 'connect' ? 'Connecter Google' : 'Reconnecter Google'}
+              </button>
+            )}
+          </div>
         ) : taskLists.length === 0 ? (
           <div className="empty-message">📝 Aucune tâche</div>
         ) : (

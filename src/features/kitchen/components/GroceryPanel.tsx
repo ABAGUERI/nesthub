@@ -9,6 +9,7 @@ import {
   GoogleTaskStatus,
   updateTaskStatusWithAuth,
 } from '../services/google.service';
+import { initiateGoogleOAuth } from '@/features/google/google.service';
 import { GroceryTask } from '@/shared/types/kitchen.types';
 import './GroceryPanel.css';
 
@@ -22,6 +23,7 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
   const [tasks, setTasks] = useState<GroceryTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cta, setCta] = useState<'connect' | 'reconnect' | null>(null);
   const [newItem, setNewItem] = useState('');
   const [listId, setListId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -67,9 +69,17 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
 
     setLoading(true);
     setError(null);
+    setCta(null);
 
     try {
       const connection = await getGoogleConnection(user.id);
+      if (!connection) {
+        setError('Google non connecté');
+        setCta('connect');
+        setTasks([]);
+        setListId(null);
+        return;
+      }
       const targetListId = connection?.groceryListId || config?.googleGroceryListId;
 
       if (!targetListId) {
@@ -92,7 +102,17 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
       setTasks(normalized);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur inconnue';
-      setError(message === 'unauthorized' ? 'Google non connecté' : 'Erreur de synchronisation');
+      const status = (err as { status?: number }).status;
+      const isUnauthorized =
+        message === 'unauthorized' ||
+        message.includes('Reconnecter') ||
+        status === 401;
+      if (isUnauthorized) {
+        setError('Session Google expirée : reconnectez-vous.');
+        setCta('reconnect');
+      } else {
+        setError(message === 'unauthorized' ? 'Google non connecté' : 'Erreur de synchronisation');
+      }
       console.error('Erreur de chargement:', err);
     } finally {
       setLoading(false);
@@ -214,6 +234,11 @@ export const GroceryPanel: React.FC<GroceryPanelProps> = ({ onBackToMenu }) => {
             <div style={{ fontSize: '14px', color: '#ef4444', marginBottom: '16px', fontWeight: '700' }}>
               {error}
             </div>
+            {cta && (
+              <button className="ghost-btn" onClick={initiateGoogleOAuth} type="button">
+                {cta === 'connect' ? 'Connecter Google' : 'Reconnecter Google'}
+              </button>
+            )}
             <button className="ghost-btn" onClick={handleRetry} disabled={refreshing} type="button">
               {refreshing ? '⏳ Rechargement...' : '🔄 Réessayer'}
             </button>
