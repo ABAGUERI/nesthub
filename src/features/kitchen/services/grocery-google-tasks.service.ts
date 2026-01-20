@@ -2,6 +2,7 @@
 // Service pour ajouter items épicerie à Google Tasks
 
 import type { GroceryList, GroceryCategory } from '../types/ai-menu.types';
+import { createTaskInList } from '@/features/google/google-edge.service';
 
 /**
  * Ajouter items épicerie à Google Tasks
@@ -36,10 +37,8 @@ export async function addGroceryItemsToGoogleTasks(
 
     // Exemple d'implémentation future:
     // const taskListId = await getGroceryTaskListId(userId);
-    // const accessToken = await getGoogleAccessToken(userId);
-    // 
     // for (const item of items) {
-    //   await addTaskToGoogle(accessToken, taskListId, item);
+    //   await addTaskToGoogle(taskListId, item);
     // }
 
     console.log('✅ Items épicerie préparés pour ajout');
@@ -90,45 +89,14 @@ async function getGroceryTaskListId(userId: string): Promise<string> {
 /**
  * Récupérer Google access token
  */
-async function getGoogleAccessToken(userId: string): Promise<string> {
-  // TODO: Implémenter récupération + refresh token si expiré
-  
-  throw new Error('TODO: Implémenter getGoogleAccessToken');
-}
-
 /**
  * Ajouter une tâche à Google Tasks
  */
 async function addTaskToGoogle(
-  accessToken: string,
   taskListId: string,
   item: { title: string; category: string }
 ): Promise<void> {
-  // TODO: Implémenter appel Google Tasks API
-  // POST https://www.googleapis.com/tasks/v1/lists/{taskListId}/tasks
-  // {
-  //   "title": "Poulet 1.5kg",
-  //   "notes": "Catégorie: Viandes & Poissons"
-  // }
-  
-  const response = await fetch(
-    `https://www.googleapis.com/tasks/v1/lists/${taskListId}/tasks`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title: item.title,
-        notes: `Catégorie: ${item.category}`,
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Erreur Google Tasks API: ${response.status}`);
-  }
+  await createTaskInList(taskListId, `${item.title} (${item.category})`);
 
   console.log('✅ Item ajouté:', item.title);
 }
