@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { Button } from '@/shared/components/Button';
+import { supabase } from '@/shared/utils/supabase';
 import {
   exchangeCodeForTokens,
   saveGoogleConnection,
@@ -12,6 +14,7 @@ export const OAuthCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [sessionMissing, setSessionMissing] = useState(false);
 
   useEffect(() => {
     handleCallback();
@@ -34,9 +37,10 @@ export const OAuthCallback: React.FC = () => {
       return;
     }
 
-    if (!user) {
-      setError('Utilisateur non connecté');
-      setTimeout(() => navigate('/login'), 2000);
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session || !user) {
+      setSessionMissing(true);
+      setError('Session manquante. Veuillez vous reconnecter.');
       return;
     }
 
@@ -62,8 +66,7 @@ export const OAuthCallback: React.FC = () => {
       navigate('/onboarding');
     } catch (err: any) {
       console.error('Error handling OAuth callback:', err);
-      setError('Erreur lors de la connexion Google');
-      setTimeout(() => navigate('/onboarding'), 2000);
+      setError('Connexion Google impossible (session ou permissions).');
     }
   };
 
@@ -85,7 +88,22 @@ export const OAuthCallback: React.FC = () => {
         <>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
           <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>{error}</h2>
-          <p style={{ color: '#94a3b8' }}>Redirection en cours...</p>
+          <p style={{ color: '#94a3b8' }}>
+            {sessionMissing ? 'Veuillez vous reconnecter.' : 'Réessayez dans un instant.'}
+          </p>
+          {sessionMissing ? (
+            <div style={{ marginTop: '16px' }}>
+              <Button onClick={() => navigate('/login')} size="large">
+                Se connecter
+              </Button>
+            </div>
+          ) : (
+            <div style={{ marginTop: '16px' }}>
+              <Button onClick={() => navigate('/onboarding')} size="large">
+                Retour à l’onboarding
+              </Button>
+            </div>
+          )}
         </>
       ) : (
         <>

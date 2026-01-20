@@ -79,26 +79,18 @@ export const saveGoogleConnection = async (
   gmailAddress: string,
   accessToken: string,
   refreshToken: string,
-  expiresIn: number
+  expiresIn: number,
+  scope?: string | null
 ) => {
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
-  const { error } = await supabase
-    .from('google_connections')
-    .upsert(
-      {
-        user_id: userId,
-        gmail_address: gmailAddress,
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        token_expires_at: expiresAt.toISOString(),
-        expires_at: expiresAt.toISOString(),  // ← AJOUTER CETTE LIGNE
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: 'user_id',
-      }
-    );
+  const { error } = await supabase.rpc('upsert_google_connection', {
+    p_gmail_address: gmailAddress,
+    p_access_token: accessToken,
+    p_refresh_token: refreshToken,
+    p_expires_at: expiresAt.toISOString(),
+    p_scope: scope ?? null,
+  });
 
   if (error) throw error;
 };
