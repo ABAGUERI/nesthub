@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
@@ -10,26 +10,33 @@ export const OAuthCallback: React.FC = () => {
   const { supabaseUser, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
+  // Guard anti double-execution (React re-render / StrictMode / deps)
+  const hasRunRef = useRef(false);
+
   const redirectUri = useMemo(() => {
     return import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
   }, []);
 
   const handleCallback = useCallback(async () => {
-    // Récupérer le code OAuth depuis l'URL
     const code = searchParams.get('code');
     const errorParam = searchParams.get('error');
 
     if (errorParam) {
       setError('Connexion Google annulée');
-      setTimeout(() => navigate('/onboarding'), 2000);
       return;
     }
 
     if (!code) {
       setError('Code OAuth manquant');
-      setTimeout(() => navigate('/onboarding'), 2000);
       return;
     }
+
+    // Extra-guard: dedupe per code (survit aux remounts)
+    const dedupeKey = `google_oauth_processed_${code}`;
+    if (sessionStorage.getItem(dedupeKey)) {
+      return;
+    }
+    sessionStorage.setItem(dedupeKey, '1');
 
     try {
       const result = await googleOAuthExchange(code, redirectUri);
@@ -39,20 +46,20 @@ export const OAuthCallback: React.FC = () => {
         return;
       }
 
-      console.log('✅ Google connecté avec succès');
-
-      // Rediriger vers l'onboarding
-      navigate('/onboarding');
+      // Nettoie l'URL pour éviter un replay au refresh/back
+      window.history.replaceState({}, document.title, '/onboarding');
+      navigate('/onboarding', { replace: true });
     } catch (err: any) {
       console.error('Error handling OAuth callback:', err);
       setError('Erreur OAuth: impossible de finaliser la connexion.');
+    } finally {
+      // Même en erreur, on évite de rester bloqué sur /auth/callback?code=...
+      // (sauf si tu préfères laisser l'utilisateur cliquer "Retour à l’onboarding")
     }
   }, [navigate, redirectUri, searchParams]);
 
   useEffect(() => {
-    if (loading) {
-      return;
-    }
+    if (loading) return;
 
     if (!supabaseUser) {
       const nextUrl = `/auth/callback${window.location.search}`;
@@ -60,7 +67,11 @@ export const OAuthCallback: React.FC = () => {
       return;
     }
 
-    handleCallback();
+    // Guard global
+    if (hasRunRef.current) return;
+    hasRunRef.current = true;
+
+    void handleCallback();
   }, [handleCallback, loading, navigate, supabaseUser]);
 
   return (
@@ -83,7 +94,14 @@ export const OAuthCallback: React.FC = () => {
           <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>{error}</h2>
           <p style={{ color: '#94a3b8' }}>Réessayez dans un instant.</p>
           <div style={{ marginTop: '16px' }}>
-            <Button onClick={() => navigate('/onboarding')} size="large">
+            <Button
+              onClick={() => {
+                // Nettoie l'URL avant de repartir
+                window.history.replaceState({}, document.title, '/onboarding');
+                navigate('/onboarding', { replace: true });
+              }}
+              size="large"
+            >
               Retour à l’onboarding
             </Button>
           </div>
