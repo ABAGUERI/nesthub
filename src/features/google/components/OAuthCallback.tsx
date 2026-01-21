@@ -2,23 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
-import { supabase } from '@/shared/utils/supabase';
-import {
-  exchangeCodeForTokens,
-  saveGoogleConnection,
-  getGoogleUserInfo,
-} from '../google.service';
+import { googleOAuthExchange } from '../google.service';
 
 export const OAuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { supabaseUser, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
-  const [sessionMissing, setSessionMissing] = useState(false);
 
   useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    if (!supabaseUser) {
+      const nextUrl = `/auth/callback${window.location.search}`;
+      navigate(`/login?next=${encodeURIComponent(nextUrl)}`, { replace: true });
+      return;
+    }
+
     handleCallback();
-  }, []);
+  }, [loading, supabaseUser, navigate, searchParams]);
 
   const handleCallback = async () => {
     // Récupérer le code OAuth depuis l'URL
@@ -37,28 +41,11 @@ export const OAuthCallback: React.FC = () => {
       return;
     }
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session || !user) {
-      setSessionMissing(true);
-      setError('Session manquante. Veuillez vous reconnecter.');
-      return;
-    }
-
     try {
-      // Échanger le code contre des tokens
-      const { accessToken, refreshToken, expiresIn } = await exchangeCodeForTokens(code);
-
-      // Récupérer l'email Google
-      const gmailAddress = await getGoogleUserInfo(accessToken);
-
-      // Sauvegarder dans Supabase
-      await saveGoogleConnection(
-        user.id,
-        gmailAddress,
-        accessToken,
-        refreshToken,
-        expiresIn
-      );
+      const result = await googleOAuthExchange(code);
+      if (!result?.ok) {
+        throw new Error('Google OAuth exchange failed');
+      }
 
       console.log('✅ Google connecté avec succès');
 
@@ -88,22 +75,12 @@ export const OAuthCallback: React.FC = () => {
         <>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
           <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>{error}</h2>
-          <p style={{ color: '#94a3b8' }}>
-            {sessionMissing ? 'Veuillez vous reconnecter.' : 'Réessayez dans un instant.'}
-          </p>
-          {sessionMissing ? (
-            <div style={{ marginTop: '16px' }}>
-              <Button onClick={() => navigate('/login')} size="large">
-                Se connecter
-              </Button>
-            </div>
-          ) : (
-            <div style={{ marginTop: '16px' }}>
-              <Button onClick={() => navigate('/onboarding')} size="large">
-                Retour à l’onboarding
-              </Button>
-            </div>
-          )}
+          <p style={{ color: '#94a3b8' }}>Réessayez dans un instant.</p>
+          <div style={{ marginTop: '16px' }}>
+            <Button onClick={() => navigate('/onboarding')} size="large">
+              Retour à l’onboarding
+            </Button>
+          </div>
         </>
       ) : (
         <>

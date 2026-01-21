@@ -77,7 +77,6 @@ Assure-toi que tu as :
 
 ```env
 VITE_GOOGLE_CLIENT_ID=ton-client-id
-VITE_GOOGLE_CLIENT_SECRET=ton-client-secret
 VITE_SUPABASE_URL=ton-url
 VITE_SUPABASE_ANON_KEY=ta-key
 ```

@@ -57,7 +57,6 @@ Ouvrir http://localhost:3000
 ### Ajouter au .env
 ```env
 VITE_GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
-VITE_GOOGLE_CLIENT_SECRET=GOCSPX-xxxxx
 ```
 
 ---
