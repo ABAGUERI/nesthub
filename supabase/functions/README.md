@@ -3,9 +3,7 @@
 ## Déploiement
 
 ```bash
-supabase functions deploy google-calendar-events
 supabase functions deploy google-oauth-exchange
-supabase functions deploy google-tasks-list
 ```
 
 ## Variables d'environnement requises
