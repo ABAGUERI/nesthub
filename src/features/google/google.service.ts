@@ -40,26 +40,53 @@ export const initiateGoogleOAuth = () => {
   window.location.href = authUrl.toString();
 };
 
+export type GoogleOAuthExchangeSuccess = {
+  ok: true;
+  gmailAddress: string;
+  scope: string | null;
+  expiresAt: string;
+};
+
+export type GoogleOAuthExchangeError = {
+  error: string;
+  description: string;
+};
+
+export type GoogleOAuthExchangeResult = GoogleOAuthExchangeSuccess | GoogleOAuthExchangeError;
+
 /**
  * Échanger le code OAuth via Edge Function
  */
-export const googleOAuthExchange = async (code: string) => {
+export const googleOAuthExchange = async (
+  code: string,
+  redirectUri: string
+): Promise<GoogleOAuthExchangeResult> => {
   const { data, error } = await supabase.functions.invoke('google-oauth-exchange', {
     body: {
       code,
-      redirectUri: GOOGLE_REDIRECT_URI,
+      redirectUri,
     },
   });
 
   if (error) {
-    throw error;
+    return {
+      error: 'supabase_error',
+      description: error.message,
+    };
   }
 
-  if (!data?.ok) {
-    throw new Error(data?.message || 'Failed to exchange code for tokens');
+  if (data?.ok) {
+    return data as GoogleOAuthExchangeSuccess;
   }
 
-  return data;
+  if (data?.error && data?.description) {
+    return data as GoogleOAuthExchangeError;
+  }
+
+  return {
+    error: 'unknown_error',
+    description: 'Réponse inattendue du serveur OAuth.',
+  };
 };
 
 /**

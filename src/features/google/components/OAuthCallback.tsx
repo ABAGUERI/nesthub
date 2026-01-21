@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
-import { googleOAuthExchange } from '../google.service';
+import { GoogleOAuthExchangeError, googleOAuthExchange } from '../google.service';
 
 export const OAuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -10,21 +10,11 @@ export const OAuthCallback: React.FC = () => {
   const { supabaseUser, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (loading) {
-      return;
-    }
+  const redirectUri = useMemo(() => {
+    return import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
+  }, []);
 
-    if (!supabaseUser) {
-      const nextUrl = `/auth/callback${window.location.search}`;
-      navigate(`/login?next=${encodeURIComponent(nextUrl)}`, { replace: true });
-      return;
-    }
-
-    handleCallback();
-  }, [loading, supabaseUser, navigate, searchParams]);
-
-  const handleCallback = async () => {
+  const handleCallback = useCallback(async () => {
     // Récupérer le code OAuth depuis l'URL
     const code = searchParams.get('code');
     const errorParam = searchParams.get('error');
@@ -42,9 +32,11 @@ export const OAuthCallback: React.FC = () => {
     }
 
     try {
-      const result = await googleOAuthExchange(code);
+      const result = await googleOAuthExchange(code, redirectUri);
       if (!result?.ok) {
-        throw new Error('Google OAuth exchange failed');
+        const exchangeError = result as GoogleOAuthExchangeError;
+        setError(`${exchangeError.error}: ${exchangeError.description}`);
+        return;
       }
 
       console.log('✅ Google connecté avec succès');
@@ -53,9 +45,23 @@ export const OAuthCallback: React.FC = () => {
       navigate('/onboarding');
     } catch (err: any) {
       console.error('Error handling OAuth callback:', err);
-      setError('Connexion Google impossible (session ou permissions).');
+      setError('Erreur OAuth: impossible de finaliser la connexion.');
     }
-  };
+  }, [navigate, redirectUri, searchParams]);
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    if (!supabaseUser) {
+      const nextUrl = `/auth/callback${window.location.search}`;
+      navigate(`/login?next=${encodeURIComponent(nextUrl)}`, { replace: true });
+      return;
+    }
+
+    handleCallback();
+  }, [handleCallback, loading, navigate, supabaseUser]);
 
   return (
     <div
@@ -94,7 +100,7 @@ export const OAuthCallback: React.FC = () => {
             🔄
           </div>
           <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>
-            Connexion à Google...
+            {loading ? 'Connexion en cours…' : 'Connexion à Google...'}
           </h2>
           <p style={{ color: '#94a3b8' }}>Veuillez patienter</p>
         </>
