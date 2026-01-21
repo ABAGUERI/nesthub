@@ -41,58 +41,25 @@ export const initiateGoogleOAuth = () => {
 };
 
 /**
- * Échanger le code OAuth contre des tokens
+ * Échanger le code OAuth via Edge Function
  */
-export const exchangeCodeForTokens = async (code: string) => {
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
+export const googleOAuthExchange = async (code: string) => {
+  const { data, error } = await supabase.functions.invoke('google-oauth-exchange', {
+    body: {
       code,
-      client_id: GOOGLE_CLIENT_ID,
-      client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
-      redirect_uri: GOOGLE_REDIRECT_URI,
-      grant_type: 'authorization_code',
-    }),
+      redirectUri: GOOGLE_REDIRECT_URI,
+    },
   });
 
-  if (!response.ok) {
-    throw new Error('Failed to exchange code for tokens');
+  if (error) {
+    throw error;
   }
 
-  const data = await response.json();
-  
-  return {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-    expiresIn: data.expires_in,
-  };
-};
+  if (!data?.ok) {
+    throw new Error(data?.message || 'Failed to exchange code for tokens');
+  }
 
-/**
- * Sauvegarder la connexion Google dans Supabase
- */
-export const saveGoogleConnection = async (
-  userId: string,
-  gmailAddress: string,
-  accessToken: string,
-  refreshToken: string,
-  expiresIn: number,
-  scope?: string | null
-) => {
-  const expiresAt = new Date(Date.now() + expiresIn * 1000);
-
-  const { error } = await supabase.rpc('upsert_google_connection', {
-    p_gmail_address: gmailAddress,
-    p_access_token: accessToken,
-    p_refresh_token: refreshToken,
-    p_expires_at: expiresAt.toISOString(),
-    p_scope: scope ?? null,
-  });
-
-  if (error) throw error;
+  return data;
 };
 
 /**
@@ -117,24 +84,6 @@ export interface GoogleTaskList {
   id: string;
   title: string;
 }
-
-/**
- * Récupérer les informations du profil Google (email)
- */
-export const getGoogleUserInfo = async (accessToken: string) => {
-  const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to get user info');
-  }
-
-  const data = await response.json();
-  return data.email;
-};
 
 export const getTaskListsWithAuth = async (userId: string): Promise<GoogleTaskList[]> => {
   const { data, error } = await supabase

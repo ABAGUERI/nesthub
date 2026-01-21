@@ -91,11 +91,7 @@ function AppRoutes() {
       {/* Route OAuth callback */}
       <Route
         path="/auth/callback"
-        element={
-          <ProtectedRoute>
-            <OAuthCallback />
-          </ProtectedRoute>
-        }
+        element={<OAuthCallback />}
       />
 
       {/* Routes protégées */}
