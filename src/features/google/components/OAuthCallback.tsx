@@ -10,7 +10,7 @@ export const OAuthCallback: React.FC = () => {
   const { supabaseUser, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
-  // Guard anti double-execution (React re-render / StrictMode / deps)
+  // Anti double-run (rerender / StrictMode / deps)
   const hasRunRef = useRef(false);
 
   const redirectUri = useMemo(() => {
@@ -23,38 +23,42 @@ export const OAuthCallback: React.FC = () => {
 
     if (errorParam) {
       setError('Connexion Google annulée');
+      // Nettoie l’URL pour éviter de re-trigger le callback
+      window.history.replaceState({}, document.title, '/onboarding');
+      navigate('/onboarding', { replace: true });
       return;
     }
 
     if (!code) {
       setError('Code OAuth manquant');
+      window.history.replaceState({}, document.title, '/onboarding');
+      navigate('/onboarding', { replace: true });
       return;
     }
 
-    // Extra-guard: dedupe per code (survit aux remounts)
+    // Dedupe par code (survit aux remounts)
     const dedupeKey = `google_oauth_processed_${code}`;
-    if (sessionStorage.getItem(dedupeKey)) {
-      return;
-    }
+    if (sessionStorage.getItem(dedupeKey)) return;
     sessionStorage.setItem(dedupeKey, '1');
 
     try {
       const result = await googleOAuthExchange(code, redirectUri);
+
       if (!result?.ok) {
         const exchangeError = result as GoogleOAuthExchangeError;
         setError(`${exchangeError.error}: ${exchangeError.description}`);
+        // Nettoie l’URL pour éviter de retenter avec le même code
+        window.history.replaceState({}, document.title, '/onboarding');
         return;
       }
 
-      // Nettoie l'URL pour éviter un replay au refresh/back
+      // Succès: retire ?code=... pour éviter replay
       window.history.replaceState({}, document.title, '/onboarding');
       navigate('/onboarding', { replace: true });
     } catch (err: any) {
       console.error('Error handling OAuth callback:', err);
       setError('Erreur OAuth: impossible de finaliser la connexion.');
-    } finally {
-      // Même en erreur, on évite de rester bloqué sur /auth/callback?code=...
-      // (sauf si tu préfères laisser l'utilisateur cliquer "Retour à l’onboarding")
+      window.history.replaceState({}, document.title, '/onboarding');
     }
   }, [navigate, redirectUri, searchParams]);
 
@@ -67,7 +71,6 @@ export const OAuthCallback: React.FC = () => {
       return;
     }
 
-    // Guard global
     if (hasRunRef.current) return;
     hasRunRef.current = true;
 
@@ -96,7 +99,6 @@ export const OAuthCallback: React.FC = () => {
           <div style={{ marginTop: '16px' }}>
             <Button
               onClick={() => {
-                // Nettoie l'URL avant de repartir
                 window.history.replaceState({}, document.title, '/onboarding');
                 navigate('/onboarding', { replace: true });
               }}
@@ -108,13 +110,7 @@ export const OAuthCallback: React.FC = () => {
         </>
       ) : (
         <>
-          <div
-            style={{
-              fontSize: '48px',
-              marginBottom: '16px',
-              animation: 'spin 1s linear infinite',
-            }}
-          >
+          <div style={{ fontSize: '48px', marginBottom: '16px', animation: 'spin 1s linear infinite' }}>
             🔄
           </div>
           <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>
