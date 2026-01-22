@@ -61,33 +61,36 @@ export const googleOAuthExchange = async (
   code: string,
   redirectUri: string
 ): Promise<GoogleOAuthExchangeResult> => {
-  const { data, error } = await supabase.functions.invoke('google-oauth-exchange', {
-    body: {
-      code,
-      redirectUri,
-    },
-  });
+  // 1) Forcer récupération session
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const accessToken = sessionData?.session?.access_token;
 
-  if (error) {
+  if (sessionError || !accessToken) {
     return {
-      error: 'supabase_error',
-      description: error.message,
+      error: 'unauthorized',
+      description: 'Session Supabase absente. Reconnecte-toi puis réessaie.',
     };
   }
 
-  if (data?.ok) {
-    return data as GoogleOAuthExchangeSuccess;
+  // 2) Appeler l’Edge Function en passant le JWT explicitement
+  const { data, error } = await supabase.functions.invoke('google-oauth-exchange', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: { code, redirectUri },
+  });
+
+  if (error) {
+    return { error: 'supabase_error', description: error.message };
   }
 
-  if (data?.error && data?.description) {
-    return data as GoogleOAuthExchangeError;
-  }
+  if (data?.ok) return data as GoogleOAuthExchangeSuccess;
 
-  return {
-    error: 'unknown_error',
-    description: 'Réponse inattendue du serveur OAuth.',
-  };
+  if (data?.error && data?.description) return data as GoogleOAuthExchangeError;
+
+  return { error: 'unknown_error', description: 'Réponse inattendue du serveur OAuth.' };
 };
+
 
 /**
  * Récupérer la connexion Google de l'utilisateur

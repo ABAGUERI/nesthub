@@ -4,68 +4,116 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
 import { GoogleOAuthExchangeError, googleOAuthExchange } from '../google.service';
 
+type UiState = 'idle' | 'processing' | 'success' | 'error';
+
 export const OAuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { supabaseUser, loading } = useAuth();
+  const { supabaseUser, session, loading } = useAuth() as any; // adapte si ton hook expose déjà session
   const [error, setError] = useState<string | null>(null);
+  const [uiState, setUiState] = useState<UiState>('idle');
 
-  // Anti double-run (rerender / StrictMode / deps)
+  // Empêche double-run (StrictMode / rerenders)
   const hasRunRef = useRef(false);
+
+  // Correlation id pour logs (utile si tu compares avec logs edge)
+  const requestId = useMemo(() => crypto.randomUUID(), []);
 
   const redirectUri = useMemo(() => {
     return import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
   }, []);
 
+  const cleanUrl = useCallback(() => {
+    // Retire les params OAuth pour empêcher tout replay
+    const url = new URL(window.location.href);
+    url.searchParams.delete('code');
+    url.searchParams.delete('scope');
+    url.searchParams.delete('authuser');
+    url.searchParams.delete('prompt');
+    url.searchParams.delete('error');
+    url.searchParams.delete('error_description');
+    window.history.replaceState({}, document.title, url.pathname);
+  }, []);
+
+  const restartGoogleConnect = useCallback(() => {
+    // Ici tu peux rediriger vers ton bouton / route "connect google"
+    // Exemple : /onboarding ou /settings/integrations
+    cleanUrl();
+    navigate('/onboarding', { replace: true });
+  }, [cleanUrl, navigate]);
+
   const handleCallback = useCallback(async () => {
     const code = searchParams.get('code');
     const errorParam = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
 
     if (errorParam) {
-      setError('Connexion Google annulée');
-      // Nettoie l’URL pour éviter de re-trigger le callback
-      window.history.replaceState({}, document.title, '/onboarding');
-      navigate('/onboarding', { replace: true });
+      setUiState('error');
+      setError(errorDescription ? `Connexion Google annulée: ${errorDescription}` : 'Connexion Google annulée');
+      cleanUrl();
       return;
     }
 
     if (!code) {
+      setUiState('error');
       setError('Code OAuth manquant');
-      window.history.replaceState({}, document.title, '/onboarding');
-      navigate('/onboarding', { replace: true });
+      cleanUrl();
       return;
     }
 
-    // Dedupe par code (survit aux remounts)
+    // Dedupe par code (survit aux remounts / refresh)
     const dedupeKey = `google_oauth_processed_${code}`;
-    if (sessionStorage.getItem(dedupeKey)) return;
+    if (sessionStorage.getItem(dedupeKey)) {
+      // Déjà traité : on évite de rappeler l’edge function
+      cleanUrl();
+      navigate('/onboarding', { replace: true });
+      return;
+    }
     sessionStorage.setItem(dedupeKey, '1');
 
+    setUiState('processing');
+    setError(null);
+
     try {
+      console.info(`[OAuthCallback:${requestId}] exchange start`, {
+        hasUser: !!supabaseUser,
+        hasSession: !!session,
+        redirectUri,
+        codeLength: code.length,
+      });
+
       const result = await googleOAuthExchange(code, redirectUri);
 
       if (!result?.ok) {
         const exchangeError = result as GoogleOAuthExchangeError;
+        console.error(`[OAuthCallback:${requestId}] exchange failed`, exchangeError);
+
+        setUiState('error');
         setError(`${exchangeError.error}: ${exchangeError.description}`);
-        // Nettoie l’URL pour éviter de retenter avec le même code
-        window.history.replaceState({}, document.title, '/onboarding');
+
+        cleanUrl();
         return;
       }
 
-      // Succès: retire ?code=... pour éviter replay
-      window.history.replaceState({}, document.title, '/onboarding');
+      console.info(`[OAuthCallback:${requestId}] exchange success`);
+      setUiState('success');
+
+      cleanUrl();
       navigate('/onboarding', { replace: true });
     } catch (err: any) {
-      console.error('Error handling OAuth callback:', err);
+      console.error(`[OAuthCallback:${requestId}] unexpected error`, err);
+      setUiState('error');
       setError('Erreur OAuth: impossible de finaliser la connexion.');
-      window.history.replaceState({}, document.title, '/onboarding');
+      cleanUrl();
     }
-  }, [navigate, redirectUri, searchParams]);
+  }, [cleanUrl, navigate, redirectUri, requestId, searchParams, session, supabaseUser]);
 
   useEffect(() => {
     if (loading) return;
 
-    if (!supabaseUser) {
+    // Important : ne pas lancer tant qu’on n’a pas une session valide.
+    // Si ton useAuth ne fournit pas session, garde supabaseUser mais c’est moins robuste.
+    if (!supabaseUser || !session) {
       const nextUrl = `/auth/callback${window.location.search}`;
       navigate(`/login?next=${encodeURIComponent(nextUrl)}`, { replace: true });
       return;
@@ -75,7 +123,9 @@ export const OAuthCallback: React.FC = () => {
     hasRunRef.current = true;
 
     void handleCallback();
-  }, [handleCallback, loading, navigate, supabaseUser]);
+  }, [handleCallback, loading, navigate, session, supabaseUser]);
+
+  const isLoading = uiState === 'processing' || loading;
 
   return (
     <div
@@ -91,32 +141,40 @@ export const OAuthCallback: React.FC = () => {
         color: '#e2e8f0',
       }}
     >
-      {error ? (
+      {uiState === 'error' ? (
         <>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
-          <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>{error}</h2>
-          <p style={{ color: '#94a3b8' }}>Réessayez dans un instant.</p>
-          <div style={{ marginTop: '16px' }}>
+          <h2 style={{ fontSize: '22px', marginBottom: '8px' }}>{error}</h2>
+          <p style={{ color: '#94a3b8', maxWidth: 520 }}>
+            Tu peux relancer la connexion Google. Si ça persiste, on comparera le requestId côté front avec les logs
+            de l’Edge Function pour isoler l’étape qui casse.
+          </p>
+
+          <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+            <Button onClick={restartGoogleConnect} size="large">
+              Recommencer
+            </Button>
             <Button
               onClick={() => {
-                window.history.replaceState({}, document.title, '/onboarding');
+                cleanUrl();
                 navigate('/onboarding', { replace: true });
               }}
               size="large"
+              variant="secondary"
             >
-              Retour à l’onboarding
+              Retour onboarding
             </Button>
           </div>
         </>
       ) : (
         <>
-          <div style={{ fontSize: '48px', marginBottom: '16px', animation: 'spin 1s linear infinite' }}>
-            🔄
-          </div>
+          <div style={{ fontSize: '48px', marginBottom: '16px', animation: 'spin 1s linear infinite' }}>🔄</div>
           <h2 style={{ fontSize: '24px', marginBottom: '8px' }}>
-            {loading ? 'Connexion en cours…' : 'Connexion à Google...'}
+            {isLoading ? 'Connexion en cours…' : 'Connexion à Google...'}
           </h2>
-          <p style={{ color: '#94a3b8' }}>Veuillez patienter</p>
+          <p style={{ color: '#94a3b8' }}>
+            {uiState === 'success' ? 'Connexion réussie. Redirection…' : 'Veuillez patienter'}
+          </p>
         </>
       )}
 
