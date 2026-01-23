@@ -118,12 +118,10 @@ export const getChildProgress = async (
     .from('child_progress')
     .select('*')
     .eq('child_id', childId)
-    .single();
+    .maybeSingle();
 
-  if (error) {
-    if (error.code === 'PGRST116') return null; // Not found
-    throw error;
-  }
+  if (error) throw error;
+  if (!data) return null;
 
   return {
     id: data.id,
