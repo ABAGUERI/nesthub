@@ -26,6 +26,13 @@ const HEADER_META: Array<{ match: RegExp; meta: HeaderMeta }> = [
     },
   },
   {
+    match: /^\/famille/,
+    meta: {
+      title: 'Famille',
+      description: 'Gérez vos tâches et votre agenda Google en un seul endroit.',
+    },
+  },
+  {
     match: /^\/finances/,
     meta: {
       title: 'Finances',

@@ -1,0 +1,30 @@
+.family-page {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.family-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 18px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.family-panel {
+  display: flex;
+  min-width: 0;
+}
+
+.family-panel .widget {
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .family-grid {
+    grid-template-columns: 1fr;
+  }
+}
