@@ -127,6 +127,7 @@ export const DashboardHeader: React.FC = () => {
 
   const navItems = [
     { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
+    { path: '/famille', icon: '👨‍👩‍👧‍👦', label: 'Famille' },
     { path: '/kitchen', icon: '🍽️', label: 'Cuisine' },
     { path: '/finances', icon: '💰', label: 'Finances' },
     { path: '/config', icon: '⚙️', label: 'Paramètres' },

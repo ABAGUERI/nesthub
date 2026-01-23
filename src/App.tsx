@@ -9,6 +9,7 @@ import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { ConfigPage } from '@/features/config/ConfigPage';
 import { KitchenPage } from '@/features/kitchen/KitchenPage';
 import { FinancePage } from '@/features/finance/FinancePage';
+import { FamilyPage } from '@/features/family/FamilyPage';
 import { ChildSelectionProvider } from '@/features/dashboard/contexts/ChildSelectionContext';
 import { AppLayout } from '@/shared/layouts/AppLayout';
 import '@/styles/global.css';
@@ -131,6 +132,17 @@ function AppRoutes() {
           <ProtectedRoute>
             <AppLayout>
               <KitchenPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/famille"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <FamilyPage />
             </AppLayout>
           </ProtectedRoute>
         }

@@ -1,22 +1,22 @@
+:root {
+  --bottom-nav-h: 96px;
+}
+
 .app-shell {
   height: 100dvh;
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   position: relative;
 }
 
 .app-content {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   position: relative;
   z-index: 1;
-  overflow: auto;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-@media (max-width: 768px) {
-  .app-content {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom));
-  }
+  padding: 16px;
+  padding-bottom: calc(16px + var(--bottom-nav-h) + env(safe-area-inset-bottom));
 }

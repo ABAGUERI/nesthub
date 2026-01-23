@@ -18,7 +18,11 @@ interface CalendarEvent {
   calendarId: string;
 }
 
-export const CalendarWidget: React.FC = () => {
+type CalendarWidgetProps = {
+  maxEvents?: number;
+};
+
+export const CalendarWidget: React.FC<CalendarWidgetProps> = ({ maxEvents }) => {
   const { user } = useAuth();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +69,13 @@ export const CalendarWidget: React.FC = () => {
         return date >= now && date <= horizon;
       });
 
-      setEvents(withinRange);
+      const sorted = withinRange.sort(
+        (a, b) =>
+          new Date(a.start.dateTime || a.start.date!).getTime() -
+          new Date(b.start.dateTime || b.start.date!).getTime()
+      );
+
+      setEvents(maxEvents ? sorted.slice(0, maxEvents) : sorted);
     } catch (error: any) {
       console.error('Error loading calendar events:', error);
       const status = (error as { status?: number }).status;

@@ -39,6 +39,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, description }) => {
 
   const navItems = [
     { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
+    { path: '/famille', icon: '👨‍👩‍👧‍👦', label: 'Famille' },
     { path: '/kitchen', icon: '🍽️', label: 'Cuisine' },
     { path: '/finances', icon: '💰', label: 'Finances' },
     { path: '/config', icon: '⚙️', label: 'Paramètres' },
