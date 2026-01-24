@@ -3,22 +3,35 @@ import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
-import { supabase } from '@/shared/utils/supabase';
 import { getOrCreateConfig, upsertConfig } from '@/shared/utils/screenTimeService';
+import { getChildren } from '@/shared/utils/children.service';
+import type { Child } from '@/shared/types';
+import { getAvatarUrl } from '../../services/avatar.service';
 import './ScreenTimeTab.css';
-
-interface ChildRow {
-  id: string;
-  first_name: string;
-}
 
 interface ScreenTimeChildState {
   childId: string;
   name: string;
+  icon: Child['icon'];
+  avatarUrl?: string;
   weeklyAllowance: number;
   weekResetDay: number;
   heartsTotal: number;
 }
+
+const ICON_OPTIONS: Array<{ value: Child['icon']; emoji: string }> = [
+  { value: 'bee', emoji: '🐝' },
+  { value: 'ladybug', emoji: '🐞' },
+  { value: 'butterfly', emoji: '🦋' },
+  { value: 'caterpillar', emoji: '🐛' },
+];
+
+const DEFAULT_COLORS: Record<Child['icon'], string> = {
+  bee: '#22d3ee',
+  ladybug: '#10b981',
+  butterfly: '#a855f7',
+  caterpillar: '#fb923c',
+};
 
 const WEEK_DAYS = [
   { value: 1, label: 'Lundi' },
@@ -52,23 +65,17 @@ export const ScreenTimeTab: React.FC = () => {
     setError(null);
 
     try {
-      const { data: childrenData, error: childrenError } = await supabase
-        .from('family_members')
-        .select('id, first_name')
-        .eq('user_id', user.id)
-        .eq('role', 'child')
-        .order('created_at', { ascending: true });
-
-      if (childrenError) throw childrenError;
-
+      const childrenData = await getChildren(user.id);
       const populated = await Promise.all(
-        (childrenData || []).map(async (child: ChildRow) => {
+        childrenData.filter((child) => child.role === 'child').map(async (child: Child) => {
           const screenConfig = await getOrCreateConfig(child.id);
           const weeklyAllowance = resolveWeeklyAllowance(screenConfig);
           const heartsTotal = Math.max(1, screenConfig.heartsTotal ?? 5);
           return {
             childId: child.id,
-            name: child.first_name,
+            name: child.firstName,
+            icon: child.icon,
+            avatarUrl: child.avatarUrl,
             weeklyAllowance,
             weekResetDay: screenConfig.weekResetDay ?? 1,
             heartsTotal,
@@ -227,8 +234,21 @@ export const ScreenTimeTab: React.FC = () => {
             {children.map((child) => (
               <div key={child.childId} className="screen-time-child-card">
                 <div className="screen-time-card-header">
-                  <div className="screen-time-avatar" aria-hidden="true">
-                    {getInitials(child.name)}
+                  <div
+                    className="screen-time-avatar"
+                    style={{ '--child-color': DEFAULT_COLORS[child.icon] } as React.CSSProperties}
+                  >
+                    {child.avatarUrl ? (
+                      <img
+                        src={getAvatarUrl(child.avatarUrl) || ''}
+                        alt={`Avatar de ${child.name}`}
+                        className="screen-time-avatar-img"
+                      />
+                    ) : (
+                      <span className="screen-time-avatar-emoji">
+                        {ICON_OPTIONS.find((option) => option.value === child.icon)?.emoji ?? getInitials(child.name)}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <h4>{child.name}</h4>
