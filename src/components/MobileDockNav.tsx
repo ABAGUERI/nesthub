@@ -4,6 +4,7 @@ import './MobileDockNav.css';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
+  { path: '/famille', icon: '👨‍👩‍👧‍👦', label: 'Famille' },
   { path: '/kitchen', icon: '🍽️', label: 'Cuisine' },
   { path: '/finances', icon: '💰', label: 'Finances' },
   { path: '/config', icon: '⚙️', label: 'Paramètres' },

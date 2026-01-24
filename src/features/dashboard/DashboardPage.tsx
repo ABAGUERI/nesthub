@@ -3,13 +3,6 @@ import { useAuth } from '@/shared/hooks/useAuth';
 
 import { ChildrenWidget } from './components/ChildrenWidget';
 import { DailyTasksWidget } from './components/DailyTasksWidget';
-import { CalendarWidget } from './components/CalendarWidget';
-import { GoogleTasksWidget } from './components/GoogleTasksWidget';
-import { FinanceWidget } from './components/FinanceWidget';
-import { StockTicker } from './components/StockTicker';
-import { VehicleWidget } from './components/VehicleWidget';
-
-import { useChildSelection } from './contexts/ChildSelectionContext';
 import ChildTimeline, { ChildTimelineEvent } from './components/ChildTimeline';
 
 import { supabase } from '@/shared/utils/supabase';
@@ -35,31 +28,14 @@ const matchesSelectedChild = (title: string, childName: string) => {
 
 const DashboardInner: React.FC = () => {
   const { user } = useAuth();
-  const { selectedChildIndex } = useChildSelection();
-
-  const [screenIndex, setScreenIndex] = useState(0);
-  const screensCount = 4;
 
   const [children, setChildren] = useState<ChildRow[]>([]);
   const [childrenError, setChildrenError] = useState<string | null>(null);
-  const timelineRef = useRef<HTMLDivElement | null>(null);
   const celebrationTimerRef = useRef<number | null>(null);
   const [celebrationActive, setCelebrationActive] = useState(false);
   const [completedTodayCount, setCompletedTodayCount] = useState(0);
 
   const { events, error: eventsError } = useChildEvents(user?.id, RANGE_DAYS);
-
-  const goPrev = useCallback(() => {
-    setScreenIndex((v) => (v - 1 + screensCount) % screensCount);
-  }, [screensCount]);
-
-  const goNext = useCallback(() => {
-    setScreenIndex((v) => (v + 1) % screensCount);
-  }, [screensCount]);
-
-  const handleScrollToTimeline = useCallback(() => {
-    timelineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
 
   const handleCelebration = useCallback(() => {
     if (celebrationTimerRef.current) {
@@ -71,15 +47,6 @@ const DashboardInner: React.FC = () => {
       celebrationTimerRef.current = null;
     }, 900);
   }, []);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') goPrev();
-      if (e.key === 'ArrowRight') goNext();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [goNext, goPrev]);
 
   useEffect(() => {
     return () => {
@@ -116,140 +83,72 @@ const DashboardInner: React.FC = () => {
     loadChildren();
   }, [loadChildren]);
 
-  const selectedChildName = useMemo(() => {
-    return children[selectedChildIndex]?.first_name || '';
-  }, [children, selectedChildIndex]);
-
-  // 3) Timeline = STRICTEMENT l’enfant sélectionné
-  const timelineEvents: ChildTimelineEvent[] = useMemo(() => {
-    if (!selectedChildName) return [];
-
-    const normalized: ChildTimelineEvent[] = (events || []).map((e) => ({
+  const normalizedEvents: ChildTimelineEvent[] = useMemo(() => {
+    return (events || []).map((e) => ({
       id: e.id,
       title: e.summary || 'Sans titre',
       start: e.start.dateTime || e.start.date!,
       end: e.end?.dateTime || e.end?.date,
     }));
+  }, [events]);
 
-    return normalized
-      .filter((e) => matchesSelectedChild(e.title, selectedChildName))
-      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-  }, [events, selectedChildName]);
+  // 3) Timeline = multi-enfants
+  const eventsByChild = useMemo(() => {
+    return children.reduce<Record<string, ChildTimelineEvent[]>>((acc, child) => {
+      const childEvents = normalizedEvents
+        .filter((event) => matchesSelectedChild(event.title, child.first_name))
+        .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+      acc[child.id] = childEvents;
+      return acc;
+    }, {});
+  }, [children, normalizedEvents]);
 
   const timelineBlockedMessage = useMemo(() => {
     if (childrenError) return childrenError;
-    if (!selectedChildName) return "Sélectionnez un enfant pour afficher sa timeline.";
+    if (children.length === 0) return "Ajoutez un enfant pour afficher la timeline.";
     if (eventsError) return eventsError;
     return null;
-  }, [childrenError, selectedChildName, eventsError]);
+  }, [children.length, childrenError, eventsError]);
 
   return (
-    <div className="dashboard-container carousel-mode">
+    <div className="dashboard-container">
       <div className="dashboard-body">
-        <section className="dashboard-carousel">
-          <div className="dashboard-carousel-track" style={{ transform: `translateX(-${screenIndex * 100}%)` }}>
-            {/* SCREEN 1 — Kids */}
-            <div className="dashboard-screen" aria-label="Écran enfants">
-              <div className="kids-screen-actions">
-                <button type="button" className="kids-screen-link" onClick={handleScrollToTimeline}>
-                  Voir événements
-                </button>
-              </div>
-              <div className={`kids-celebration-toast${celebrationActive ? ' is-visible' : ''}`}>
-                Bravo — 2 tâches aujourd&apos;hui
-              </div>
-              <section className="kids-layout">
-                <div className="kids-top kids-goal">
-                  <div className={`kids-celebration${celebrationActive ? ' is-active' : ''}`}>
-                    {/* {completedTodayCount >= 2 && (
-                      <div className="kids-magic-badge" aria-live="polite">
-                        Bravo — {completedTodayCount} tâches aujourd&apos;hui
-                      </div>
-                    )} */}
-                    <ChildrenWidget />
-                  </div>
+        <section className="kids-layout">
+          <div className="kids-top kids-goal">
+            <div className={`kids-celebration${celebrationActive ? ' is-active' : ''}`}>
+              {/* {completedTodayCount >= 2 && (
+                <div className="kids-magic-badge" aria-live="polite">
+                  Bravo — {completedTodayCount} tâches aujourd&apos;hui
                 </div>
-                <div className="kids-top kids-tasks">
-                  <DailyTasksWidget
-                    onMilestone={handleCelebration}
-                    onCompletedTodayCountChange={setCompletedTodayCount}
-                  />
-                </div>
-
-                {/* Timeline — enfant sélectionné uniquement */}
-                <div ref={timelineRef} className="kids-timeline">
-                  {timelineBlockedMessage ? (
-                    <div className="timeline-card child-timeline">
-                      <div className="timeline-empty">{timelineBlockedMessage}</div>
-                    </div>
-                  ) : (
-                    <ChildTimeline childName={selectedChildName} events={timelineEvents} rangeDays={RANGE_DAYS} />
-                  )}
-                </div>
-              </section>
-            </div>
-
-            {/* SCREEN 2 — Agenda */}
-            <div className="dashboard-screen" aria-label="Écran agenda">
-              <div className="screen-grid agenda-screen">
-                <CalendarWidget />
-                <GoogleTasksWidget />
-              </div>
-            </div>
-
-            {/* SCREEN 3 — Finance */}
-            <div className="dashboard-screen" aria-label="Écran finances">
-              <div className="screen-grid mobility-screen">
-                <FinanceWidget />
-                <StockTicker />
-              </div>
-            </div>
-
-            {/* SCREEN 4 — Mobility */}
-            <div className="dashboard-screen" aria-label="Écran mobilité">
-              <div className="screen-grid mobility-screen">
-                <VehicleWidget />
-                <div className="screen-card">
-                  <div className="widget">
-                    <div className="widget-header">
-                      <div className="widget-title">Raccourcis</div>
-                    </div>
-                    <div className="widget-scroll">
-                      <div className="empty-message">
-                        Ajoutez ici vos raccourcis (ex: entretien, pneus, stationnement).
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )} */}
+              <ChildrenWidget />
             </div>
           </div>
+          <div className="kids-top kids-tasks">
+            <DailyTasksWidget
+              onMilestone={handleCelebration}
+              onCompletedTodayCountChange={setCompletedTodayCount}
+            />
+          </div>
 
-          <button className="screen-arrow left" onClick={goPrev} aria-label="Écran précédent" type="button">
-            <span className="screen-arrow-icon">‹</span>
-            <span className="screen-arrow-label">
-              <span>ÉCRAN</span>
-              <span>PRÉCÉDENT</span>
-            </span>
-          </button>
-          <button className="screen-arrow right" onClick={goNext} aria-label="Écran suivant" type="button">
-            <span className="screen-arrow-icon">›</span>
-            <span className="screen-arrow-label">
-              <span>ÉCRAN</span>
-              <span>SUIVANT</span>
-            </span>
-          </button>
-
-          <div className="screen-dots" role="tablist" aria-label="Navigation des écrans">
-            {Array.from({ length: screensCount }).map((_, i) => (
-              <button
-                key={i}
-                className={`screen-dot ${i === screenIndex ? 'active' : ''}`}
-                onClick={() => setScreenIndex(i)}
-                aria-label={`Aller à l'écran ${i + 1}`}
-                type="button"
-              />
-            ))}
+          {/* Timeline — multi-enfants */}
+          <div className="kids-timeline">
+            {timelineBlockedMessage ? (
+              <div className="timeline-card child-timeline">
+                <div className="timeline-empty">{timelineBlockedMessage}</div>
+              </div>
+            ) : (
+              <div className="kids-timeline-list">
+                {children.map((child) => (
+                  <ChildTimeline
+                    key={child.id}
+                    childName={child.first_name}
+                    events={eventsByChild[child.id] || []}
+                    rangeDays={RANGE_DAYS}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </div>
