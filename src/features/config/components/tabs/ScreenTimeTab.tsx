@@ -3,24 +3,35 @@ import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
-import { supabase } from '@/shared/utils/supabase';
 import { getOrCreateConfig, upsertConfig } from '@/shared/utils/screenTimeService';
+import { getChildren } from '@/shared/utils/children.service';
+import type { Child } from '@/shared/types';
+import { getAvatarUrl } from '../../services/avatar.service';
 import './ScreenTimeTab.css';
-
-interface ChildRow {
-  id: string;
-  first_name: string;
-}
 
 interface ScreenTimeChildState {
   childId: string;
   name: string;
+  icon: Child['icon'];
+  avatarUrl?: string;
   weeklyAllowance: number;
   weekResetDay: number;
   heartsTotal: number;
-  heartsMinutesMode: 'auto' | 'manual';
-  heartsMinutes: number | null;
 }
+
+const ICON_OPTIONS: Array<{ value: Child['icon']; emoji: string }> = [
+  { value: 'bee', emoji: '🐝' },
+  { value: 'ladybug', emoji: '🐞' },
+  { value: 'butterfly', emoji: '🦋' },
+  { value: 'caterpillar', emoji: '🐛' },
+];
+
+const DEFAULT_COLORS: Record<Child['icon'], string> = {
+  bee: '#22d3ee',
+  ladybug: '#10b981',
+  butterfly: '#a855f7',
+  caterpillar: '#fb923c',
+};
 
 const WEEK_DAYS = [
   { value: 1, label: 'Lundi' },
@@ -43,8 +54,6 @@ export const ScreenTimeTab: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const moduleEnabled = config?.moduleScreenTime ?? false;
-  const screenTimeMode = config?.screenTimeMode ?? 'manual';
-
   useEffect(() => {
     void loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,33 +65,20 @@ export const ScreenTimeTab: React.FC = () => {
     setError(null);
 
     try {
-      const { data: childrenData, error: childrenError } = await supabase
-        .from('family_members')
-        .select('id, first_name')
-        .eq('user_id', user.id)
-        .eq('role', 'child')
-        .order('created_at', { ascending: true });
-
-      if (childrenError) throw childrenError;
-
+      const childrenData = await getChildren(user.id);
       const populated = await Promise.all(
-        (childrenData || []).map(async (child: ChildRow) => {
+        childrenData.filter((child) => child.role === 'child').map(async (child: Child) => {
           const screenConfig = await getOrCreateConfig(child.id);
           const weeklyAllowance = resolveWeeklyAllowance(screenConfig);
           const heartsTotal = Math.max(1, screenConfig.heartsTotal ?? 5);
-          const heartsMinutes =
-            screenConfig.heartsMinutes && screenConfig.heartsMinutes > 0
-              ? screenConfig.heartsMinutes
-              : null;
-
           return {
             childId: child.id,
-            name: child.first_name,
+            name: child.firstName,
+            icon: child.icon,
+            avatarUrl: child.avatarUrl,
             weeklyAllowance,
             weekResetDay: screenConfig.weekResetDay ?? 1,
             heartsTotal,
-            heartsMinutesMode: heartsMinutes ? 'manual' : 'auto',
-            heartsMinutes,
           };
         })
       );
@@ -126,11 +122,6 @@ export const ScreenTimeTab: React.FC = () => {
       return;
     }
 
-    if (child.heartsMinutesMode === 'manual' && (!child.heartsMinutes || child.heartsMinutes <= 0)) {
-      setError('Les minutes par cœur doivent être supérieures à 0.');
-      return;
-    }
-
     setSavingChildId(childId);
     setError(null);
     setSuccessMessage(null);
@@ -140,7 +131,7 @@ export const ScreenTimeTab: React.FC = () => {
         weeklyAllowance: child.weeklyAllowance,
         weekResetDay: child.weekResetDay,
         heartsTotal: child.heartsTotal,
-        heartsMinutes: child.heartsMinutesMode === 'manual' ? child.heartsMinutes : null,
+        heartsMinutes: null,
         livesEnabled: true,
       });
 
@@ -183,6 +174,15 @@ export const ScreenTimeTab: React.FC = () => {
     return map;
   }, [children]);
 
+  const getInitials = (name: string) =>
+    name
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+
   return (
     <div className="config-tab-panel screen-time-tab">
       <div className="panel-header">
@@ -222,13 +222,6 @@ export const ScreenTimeTab: React.FC = () => {
 
       <div className="config-card">
         <div className="config-card-header">
-          <h3>Mode actuel</h3>
-          <p>Mode de suivi configuré : {screenTimeMode === 'manual' ? 'Manuel' : screenTimeMode}.</p>
-        </div>
-      </div>
-
-      <div className="config-card">
-        <div className="config-card-header">
           <h3>Paramètres par enfant</h3>
           <p>Budget hebdomadaire, jour de reset et conversion en cœurs.</p>
         </div>
@@ -240,19 +233,27 @@ export const ScreenTimeTab: React.FC = () => {
           <div className="screen-time-children">
             {children.map((child) => (
               <div key={child.childId} className="screen-time-child-card">
-                <div className="screen-time-child-header">
+                <div className="screen-time-card-header">
+                  <div
+                    className="screen-time-avatar"
+                    style={{ '--child-color': DEFAULT_COLORS[child.icon] } as React.CSSProperties}
+                  >
+                    {child.avatarUrl ? (
+                      <img
+                        src={getAvatarUrl(child.avatarUrl) || ''}
+                        alt={`Avatar de ${child.name}`}
+                        className="screen-time-avatar-img"
+                      />
+                    ) : (
+                      <span className="screen-time-avatar-emoji">
+                        {ICON_OPTIONS.find((option) => option.value === child.icon)?.emoji ?? getInitials(child.name)}
+                      </span>
+                    )}
+                  </div>
                   <div>
                     <h4>{child.name}</h4>
-                    <p>Personnalisez le budget hebdomadaire et les cœurs.</p>
+                    <p>Réglez le budget et la conversion en cœurs.</p>
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="small"
-                    onClick={() => handleSaveChild(child.childId)}
-                    isLoading={savingChildId === child.childId}
-                  >
-                    Enregistrer
-                  </Button>
                 </div>
 
                 <div className="screen-time-grid">
@@ -292,42 +293,21 @@ export const ScreenTimeTab: React.FC = () => {
                       updateChildState(child.childId, { heartsTotal: Number(event.target.value) })
                     }
                   />
-
-                  <div className="screen-time-field">
-                    <label>Minutes par cœur</label>
-                    <div className="role-toggle" role="group" aria-label="Minutes par cœur">
-                      <button
-                        type="button"
-                        className={`role-btn ${child.heartsMinutesMode === 'auto' ? 'active' : ''}`}
-                        onClick={() => updateChildState(child.childId, { heartsMinutesMode: 'auto' })}
-                      >
-                        Auto
-                      </button>
-                      <button
-                        type="button"
-                        className={`role-btn ${child.heartsMinutesMode === 'manual' ? 'active' : ''}`}
-                        onClick={() => updateChildState(child.childId, { heartsMinutesMode: 'manual' })}
-                      >
-                        Manuel
-                      </button>
-                    </div>
-                    {child.heartsMinutesMode === 'manual' ? (
-                      <Input
-                        label=""
-                        type="number"
-                        min={1}
-                        value={child.heartsMinutes ?? ''}
-                        onChange={(event) =>
-                          updateChildState(child.childId, { heartsMinutes: Number(event.target.value) })
-                        }
-                      />
-                    ) : (
-                      <div className="screen-time-hint">
-                        Auto : {autoMinutesByChild.get(child.childId)} min / ❤️
-                      </div>
-                    )}
-                  </div>
                 </div>
+
+                <div className="screen-time-hint">
+                  1 ❤️ = {autoMinutesByChild.get(child.childId)} minutes (calcul automatique)
+                </div>
+
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => handleSaveChild(child.childId)}
+                  isLoading={savingChildId === child.childId}
+                  fullWidth
+                >
+                  Enregistrer
+                </Button>
               </div>
             ))}
           </div>

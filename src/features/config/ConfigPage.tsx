@@ -27,7 +27,6 @@ export const ConfigPage: React.FC = () => {
     <div className="config-page">
       <div className="config-hero">
         <div className="config-hero-text">
-          <p className="config-kicker">Paramètres & personnalisation</p>
           <h1>Affinez votre hub familial</h1>
           <p className="config-subtitle">
             Gérez votre famille, vos rotations de tâches, votre compte Google et vos récompenses en quelques clics.
