@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAuth } from '@/shared/hooks/useAuth';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { ChildrenWidget } from './components/ChildrenWidget';
 import { DailyTasksWidget } from './components/DailyTasksWidget';
@@ -9,22 +9,6 @@ import { supabase } from '@/shared/utils/supabase';
 import { useChildEvents } from './hooks/useChildEvents';
 
 import './Dashboard.css';
-
-type ChildRow = {
-  id: string;
-  first_name: string;
-};
-
-const RANGE_DAYS = 28;
-
-// const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
-const matchesSelectedChild = (title: string, childName: string) => {
-  // Matching strict comme tu le veux: commence par "Prenom" ou contient "Prenom -"
-  const t = (title || '').trim().toLowerCase();
-  const n = (childName || '').trim().toLowerCase();
-  return t.startsWith(n) || t.includes(`${n} -`);
-};
 
 const DashboardInner: React.FC = () => {
   const { user } = useAuth();
