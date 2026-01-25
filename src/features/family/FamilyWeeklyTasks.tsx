@@ -33,6 +33,8 @@ export const FamilyWeeklyTasks: React.FC = () => {
   const [cta, setCta] = useState<'connect' | 'reconnect' | null>(null);
   const [columns, setColumns] = useState(6);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [completingTaskIds, setCompletingTaskIds] = useState<Set<string>>(new Set());
+  const [clickedTaskId, setClickedTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -166,8 +168,27 @@ export const FamilyWeeklyTasks: React.FC = () => {
     if (!user) return;
 
     try {
-      await updateTaskStatusWithAuth(user.id, task.listId, task.id, 'completed');
-      setTasks((prev) => prev.filter((item) => item.id !== task.id));
+      setCompletingTaskIds((prev) => new Set(prev).add(task.id));
+      setClickedTaskId(task.id);
+
+      window.setTimeout(() => {
+        setClickedTaskId((prev) => (prev === task.id ? null : prev));
+      }, 200);
+
+      window.setTimeout(async () => {
+        try {
+          await updateTaskStatusWithAuth(user.id, task.listId, task.id, 'completed');
+          setTasks((prev) => prev.filter((item) => item.id !== task.id));
+        } catch (error) {
+          console.error('Error updating task status:', error);
+        } finally {
+          setCompletingTaskIds((prev) => {
+            const next = new Set(prev);
+            next.delete(task.id);
+            return next;
+          });
+        }
+      }, 300);
     } catch (err) {
       console.error('Error updating task status:', err);
     }
@@ -242,7 +263,9 @@ export const FamilyWeeklyTasks: React.FC = () => {
               return (
                 <div
                   key={task.id}
-                  className="task-tile"
+                  className={`task-tile${completingTaskIds.has(task.id) ? ' is-completing' : ''}${
+                    clickedTaskId === task.id ? ' is-clicked' : ''
+                  }`}
                   role="button"
                   tabIndex={0}
                   onClick={() => handleToggleTask(task)}
@@ -253,20 +276,13 @@ export const FamilyWeeklyTasks: React.FC = () => {
                     }
                   }}
                 >
-                  <label className="task-tile-checkbox">
-                    <input
-                      type="checkbox"
-                      aria-label={`Terminer la tâche ${task.title}`}
-                      onChange={() => handleToggleTask(task)}
-                      onClick={(event) => event.stopPropagation()}
-                    />
-                    <span className="task-tile-checkmark"></span>
-                  </label>
                   <div className="task-tile-content">
-                    <div className="task-title">{task.title}</div>
-                    <div className="task-due">
-                      {task.due ? `Échéance ${formatDueDate(task.due)}` : task.listName}
-                    </div>
+                    <div className="task-title" title={task.title}>{task.title}</div>
+                    {(task.due || task.listName) && (
+                      <div className="task-due">
+                        {task.due ? `Échéance ${formatDueDate(task.due)}` : task.listName}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
