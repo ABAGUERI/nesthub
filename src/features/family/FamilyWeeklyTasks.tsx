@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { supabase } from '@/shared/utils/supabase';
 import {
@@ -24,6 +24,72 @@ interface TaskItem {
   listName?: string;
   listId: string;
 }
+
+type TaskTileProps = {
+  task: TaskItem;
+  isCompleting: boolean;
+  isClicked: boolean;
+  onComplete: (task: TaskItem) => void;
+  formatDueDate: (due?: string) => string | null;
+};
+
+const TaskTile: React.FC<TaskTileProps> = ({
+  task,
+  isCompleting,
+  isClicked,
+  onComplete,
+  formatDueDate,
+}) => {
+  const titleRef = useRef<HTMLDivElement | null>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useLayoutEffect(() => {
+    const element = titleRef.current;
+    if (!element) return;
+    const check = () => {
+      setIsTruncated(element.scrollHeight > element.clientHeight);
+    };
+
+    const frame = window.requestAnimationFrame(check);
+    window.addEventListener('resize', check);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', check);
+    };
+  }, [task.title]);
+
+  return (
+    <div
+      className={`task-tile${isCompleting ? ' is-completing' : ''}${isClicked ? ' is-clicked' : ''}`}
+      role="button"
+      tabIndex={0}
+      onClick={() => onComplete(task)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onComplete(task);
+        }
+      }}
+      title={isTruncated ? task.title : undefined}
+    >
+      <div className="task-tile-content">
+        <div ref={titleRef} className="task-title">
+          {task.title}
+        </div>
+        {(task.due || task.listName) && (
+          <div className="task-due">
+            {task.due ? `Échéance ${formatDueDate(task.due)}` : task.listName}
+          </div>
+        )}
+      </div>
+      {isTruncated && (
+        <span className="task-more-badge" title={task.title}>
+          …
+        </span>
+      )}
+    </div>
+  );
+};
 
 export const FamilyWeeklyTasks: React.FC = () => {
   const { user } = useAuth();
@@ -261,30 +327,14 @@ export const FamilyWeeklyTasks: React.FC = () => {
               }
 
               return (
-                <div
+                <TaskTile
                   key={task.id}
-                  className={`task-tile${completingTaskIds.has(task.id) ? ' is-completing' : ''}${
-                    clickedTaskId === task.id ? ' is-clicked' : ''
-                  }`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleToggleTask(task)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      handleToggleTask(task);
-                    }
-                  }}
-                >
-                  <div className="task-tile-content">
-                    <div className="task-title" title={task.title}>{task.title}</div>
-                    {(task.due || task.listName) && (
-                      <div className="task-due">
-                        {task.due ? `Échéance ${formatDueDate(task.due)}` : task.listName}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  task={task}
+                  isCompleting={completingTaskIds.has(task.id)}
+                  isClicked={clickedTaskId === task.id}
+                  onComplete={handleToggleTask}
+                  formatDueDate={formatDueDate}
+                />
               );
             })}
           </div>

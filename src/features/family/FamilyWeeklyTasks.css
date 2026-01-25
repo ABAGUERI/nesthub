@@ -17,6 +17,7 @@
 }
 
 .task-tile {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -49,6 +50,8 @@
 .task-tile.is-completing {
   opacity: 0.6;
   filter: saturate(0.6);
+  transform: scale(0.98);
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.35);
 }
 
 .task-tile--placeholder {
@@ -79,8 +82,10 @@
 .task-title {
   font-size: 16px;
   font-weight: 600;
-  white-space: nowrap;
   overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   text-overflow: ellipsis;
   max-width: 100%;
 }
@@ -88,6 +93,28 @@
 .task-due {
   font-size: 12px;
   opacity: 0.75;
+}
+
+.task-tile.is-completing .task-title {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.task-more-badge {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0.85;
+  pointer-events: auto;
+}
+
+.task-tile:hover .task-more-badge {
+  opacity: 1;
 }
 
 .family-tasks-modal {

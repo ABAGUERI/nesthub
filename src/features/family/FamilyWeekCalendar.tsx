@@ -149,6 +149,9 @@ const getEventTone = (event: CalendarEvent, people: EventPerson[]) => {
   return 'tone-default';
 };
 
+const START_HOUR = 8;
+const END_HOUR = 18;
+
 export const FamilyWeekCalendar: React.FC = () => {
   const { user } = useAuth();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
@@ -160,8 +163,8 @@ export const FamilyWeekCalendar: React.FC = () => {
   const [calendarLabel, setCalendarLabel] = useState<string>('Calendrier');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
-  const startHour = 8;
-  const endHour = 20;
+  const startHour = START_HOUR;
+  const endHour = END_HOUR;
   const totalHours = endHour - startHour;
 
   const days = useMemo(
