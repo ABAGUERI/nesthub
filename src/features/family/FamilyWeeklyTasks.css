@@ -31,12 +31,28 @@
   cursor: pointer;
   text-align: center;
   transition: border 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
 }
 
 .task-tile:hover,
 .task-tile:focus-visible {
   border-color: rgba(226, 232, 240, 0.5);
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+.task-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.08) 45%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.task-tile:hover::before,
+.task-tile:focus-visible::before {
+  transform: translateX(120%);
 }
 
 .task-tile:active {
@@ -77,11 +93,13 @@
   gap: 6px;
   min-width: 0;
   align-items: center;
+  padding: 4px 0;
 }
 
 .task-title {
   font-size: 16px;
   font-weight: 600;
+  line-height: 1.35;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;

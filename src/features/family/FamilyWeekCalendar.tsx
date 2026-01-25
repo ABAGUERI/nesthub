@@ -458,7 +458,10 @@ export const FamilyWeekCalendar: React.FC = () => {
                 {days.map((day) => {
                   const isToday = toDateKey(day) === toDateKey(new Date());
                   return (
-                    <div key={day.toISOString()} className={`family-day-header ${isToday ? 'today' : ''}`}>
+                    <div
+                      key={day.toISOString()}
+                      className={`family-day-header ${isToday ? 'today' : ''}`}
+                    >
                       <div className="family-day-name">
                         {day.toLocaleDateString('fr-CA', { weekday: 'short' })}
                       </div>
@@ -510,9 +513,10 @@ export const FamilyWeekCalendar: React.FC = () => {
 
                 {days.map((day) => {
                   const dayKey = toDateKey(day);
+                  const isToday = dayKey === toDateKey(new Date());
                   const dayEvents = timedEventsByDay.get(dayKey) || [];
                   return (
-                    <div key={dayKey} className="family-day-column">
+                    <div key={dayKey} className={`family-day-column ${isToday ? 'today-column' : ''}`}>
                       <div className="family-day-grid">
                         {dayEvents.map((event) => renderEventBlock(event))}
                       </div>
