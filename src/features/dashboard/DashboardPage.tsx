@@ -1,5 +1,4 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChildrenWidget } from './components/ChildrenWidget';
 import { DailyTasksWidget } from './components/DailyTasksWidget';
@@ -7,14 +6,44 @@ import ChildTimeline, { ChildTimelineEvent } from './components/ChildTimeline';
 
 import { supabase } from '@/shared/utils/supabase';
 import { useChildEvents } from './hooks/useChildEvents';
+import { useAuth } from '@/shared/hooks/useAuth';
+
+// ✅ IMPORTANT : on lit la sélection enfant globale (gérée par ChildrenWidget)
+import { useChildSelection } from './contexts/ChildSelectionContext';
 
 import './Dashboard.css';
+
+const RANGE_DAYS = 14;
+
+type ChildRow = {
+  id: string;
+  first_name: string;
+};
+
+const normalize = (s: string) =>
+  (s || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const matchesSelectedChild = (eventTitle: string, childFirstName: string) => {
+  const t = normalize(eventTitle);
+  const n = normalize(childFirstName);
+  if (!n) return false;
+  return t.includes(n);
+};
 
 const DashboardInner: React.FC = () => {
   const { user } = useAuth();
 
+  // ✅ Sélection centralisée (vient de la zone "Vas-tu atteindre ton objectif ?")
+  // Si ton hook s’appelle autrement, ajuste l’import et cette ligne.
+  const { selectedChildIndex } = useChildSelection();
+
   const [children, setChildren] = useState<ChildRow[]>([]);
   const [childrenError, setChildrenError] = useState<string | null>(null);
+
   const celebrationTimerRef = useRef<number | null>(null);
   const [celebrationActive, setCelebrationActive] = useState(false);
   const [completedTodayCount, setCompletedTodayCount] = useState(0);
@@ -62,34 +91,51 @@ const DashboardInner: React.FC = () => {
     }
   }, [user]);
 
-  // 1) Charger les enfants (pour obtenir le prénom réel de l’enfant sélectionné)
   useEffect(() => {
     loadChildren();
   }, [loadChildren]);
 
   const normalizedEvents: ChildTimelineEvent[] = useMemo(() => {
-    return (events || []).map((e) => ({
+    return (events || []).map((e: any) => ({
       id: e.id,
       title: e.summary || 'Sans titre',
-      start: e.start.dateTime || e.start.date!,
+      start: e.start?.dateTime || e.start?.date,
       end: e.end?.dateTime || e.end?.date,
     }));
   }, [events]);
 
-  // 3) Timeline = multi-enfants
+  // Grouping utile, même si on n’affiche qu’un enfant à la fois
   const eventsByChild = useMemo(() => {
     return children.reduce<Record<string, ChildTimelineEvent[]>>((acc, child) => {
       const childEvents = normalizedEvents
         .filter((event) => matchesSelectedChild(event.title, child.first_name))
         .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+
       acc[child.id] = childEvents;
       return acc;
     }, {});
   }, [children, normalizedEvents]);
 
+  // ✅ L’enfant sélectionné est le même que dans ChildrenWidget (bloc objectif)
+  const selectedChild = useMemo(() => {
+    if (children.length === 0) return null;
+
+    const idx =
+      typeof selectedChildIndex === 'number' && selectedChildIndex >= 0
+        ? selectedChildIndex
+        : 0;
+
+    return children[idx] ?? children[0];
+  }, [children, selectedChildIndex]);
+
+  const selectedEvents = useMemo(() => {
+    if (!selectedChild) return [];
+    return eventsByChild[selectedChild.id] || [];
+  }, [eventsByChild, selectedChild]);
+
   const timelineBlockedMessage = useMemo(() => {
     if (childrenError) return childrenError;
-    if (children.length === 0) return "Ajoutez un enfant pour afficher la timeline.";
+    if (children.length === 0) return 'Ajoutez un enfant pour afficher la timeline.';
     if (eventsError) return eventsError;
     return null;
   }, [children.length, childrenError, eventsError]);
@@ -100,14 +146,10 @@ const DashboardInner: React.FC = () => {
         <section className="kids-layout">
           <div className="kids-top kids-goal">
             <div className={`kids-celebration${celebrationActive ? ' is-active' : ''}`}>
-              {/* {completedTodayCount >= 2 && (
-                <div className="kids-magic-badge" aria-live="polite">
-                  Bravo — {completedTodayCount} tâches aujourd&apos;hui
-                </div>
-              )} */}
               <ChildrenWidget />
             </div>
           </div>
+
           <div className="kids-top kids-tasks">
             <DailyTasksWidget
               onMilestone={handleCelebration}
@@ -115,24 +157,19 @@ const DashboardInner: React.FC = () => {
             />
           </div>
 
-          {/* Timeline — multi-enfants */}
+          {/* ✅ Timeline : 1 seule timeline, alignée sur l’enfant sélectionné globalement */}
           <div className="kids-timeline">
             {timelineBlockedMessage ? (
               <div className="timeline-card child-timeline">
                 <div className="timeline-empty">{timelineBlockedMessage}</div>
               </div>
-            ) : (
-              <div className="kids-timeline-list">
-                {children.map((child) => (
-                  <ChildTimeline
-                    key={child.id}
-                    childName={child.first_name}
-                    events={eventsByChild[child.id] || []}
-                    rangeDays={RANGE_DAYS}
-                  />
-                ))}
-              </div>
-            )}
+            ) : selectedChild ? (
+              <ChildTimeline
+                childName={selectedChild.first_name}
+                events={selectedEvents}
+                rangeDays={RANGE_DAYS}
+              />
+            ) : null}
           </div>
         </section>
       </div>
