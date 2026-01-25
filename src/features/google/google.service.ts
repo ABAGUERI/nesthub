@@ -40,60 +40,57 @@ export const initiateGoogleOAuth = () => {
   window.location.href = authUrl.toString();
 };
 
-/**
- * Échanger le code OAuth contre des tokens
- */
-export const exchangeCodeForTokens = async (code: string) => {
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      code,
-      client_id: GOOGLE_CLIENT_ID,
-      client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
-      redirect_uri: GOOGLE_REDIRECT_URI,
-      grant_type: 'authorization_code',
-    }),
-  });
+export type GoogleOAuthExchangeSuccess = {
+  ok: true;
+  gmailAddress: string;
+  scope: string | null;
+  expiresAt: string;
+};
 
-  if (!response.ok) {
-    throw new Error('Failed to exchange code for tokens');
+export type GoogleOAuthExchangeError = {
+  error: string;
+  description: string;
+};
+
+export type GoogleOAuthExchangeResult = GoogleOAuthExchangeSuccess | GoogleOAuthExchangeError;
+
+/**
+ * Échanger le code OAuth via Edge Function
+ */
+export const googleOAuthExchange = async (
+  code: string,
+  redirectUri: string
+): Promise<GoogleOAuthExchangeResult> => {
+  // 1) Forcer récupération session
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const accessToken = sessionData?.session?.access_token;
+
+  if (sessionError || !accessToken) {
+    return {
+      error: 'unauthorized',
+      description: 'Session Supabase absente. Reconnecte-toi puis réessaie.',
+    };
   }
 
-  const data = await response.json();
-  
-  return {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-    expiresIn: data.expires_in,
-  };
-};
-
-/**
- * Sauvegarder la connexion Google dans Supabase
- */
-export const saveGoogleConnection = async (
-  userId: string,
-  gmailAddress: string,
-  accessToken: string,
-  refreshToken: string,
-  expiresIn: number,
-  scope?: string | null
-) => {
-  const expiresAt = new Date(Date.now() + expiresIn * 1000);
-
-  const { error } = await supabase.rpc('upsert_google_connection', {
-    p_gmail_address: gmailAddress,
-    p_access_token: accessToken,
-    p_refresh_token: refreshToken,
-    p_expires_at: expiresAt.toISOString(),
-    p_scope: scope ?? null,
+  // 2) Appeler l’Edge Function en passant le JWT explicitement
+  const { data, error } = await supabase.functions.invoke('google-oauth-exchange', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: { code, redirectUri },
   });
 
-  if (error) throw error;
+  if (error) {
+    return { error: 'supabase_error', description: error.message };
+  }
+
+  if (data?.ok) return data as GoogleOAuthExchangeSuccess;
+
+  if (data?.error && data?.description) return data as GoogleOAuthExchangeError;
+
+  return { error: 'unknown_error', description: 'Réponse inattendue du serveur OAuth.' };
 };
+
 
 /**
  * Récupérer la connexion Google de l'utilisateur
@@ -117,24 +114,6 @@ export interface GoogleTaskList {
   id: string;
   title: string;
 }
-
-/**
- * Récupérer les informations du profil Google (email)
- */
-export const getGoogleUserInfo = async (accessToken: string) => {
-  const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to get user info');
-  }
-
-  const data = await response.json();
-  return data.email;
-};
 
 export const getTaskListsWithAuth = async (userId: string): Promise<GoogleTaskList[]> => {
   const { data, error } = await supabase

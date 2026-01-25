@@ -3,8 +3,7 @@
 ## Déploiement
 
 ```bash
-supabase functions deploy google-calendar-events
-supabase functions deploy google-tasks-list
+supabase functions deploy google-oauth-exchange
 ```
 
 ## Variables d'environnement requises
@@ -16,3 +15,8 @@ Configurez ces variables dans Supabase (Project Settings > Edge Functions > Secr
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
+
+## OAuth Google (code → tokens)
+
+La fonction `google-oauth-exchange` effectue l’échange OAuth côté serveur et
+enregistre la connexion Google via `upsert_google_connection`.

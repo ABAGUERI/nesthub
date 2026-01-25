@@ -29,11 +29,15 @@ interface CompletedTask {
 }
 
 type DailyTasksWidgetProps = {
+  maxTasks?: number;
+  showPagination?: boolean;
   onMilestone?: () => void;
   onCompletedTodayCountChange?: (count: number) => void;
 };
 
 export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
+  maxTasks,
+  showPagination = true,
   onMilestone,
   onCompletedTodayCountChange,
 }) => {
@@ -52,7 +56,8 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
   const [screenTimeSaving, setScreenTimeSaving] = useState(false);
 
   // 3 colonnes x 2 lignes
-  const tasksPerPage = 6;
+  const defaultTasksPerPage = 6;
+  const tasksPerPage = maxTasks ?? defaultTasksPerPage;
 
   useEffect(() => {
     loadData();
@@ -75,7 +80,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
 
   useEffect(() => {
     setPageIndex(0);
-  }, [selectedChildIndex, tasks.length, config?.moduleScreenTime]);
+  }, [selectedChildIndex, tasks.length, config?.moduleScreenTime, tasksPerPage]);
 
   const loadData = async () => {
     if (!user) return;
@@ -390,7 +395,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
 
   const totalPages = Math.max(1, Math.ceil(safeTasks.length / tasksPerPage));
   const paginatedTasks = safeTasks.slice(pageIndex * tasksPerPage, pageIndex * tasksPerPage + tasksPerPage);
-  const showPagination = safeTasks.length > tasksPerPage;
+  const shouldShowPagination = showPagination && safeTasks.length > tasksPerPage;
 
   const handleTaskClick = (task: Task & { isScreenTime?: boolean }, isCompleted: boolean) => {
     if (task.isScreenTime) {
@@ -477,7 +482,7 @@ export const DailyTasksWidget: React.FC<DailyTasksWidgetProps> = ({
         )}
       </div>
 
-      {showPagination && (
+      {shouldShowPagination && (
         <div className="tasks-navigation">
           <button
             className="tasks-nav-btn"

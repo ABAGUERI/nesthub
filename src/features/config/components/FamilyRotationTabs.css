@@ -341,9 +341,9 @@
 
 /* Tasks list */
 .tasks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .task-item {
@@ -358,13 +358,19 @@
   transition: all 0.2s ease;
 }
 
+.task-item .input-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
 .task-item:hover {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.15);
 }
 
 .task-icon {
-  font-size: 24px;
+  font-size: 36px;
+  line-height: 1;
   flex-shrink: 0;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
@@ -561,5 +567,23 @@
 
   .rotation-actions {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 1099px) {
+  .tasks-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 899px) {
+  .tasks-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  .tasks-list {
+    grid-template-columns: 1fr;
   }
 }

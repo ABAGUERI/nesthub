@@ -9,6 +9,7 @@ import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { ConfigPage } from '@/features/config/ConfigPage';
 import { KitchenPage } from '@/features/kitchen/KitchenPage';
 import { FinancePage } from '@/features/finance/FinancePage';
+import { FamilyPage } from '@/features/family/FamilyPage';
 import { ChildSelectionProvider } from '@/features/dashboard/contexts/ChildSelectionContext';
 import { AppLayout } from '@/shared/layouts/AppLayout';
 import '@/styles/global.css';
@@ -91,11 +92,7 @@ function AppRoutes() {
       {/* Route OAuth callback */}
       <Route
         path="/auth/callback"
-        element={
-          <ProtectedRoute>
-            <OAuthCallback />
-          </ProtectedRoute>
-        }
+        element={<OAuthCallback />}
       />
 
       {/* Routes protégées */}
@@ -135,6 +132,17 @@ function AppRoutes() {
           <ProtectedRoute>
             <AppLayout>
               <KitchenPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/famille"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <FamilyPage />
             </AppLayout>
           </ProtectedRoute>
         }

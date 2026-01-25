@@ -162,7 +162,6 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 # NOUVELLES - À CONFIGURER
 VITE_GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
-VITE_GOOGLE_CLIENT_SECRET=GOCSPX-xxxxx
 VITE_GOOGLE_REDIRECT_URI=http://localhost:3000/auth/callback
 ```
 

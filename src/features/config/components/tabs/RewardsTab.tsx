@@ -31,12 +31,13 @@ export const RewardsTab: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [newTask, setNewTask] = useState({
+  const [newTask, setNewTask] = useState(() => ({
     name: '',
     points: 10,
     moneyValue: 0.5,
     icon: '⭐',
-  });
+    draftKey: crypto.randomUUID(),
+  }));
 
   useEffect(() => {
     loadTasks();
@@ -105,7 +106,13 @@ export const RewardsTab: React.FC = () => {
           },
         ]);
       }
-      setNewTask({ name: '', points: 10, moneyValue: 0.5, icon: '⭐' });
+      setNewTask({
+        name: '',
+        points: 10,
+        moneyValue: 0.5,
+        icon: '⭐',
+        draftKey: crypto.randomUUID(),
+      });
     } catch (err: any) {
       setError(err.message || 'Impossible d’ajouter la tâche');
     } finally {
@@ -187,7 +194,7 @@ export const RewardsTab: React.FC = () => {
         ) : (
           <div className="task-grid">
             {tasks.map((task) => (
-              <div key={task.id} className="task-tile">
+              <div key={`reward-${task.id}`} className="task-tile">
                 <div className="task-tile-header">
                   <span className="chip neutral">Récompense</span>
                   <button className="ghost-button" onClick={() => handleDeleteTask(task.id)} disabled={saving}>
@@ -203,9 +210,9 @@ export const RewardsTab: React.FC = () => {
 
                 <label className="input-label">Emoji</label>
                 <div className="icon-scroll">
-                  {TASK_ICON_OPTIONS.map((icon) => (
+                  {TASK_ICON_OPTIONS.map((icon, index) => (
                     <button
-                      key={`${task.id}-${icon}`}
+                      key={`reward-${task.id}-${icon}-${index}`}
                       className={`icon-choice compact ${task.icon === icon ? 'active' : ''}`}
                       onClick={() => updateLocalTask(task.id, { icon })}
                       type="button"
@@ -262,9 +269,9 @@ export const RewardsTab: React.FC = () => {
           />
           <label className="input-label">Emoji</label>
           <div className="icon-scroll">
-            {TASK_ICON_OPTIONS.map((icon) => (
+            {TASK_ICON_OPTIONS.map((icon, index) => (
               <button
-                key={`new-${icon}`}
+                key={`draft-${newTask.draftKey}-${icon}-${index}`}
                 className={`icon-choice compact ${newTask.icon === icon ? 'active' : ''}`}
                 onClick={() => setNewTask({ ...newTask, icon })}
                 type="button"
