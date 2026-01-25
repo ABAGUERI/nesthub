@@ -294,6 +294,43 @@ export const getCalendarEventsWithAuth = async (
   return allEvents.slice(0, maxResults);
 };
 
+export const getCalendarEventsForRange = async (
+  userId: string,
+  calendarIds: string[],
+  timeMin: string,
+  timeMax: string,
+  maxResults: number = 250
+) => {
+  const connection = await getGoogleConnectionSafe(userId);
+  if (!connection) {
+    throw new Error('google_disconnected');
+  }
+
+  const ids = calendarIds.length ? calendarIds : [connection.selectedCalendarId || 'primary'];
+  const eventResponses = await Promise.all(
+    ids.map((calendarId) =>
+      fetchCalendarEvents({ timeMin, timeMax, maxResults, calendarId: calendarId || 'primary' })
+    )
+  );
+
+  const allEvents = eventResponses.flatMap((response, index) => {
+    const calendarId = ids[index] || 'primary';
+    return (response.items || []).map((event: any) => ({
+      ...event,
+      calendarId,
+      calendarName: response.summary || 'Calendrier',
+    }));
+  });
+
+  allEvents.sort((a: any, b: any) => {
+    const dateA = new Date(a.start.dateTime || a.start.date);
+    const dateB = new Date(b.start.dateTime || b.start.date);
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  return allEvents;
+};
+
 export const getTasksWithAuth = async (userId: string, taskListId: string) => {
   const connection = await getGoogleConnectionSafe(userId);
   if (!connection) {
