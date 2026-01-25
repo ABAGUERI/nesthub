@@ -20,7 +20,8 @@
 
 .family-tasks-section {
   display: flex;
-  justify-content: center;
+  justify-content: stretch;
+  align-items: stretch;
   padding-bottom: 12px;
 }
 

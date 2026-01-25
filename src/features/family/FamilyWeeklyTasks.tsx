@@ -5,6 +5,7 @@ import {
   getGoogleConnection,
   getTasksWithAuth,
   initiateGoogleOAuth,
+  updateTaskStatusWithAuth,
 } from '@/features/google/google.service';
 import './FamilyWeeklyTasks.css';
 
@@ -21,6 +22,7 @@ interface TaskItem {
   status: string;
   due?: string;
   listName?: string;
+  listId: string;
 }
 
 export const FamilyWeeklyTasks: React.FC = () => {
@@ -29,10 +31,28 @@ export const FamilyWeeklyTasks: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cta, setCta] = useState<'connect' | 'reconnect' | null>(null);
+  const [columns, setColumns] = useState(6);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     loadTasks();
   }, [user]);
+
+  useEffect(() => {
+    const updateColumns = () => {
+      if (window.innerWidth <= 700) {
+        setColumns(2);
+      } else if (window.innerWidth <= 1100) {
+        setColumns(4);
+      } else {
+        setColumns(6);
+      }
+    };
+
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, []);
 
   const loadTasks = async () => {
     if (!user) return;
@@ -79,6 +99,7 @@ export const FamilyWeeklyTasks: React.FC = () => {
             return (items || []).map((task: TaskItem) => ({
               ...task,
               listName: list.name,
+              listId: list.google_task_list_id,
             }));
           } catch (err: any) {
             const status = (err as { status?: number }).status;
@@ -128,6 +149,10 @@ export const FamilyWeeklyTasks: React.FC = () => {
     });
   }, [tasks]);
 
+  const slotsCount = columns * 2;
+  const visibleTasks = sortedTasks.slice(0, slotsCount);
+  const hasOverflow = sortedTasks.length > slotsCount;
+
   const formatDueDate = (due?: string) => {
     if (!due) return null;
     const date = new Date(due);
@@ -135,6 +160,17 @@ export const FamilyWeeklyTasks: React.FC = () => {
       day: 'numeric',
       month: 'short',
     });
+  };
+
+  const handleToggleTask = async (task: TaskItem) => {
+    if (!user) return;
+
+    try {
+      await updateTaskStatusWithAuth(user.id, task.listId, task.id, 'completed');
+      setTasks((prev) => prev.filter((item) => item.id !== task.id));
+    } catch (err) {
+      console.error('Error updating task status:', err);
+    }
   };
 
   if (loading) {
@@ -174,24 +210,105 @@ export const FamilyWeeklyTasks: React.FC = () => {
             )}
           </div>
         ) : sortedTasks.length === 0 ? (
-          <div className="empty-message">📝 Aucune tâche en attente</div>
+          <div className="family-tasks-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+            {Array.from({ length: slotsCount }, (_, index) => (
+              <div key={`placeholder-${index}`} className="task-tile task-tile--placeholder"></div>
+            ))}
+          </div>
         ) : (
-          <div className="family-weekly-list">
-            {sortedTasks.map((task) => (
-              <div key={task.id} className="family-weekly-row">
-                <div className="family-weekly-checkbox"></div>
-                <div className="family-weekly-content">
-                  <div className="family-weekly-title">{task.title}</div>
-                  <div className="family-weekly-meta">
-                    {task.listName && <span>{task.listName}</span>}
-                    {task.due && <span>Échéance {formatDueDate(task.due)}</span>}
+          <div className="family-tasks-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+            {Array.from({ length: slotsCount }, (_, index) => {
+              if (hasOverflow && index === slotsCount - 1) {
+                return (
+                  <button
+                    key="view-all"
+                    type="button"
+                    className="task-tile task-tile--view-all"
+                    aria-label={`Voir toutes les tâches (${sortedTasks.length})`}
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    <span>Voir tout ({sortedTasks.length})</span>
+                  </button>
+                );
+              }
+
+              const task = visibleTasks[index];
+              if (!task) {
+                return (
+                  <div key={`placeholder-${index}`} className="task-tile task-tile--placeholder"></div>
+                );
+              }
+
+              return (
+                <div
+                  key={task.id}
+                  className="task-tile"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleToggleTask(task)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleToggleTask(task);
+                    }
+                  }}
+                >
+                  <label className="task-tile-checkbox">
+                    <input
+                      type="checkbox"
+                      aria-label={`Terminer la tâche ${task.title}`}
+                      onChange={() => handleToggleTask(task)}
+                      onClick={(event) => event.stopPropagation()}
+                    />
+                    <span className="task-tile-checkmark"></span>
+                  </label>
+                  <div className="task-tile-content">
+                    <div className="task-title">{task.title}</div>
+                    <div className="task-due">
+                      {task.due ? `Échéance ${formatDueDate(task.due)}` : task.listName}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
+
+      {isModalOpen && (
+        <div className="family-tasks-modal" onClick={() => setIsModalOpen(false)}>
+          <div
+            className="family-tasks-modal-content"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="family-tasks-modal-header">
+              <div>
+                <div className="family-tasks-modal-title">Toutes les tâches</div>
+                <div className="family-tasks-modal-subtitle">
+                  {sortedTasks.length} tâches en attente
+                </div>
+              </div>
+              <button
+                type="button"
+                className="family-tasks-modal-close"
+                onClick={() => setIsModalOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="family-tasks-modal-body">
+              {sortedTasks.map((task) => (
+                <div key={`modal-${task.id}`} className="family-tasks-modal-row">
+                  <span className="family-tasks-modal-task">{task.title}</span>
+                  <span className="family-tasks-modal-meta">
+                    {task.due ? `Échéance ${formatDueDate(task.due)}` : task.listName}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
