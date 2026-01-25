@@ -23,6 +23,9 @@ interface CalendarEvent {
   };
   calendarName?: string;
   calendarId?: string;
+  location?: string;
+  description?: string;
+  htmlLink?: string;
 }
 
 interface EventPerson {
@@ -85,6 +88,28 @@ const formatRangeLabel = (start?: string, end?: string) => {
   return `${formatTime(startDate)} → ${formatTime(endDate)}`;
 };
 
+const formatEventDateTime = (event: CalendarEvent) => {
+  const start = parseEventDate(event.start.dateTime || event.start.date);
+  const end = parseEventDate(event.end?.dateTime || event.end?.date);
+
+  if (!start) return '';
+  const dateLabel = start.toLocaleDateString('fr-CA', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+
+  if (!event.start.dateTime) {
+    return `${dateLabel} · Toute la journée`;
+  }
+
+  const timeLabel = formatRangeLabel(
+    event.start.dateTime,
+    event.end?.dateTime || event.end?.date
+  );
+  return `${dateLabel} · ${timeLabel}`;
+};
+
 const formatWeekLabel = (start: Date) => {
   const end = addDays(start, 6);
   const sameMonth = start.getMonth() === end.getMonth();
@@ -132,6 +157,8 @@ export const FamilyWeekCalendar: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [cta, setCta] = useState<'connect' | 'reconnect' | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
+  const [calendarLabel, setCalendarLabel] = useState<string>('Calendrier');
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   const startHour = 8;
   const endHour = 20;
@@ -189,6 +216,18 @@ export const FamilyWeekCalendar: React.FC = () => {
         timeMax.toISOString(),
         200
       );
+
+      const uniqueCalendars = Array.from(
+        new Set(fetchedEvents.map((event) => event.calendarName).filter(Boolean))
+      ) as string[];
+
+      if (uniqueCalendars.length > 1) {
+        setCalendarLabel(`Calendriers (${uniqueCalendars.length})`);
+      } else if (uniqueCalendars.length === 1) {
+        setCalendarLabel(uniqueCalendars[0]);
+      } else {
+        setCalendarLabel(connection.selectedCalendarName || 'Calendrier principal');
+      }
 
       setEvents(fetchedEvents);
     } catch (err: any) {
@@ -329,11 +368,15 @@ export const FamilyWeekCalendar: React.FC = () => {
         key={event.id}
         className={`family-event-block ${tone}`}
         style={{ top: `${top}px`, height: `${height}px` }}
+        onClick={() => setSelectedEvent(event)}
+        title={event.summary || 'Sans titre'}
       >
-        {renderAvatars(people)}
         <div className="family-event-title">{event.summary || 'Sans titre'}</div>
-        <div className="family-event-time">
-          {formatRangeLabel(event.start.dateTime, event.end?.dateTime || event.end?.date)}
+        <div className="family-event-meta">
+          {renderAvatars(people)}
+          <div className="family-event-time">
+            {formatRangeLabel(event.start.dateTime, event.end?.dateTime || event.end?.date)}
+          </div>
         </div>
       </div>
     );
@@ -343,9 +386,9 @@ export const FamilyWeekCalendar: React.FC = () => {
     return (
       <div className="family-week-calendar widget">
         <div className="widget-header family-week-header">
-          <div>
-            <div className="family-week-title">📅 Agenda famille</div>
-            <div className="family-week-subtitle">Semaine du {formatWeekLabel(weekStart)}</div>
+          <div className="family-week-header-info">
+            <div className="family-week-calendar-name">{calendarLabel}</div>
+            <div className="family-week-range">Semaine du {formatWeekLabel(weekStart)}</div>
           </div>
         </div>
         <div className="family-week-body">
@@ -358,9 +401,9 @@ export const FamilyWeekCalendar: React.FC = () => {
   return (
     <div className="family-week-calendar widget">
       <div className="widget-header family-week-header">
-        <div>
-          <div className="family-week-title">📅 Agenda famille</div>
-          <div className="family-week-subtitle">Semaine du {formatWeekLabel(weekStart)}</div>
+        <div className="family-week-header-info">
+          <div className="family-week-calendar-name">{calendarLabel}</div>
+          <div className="family-week-range">Semaine du {formatWeekLabel(weekStart)}</div>
         </div>
         <div className="family-week-actions">
           <button
@@ -496,7 +539,12 @@ export const FamilyWeekCalendar: React.FC = () => {
                         const people = getEventPeople(event);
                         const tone = getEventTone(event, people);
                         return (
-                          <div key={`allday-${event.id}`} className={`family-week-list-item ${tone}`}>
+                          <div
+                            key={`allday-${event.id}`}
+                            className={`family-week-list-item ${tone}`}
+                            onClick={() => setSelectedEvent(event)}
+                            title={event.summary || 'Sans titre'}
+                          >
                             {renderAvatars(people)}
                             <div>
                               <div className="family-event-title">{event.summary || 'Sans titre'}</div>
@@ -510,7 +558,12 @@ export const FamilyWeekCalendar: React.FC = () => {
                         const people = getEventPeople(event);
                         const tone = getEventTone(event, people);
                         return (
-                          <div key={`timed-${event.id}`} className={`family-week-list-item ${tone}`}>
+                          <div
+                            key={`timed-${event.id}`}
+                            className={`family-week-list-item ${tone}`}
+                            onClick={() => setSelectedEvent(event)}
+                            title={event.summary || 'Sans titre'}
+                          >
                             {renderAvatars(people)}
                             <div>
                               <div className="family-event-title">{event.summary || 'Sans titre'}</div>
@@ -536,6 +589,50 @@ export const FamilyWeekCalendar: React.FC = () => {
           </>
         )}
       </div>
+
+      {selectedEvent && (
+        <div className="family-event-modal" onClick={() => setSelectedEvent(null)}>
+          <div className="family-event-modal-content" onClick={(event) => event.stopPropagation()}>
+            <div className="family-event-modal-header">
+              <div>
+                <div className="family-event-modal-title">
+                  {selectedEvent.summary || 'Sans titre'}
+                </div>
+                <div className="family-event-modal-subtitle">
+                  {formatEventDateTime(selectedEvent)}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="family-event-modal-close"
+                onClick={() => setSelectedEvent(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="family-event-modal-body">
+              <div className="family-event-modal-row">
+                <span className="family-event-modal-label">Lieu</span>
+                <span>{selectedEvent.location || 'Non précisé'}</span>
+              </div>
+              <div className="family-event-modal-row">
+                <span className="family-event-modal-label">Description</span>
+                <span>{selectedEvent.description || 'Aucune description'}</span>
+              </div>
+              {selectedEvent.htmlLink && (
+                <a
+                  href={selectedEvent.htmlLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="family-event-modal-link"
+                >
+                  Ouvrir dans Google
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

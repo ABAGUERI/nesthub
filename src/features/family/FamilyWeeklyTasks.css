@@ -1,11 +1,14 @@
 .family-weekly-tasks {
-  max-width: 420px;
+  max-width: 520px;
+  max-height: 220px;
+  width: 100%;
 }
 
 .family-weekly-body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow: auto;
 }
 
 .family-weekly-list {
