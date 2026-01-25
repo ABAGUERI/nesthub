@@ -19,8 +19,12 @@
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.65), rgba(30, 41, 59, 0.35));
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.35);
 }
 
 .family-week-header-info {
@@ -31,7 +35,7 @@
 }
 
 .family-week-calendar-name {
-  font-size: 14px;
+  font-size: clamp(14px, 0.85rem + 0.4vw, 17px);
   font-weight: 800;
   letter-spacing: 0.2px;
   color: var(--text-heading);
@@ -41,8 +45,8 @@
 }
 
 .family-week-range {
-  font-size: 12px;
-  color: rgba(226, 232, 240, 0.6);
+  font-size: clamp(12px, 0.7rem + 0.3vw, 14px);
+  color: rgba(226, 232, 240, 0.68);
 }
 
 .family-week-actions {
@@ -87,7 +91,7 @@
   flex: 1;
   min-height: 0; /* clé pour scroll interne */
   overflow: auto; /* scroll ICI, pas sur la page */
-  padding-right: 2px; /* évite coupe scrollbar */
+  padding-right: 6px; /* évite coupe scrollbar */
 }
 
 /* ===== Grid ===== */

@@ -4,8 +4,27 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+  padding: 24px 28px 20px;
   overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 55%),
+    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.14), transparent 55%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.6), rgba(2, 6, 23, 0.85));
+}
+
+.family-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.06), transparent 45%),
+    radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.04), transparent 55%);
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .family-calendar-section,
@@ -25,8 +44,21 @@
   padding-bottom: 12px;
 }
 
+@media (max-width: 1200px) {
+  .family-page {
+    padding: 20px 20px 18px;
+  }
+}
+
 @media (max-width: 900px) {
   .family-tasks-section {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 700px) {
+  .family-page {
+    padding: 18px 16px 16px;
+    gap: 18px;
   }
 }
