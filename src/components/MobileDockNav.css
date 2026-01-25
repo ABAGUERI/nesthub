@@ -19,13 +19,13 @@
 .mobile-dock-btn {
   flex: 1;
   min-width: 60px;
-  min-height: 56px;
+  min-height: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 8px;
+  padding: 12px 8px;
   border-radius: 14px;
   border: 1px solid transparent;
   background: transparent;
@@ -48,7 +48,7 @@
 }
 
 .mobile-dock-icon {
-  font-size: 28px;
+  font-size: 30px;
   line-height: 1;
 }
 

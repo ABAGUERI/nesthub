@@ -286,3 +286,36 @@
     opacity: 0.75;
   }
 }
+
+@media (max-width: 520px) {
+  .dashboard-header {
+    gap: 4px;
+    padding: calc(4px + env(safe-area-inset-top)) 8px 4px;
+    border-radius: 10px;
+  }
+
+  .header-title {
+    font-size: 14px;
+    letter-spacing: 0.3px;
+  }
+
+  .menu-btn.settings-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .dashboard-header-utility {
+    padding: 4px 8px;
+    min-height: 32px;
+    font-size: 11px;
+  }
+
+  .utility-time-value {
+    font-size: 12px;
+  }
+
+  .utility-weather-icon {
+    font-size: 13px;
+  }
+}
