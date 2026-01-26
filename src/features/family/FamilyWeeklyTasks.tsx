@@ -99,8 +99,11 @@ export const FamilyWeeklyTasks: React.FC = () => {
   const [cta, setCta] = useState<'connect' | 'reconnect' | null>(null);
   const [columns, setColumns] = useState(6);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [confirmTask, setConfirmTask] = useState<TaskItem | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [completingTaskIds, setCompletingTaskIds] = useState<Set<string>>(new Set());
   const [clickedTaskId, setClickedTaskId] = useState<string | null>(null);
+  const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -121,6 +124,31 @@ export const FamilyWeeklyTasks: React.FC = () => {
     window.addEventListener('resize', updateColumns);
     return () => window.removeEventListener('resize', updateColumns);
   }, []);
+
+  useEffect(() => {
+    if (confirmTask) {
+      setIsModalOpen(false);
+      const timer = window.setTimeout(() => {
+        confirmButtonRef.current?.focus();
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+    return undefined;
+  }, [confirmTask]);
+
+  useEffect(() => {
+    if (!confirmTask) return undefined;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (!isConfirming) {
+          setConfirmTask(null);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [confirmTask, isConfirming]);
 
   const loadTasks = async () => {
     if (!user) return;
@@ -230,33 +258,32 @@ export const FamilyWeeklyTasks: React.FC = () => {
     });
   };
 
-  const handleToggleTask = async (task: TaskItem) => {
-    if (!user) return;
+  const confirmAndCompleteTask = async (task: TaskItem) => {
+    if (!user || isConfirming) return;
+
+    setIsConfirming(true);
 
     try {
       setCompletingTaskIds((prev) => new Set(prev).add(task.id));
       setClickedTaskId(task.id);
 
-      window.setTimeout(() => {
-        setClickedTaskId((prev) => (prev === task.id ? null : prev));
-      }, 200);
+      await new Promise((resolve) => window.setTimeout(resolve, 200));
+      setClickedTaskId((prev) => (prev === task.id ? null : prev));
 
-      window.setTimeout(async () => {
-        try {
-          await updateTaskStatusWithAuth(user.id, task.listId, task.id, 'completed');
-          setTasks((prev) => prev.filter((item) => item.id !== task.id));
-        } catch (error) {
-          console.error('Error updating task status:', error);
-        } finally {
-          setCompletingTaskIds((prev) => {
-            const next = new Set(prev);
-            next.delete(task.id);
-            return next;
-          });
-        }
-      }, 300);
+      await new Promise((resolve) => window.setTimeout(resolve, 100));
+
+      await updateTaskStatusWithAuth(user.id, task.listId, task.id, 'completed');
+      setTasks((prev) => prev.filter((item) => item.id !== task.id));
     } catch (err) {
       console.error('Error updating task status:', err);
+    } finally {
+      setCompletingTaskIds((prev) => {
+        const next = new Set(prev);
+        next.delete(task.id);
+        return next;
+      });
+      setIsConfirming(false);
+      setConfirmTask(null);
     }
   };
 
@@ -312,7 +339,10 @@ export const FamilyWeeklyTasks: React.FC = () => {
                     type="button"
                     className="task-tile task-tile--view-all"
                     aria-label={`Voir toutes les tâches (${sortedTasks.length})`}
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                      setConfirmTask(null);
+                      setIsModalOpen(true);
+                    }}
                   >
                     <span>Voir tout ({sortedTasks.length})</span>
                   </button>
@@ -332,7 +362,10 @@ export const FamilyWeeklyTasks: React.FC = () => {
                   task={task}
                   isCompleting={completingTaskIds.has(task.id)}
                   isClicked={clickedTaskId === task.id}
-                  onComplete={handleToggleTask}
+                  onComplete={(selectedTask) => {
+                    setIsModalOpen(false);
+                    setConfirmTask(selectedTask);
+                  }}
                   formatDueDate={formatDueDate}
                 />
               );
@@ -340,6 +373,66 @@ export const FamilyWeeklyTasks: React.FC = () => {
           </div>
         )}
       </div>
+
+      {confirmTask && (
+        <div
+          className="family-confirm-modal"
+          onClick={() => {
+            if (!isConfirming) {
+              setConfirmTask(null);
+            }
+          }}
+        >
+          <div
+            className="family-confirm-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="family-confirm-title"
+            aria-describedby="family-confirm-description"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="family-confirm-modal-header">
+              <div>
+                <div className="family-confirm-modal-title" id="family-confirm-title">
+                  Confirmer la tâche
+                </div>
+                <div className="family-confirm-modal-subtitle" id="family-confirm-description">
+                  Marquer cette tâche comme terminée ?
+                </div>
+              </div>
+            </div>
+            <div className="family-confirm-modal-body">
+              <div className="family-confirm-task-title">{confirmTask.title}</div>
+              {(confirmTask.due || confirmTask.listName) && (
+                <div className="family-confirm-task-meta">
+                  {confirmTask.due
+                    ? `Échéance ${formatDueDate(confirmTask.due)}`
+                    : confirmTask.listName}
+                </div>
+              )}
+            </div>
+            <div className="family-confirm-modal-actions">
+              <button
+                type="button"
+                className="family-confirm-btn family-confirm-btn--secondary"
+                onClick={() => setConfirmTask(null)}
+                disabled={isConfirming}
+              >
+                Annuler
+              </button>
+              <button
+                ref={confirmButtonRef}
+                type="button"
+                className="family-confirm-btn family-confirm-btn--primary"
+                onClick={() => confirmAndCompleteTask(confirmTask)}
+                disabled={isConfirming}
+              >
+                {isConfirming ? 'Validation...' : 'Valider'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isModalOpen && (
         <div className="family-tasks-modal" onClick={() => setIsModalOpen(false)}>
