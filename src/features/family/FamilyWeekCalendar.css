@@ -8,7 +8,7 @@
   gap: 16px;
 
   /* grille d'heures */
-  --hour-height: 56px;
+  --hour-height: 52px;
   --total-hours: 24;
 }
 
@@ -115,12 +115,12 @@
   z-index: 30;
 
   /* rail glass */
-  background: linear-gradient(180deg, rgba(2, 6, 23, 0.92), rgba(2, 6, 23, 0.72));
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.86), rgba(2, 6, 23, 0.66));
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 18px;
   padding: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* cellule vide au-dessus de la colonne d'heures */
@@ -131,8 +131,8 @@
 .family-day-header {
   padding: 10px 12px;
   border-radius: 16px;
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.48);
+  border: 1px solid rgba(148, 163, 184, 0.12);
   text-align: center;
   text-transform: capitalize;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
@@ -291,8 +291,8 @@
   right: 6px;
   height: 2px;
   border-radius: 999px;
-  background: rgba(56, 189, 248, 0.9);
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.75), rgba(99, 102, 241, 0.8));
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
   z-index: 5;
 }
 .family-now-line::before {
@@ -304,8 +304,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(56, 189, 248, 0.95);
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.55);
+  background: rgba(56, 189, 248, 0.9);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.45);
 }
 
 /* ===== Events ===== */
@@ -560,6 +560,12 @@
   50% {
     transform: scale(1.25);
     opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .family-day-header.today::after {
+    animation: none;
   }
 }
 
