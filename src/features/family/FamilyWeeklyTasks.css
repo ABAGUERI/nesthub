@@ -8,12 +8,12 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  height: 168px;
+  height: 156px;
 }
 
 .family-tasks-grid {
   display: grid;
-  grid-auto-rows: 72px;
+  grid-auto-rows: 68px;
   gap: 12px;
   width: 100%;
 }
@@ -27,12 +27,14 @@
   align-items: center;
   justify-content: center;
 
-  padding: 12px;
+  padding: 10px;
   border-radius: 16px;
 
   background:
     linear-gradient(135deg, rgba(64, 110, 255, 0.16), rgba(118, 67, 255, 0.12)),
     rgba(15, 23, 42, 0.42);
+  background-size: 140% 140%;
+  background-position: 0% 0%;
 
   border: 1px solid rgba(148, 163, 184, 0.2);
   color: #f8fafc;
@@ -40,7 +42,7 @@
   text-align: center;
   overflow: hidden;
 
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, filter 0.2s ease;
 }
 
 .task-tile:hover,
@@ -50,8 +52,50 @@
   transform: translateY(-1px);
 }
 
+.task-tile:focus-visible {
+  outline: 2px solid rgba(56, 189, 248, 0.55);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+}
+
 .task-tile:active {
   transform: translateY(0px) scale(0.995);
+}
+
+/* idle breathing uniquement pour tâches actives */
+.task-tile:not(.is-completing):not(.task-tile--placeholder):not(.task-tile--view-all) {
+  animation: taskIdleBreath 8.5s ease-in-out infinite;
+}
+
+@keyframes taskIdleBreath {
+  0%,
+  100% {
+    background-position: 0% 0%;
+    filter: saturate(1);
+  }
+  50% {
+    background-position: 100% 100%;
+    filter: saturate(1.08);
+  }
+}
+
+/* variations de tons */
+.family-tasks-grid .task-tile:nth-child(odd):not(.task-tile--placeholder):not(.task-tile--view-all) {
+  background:
+    linear-gradient(140deg, rgba(56, 189, 248, 0.18), rgba(99, 102, 241, 0.12)),
+    rgba(15, 23, 42, 0.42);
+}
+
+.family-tasks-grid .task-tile:nth-child(even):not(.task-tile--placeholder):not(.task-tile--view-all) {
+  background:
+    linear-gradient(140deg, rgba(79, 70, 229, 0.16), rgba(168, 85, 247, 0.12)),
+    rgba(15, 23, 42, 0.42);
+}
+
+.family-tasks-grid .task-tile:nth-child(3n):not(.task-tile--placeholder):not(.task-tile--view-all) {
+  background:
+    linear-gradient(140deg, rgba(34, 211, 238, 0.16), rgba(59, 130, 246, 0.14)),
+    rgba(15, 23, 42, 0.42);
 }
 
 /* léger sheen au hover */
@@ -79,9 +123,18 @@
 /* état "vivant" quand tu completes */
 .task-tile.is-completing {
   opacity: 0.72;
-  filter: saturate(1.05);
+  filter: saturate(1.1);
   transform: scale(0.985);
   box-shadow: 0 0 18px rgba(34, 197, 94, 0.28);
+  animation: taskCompleteGlow 0.55s ease-out;
+}
+
+.task-tile.is-completing::before {
+  background:
+    radial-gradient(circle at 50% 40%, rgba(34, 197, 94, 0.22), transparent 60%),
+    linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.18) 45%, transparent 70%);
+  transform: translateX(0%);
+  opacity: 0.8;
 }
 
 /* pulse + halo pendant completion */
@@ -94,6 +147,21 @@
   box-shadow: 0 0 22px rgba(34, 197, 94, 0.18);
   animation: taskCompletePulse 0.85s ease-out infinite;
   pointer-events: none;
+}
+
+@keyframes taskCompleteGlow {
+  0% {
+    filter: saturate(1);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+  }
+  60% {
+    filter: saturate(1.25) brightness(1.05);
+    box-shadow: 0 0 24px rgba(34, 197, 94, 0.35);
+  }
+  100% {
+    filter: saturate(1.1);
+    box-shadow: 0 0 18px rgba(34, 197, 94, 0.28);
+  }
 }
 
 @keyframes taskCompletePulse {
@@ -146,10 +214,10 @@
 }
 
 .task-title {
-  font-size: 16px;
-  font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: 0.2px;
+  font-size: 14.5px;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: 0.1px;
 
   overflow: hidden;
   display: -webkit-box;
@@ -161,8 +229,19 @@
 }
 
 .task-due {
-  font-size: 12px;
-  opacity: 0.75;
+  font-size: 11px;
+  opacity: 0.65;
+  position: relative;
+}
+
+.task-due::before {
+  content: '';
+  display: block;
+  width: 22px;
+  height: 1px;
+  margin: 0 auto 4px;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.25), rgba(168, 85, 247, 0.25));
+  opacity: 0.7;
 }
 
 /* si tu veux barrer pendant completion */
@@ -278,10 +357,23 @@
 
 @media (max-width: 700px) {
   .family-weekly-body {
-    height: 156px;
+    height: 148px;
   }
 
   .task-title {
-    font-size: 15px;
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-tile,
+  .task-tile.is-completing,
+  .task-tile::before,
+  .task-tile.is-completing::after {
+    animation: none !important;
+  }
+
+  .task-tile::before {
+    transition: none;
   }
 }
