@@ -33,8 +33,6 @@
   background:
     linear-gradient(135deg, rgba(64, 110, 255, 0.16), rgba(118, 67, 255, 0.12)),
     rgba(15, 23, 42, 0.42);
-  background-size: 140% 140%;
-  background-position: 0% 0%;
 
   border: 1px solid rgba(148, 163, 184, 0.2);
   color: #f8fafc;
@@ -43,6 +41,7 @@
   overflow: hidden;
 
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, filter 0.2s ease;
+  will-change: transform, box-shadow, filter;
 }
 
 .task-tile:hover,
@@ -62,24 +61,28 @@
   transform: translateY(0px) scale(0.995);
 }
 
-/* idle breathing uniquement pour tâches actives */
+/* ===== Idle "life" =====
+   - Très lent
+   - Aucun déplacement (pas de layout shift)
+   - Fonctionne bien sur un hub mural / usage passif
+*/
 .task-tile:not(.is-completing):not(.task-tile--placeholder):not(.task-tile--view-all) {
-  animation: taskIdleBreath 8.5s ease-in-out infinite;
+  animation: taskIdleGlow 8.5s ease-in-out infinite;
 }
 
-@keyframes taskIdleBreath {
+@keyframes taskIdleGlow {
   0%,
   100% {
-    background-position: 0% 0%;
-    filter: saturate(1);
+    filter: saturate(1) brightness(1);
+    box-shadow: 0 0 0 rgba(56, 189, 248, 0);
   }
   50% {
-    background-position: 100% 100%;
-    filter: saturate(1.08);
+    filter: saturate(1.08) brightness(1.02);
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.10);
   }
 }
 
-/* variations de tons */
+/* variations de tons (subtiles, dans le thème) */
 .family-tasks-grid .task-tile:nth-child(odd):not(.task-tile--placeholder):not(.task-tile--view-all) {
   background:
     linear-gradient(140deg, rgba(56, 189, 248, 0.18), rgba(99, 102, 241, 0.12)),
@@ -120,10 +123,10 @@
   box-shadow: 0 0 16px rgba(34, 197, 94, 0.25);
 }
 
-/* état "vivant" quand tu completes */
+/* état "completion" : satisfaisant mais non agressif */
 .task-tile.is-completing {
   opacity: 0.72;
-  filter: saturate(1.1);
+  filter: saturate(1.12) brightness(1.02);
   transform: scale(0.985);
   box-shadow: 0 0 18px rgba(34, 197, 94, 0.28);
   animation: taskCompleteGlow 0.55s ease-out;
@@ -137,7 +140,7 @@
   opacity: 0.8;
 }
 
-/* pulse + halo pendant completion */
+/* halo pendant completion — pas infini (évite fatigue visuelle) */
 .task-tile.is-completing::after {
   content: '';
   position: absolute;
@@ -145,13 +148,13 @@
   border-radius: 18px;
   border: 1px solid rgba(34, 197, 94, 0.35);
   box-shadow: 0 0 22px rgba(34, 197, 94, 0.18);
-  animation: taskCompletePulse 0.85s ease-out infinite;
+  animation: taskCompletePulse 0.85s ease-out 2;
   pointer-events: none;
 }
 
 @keyframes taskCompleteGlow {
   0% {
-    filter: saturate(1);
+    filter: saturate(1) brightness(1);
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
   }
   60% {
@@ -159,7 +162,7 @@
     box-shadow: 0 0 24px rgba(34, 197, 94, 0.35);
   }
   100% {
-    filter: saturate(1.1);
+    filter: saturate(1.12) brightness(1.02);
     box-shadow: 0 0 18px rgba(34, 197, 94, 0.28);
   }
 }
@@ -214,10 +217,10 @@
 }
 
 .task-title {
-  font-size: 14.5px;
-  font-weight: 750;
+  font-size: 14px;          /* ↓ calmé */
+  font-weight: 720;         /* ↓ moins “agressif” que 750/800 */
   line-height: 1.2;
-  letter-spacing: 0.1px;
+  letter-spacing: 0.05px;
 
   overflow: hidden;
   display: -webkit-box;
@@ -244,7 +247,7 @@
   opacity: 0.7;
 }
 
-/* si tu veux barrer pendant completion */
+/* barrer pendant completion */
 .task-tile.is-completing .task-title {
   opacity: 0.75;
   text-decoration: line-through;
@@ -365,11 +368,17 @@
   }
 }
 
+/* ===== Reduced motion ===== */
+
 @media (prefers-reduced-motion: reduce) {
   .task-tile,
   .task-tile.is-completing,
   .task-tile::before,
   .task-tile.is-completing::after {
+    animation: none !important;
+  }
+
+  .task-tile:not(.is-completing):not(.task-tile--placeholder):not(.task-tile--view-all) {
     animation: none !important;
   }
 
