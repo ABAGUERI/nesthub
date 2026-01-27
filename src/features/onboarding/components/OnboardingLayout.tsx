@@ -1,14 +1,17 @@
 import React from 'react';
-import { useOnboarding } from '../hooks/useOnboarding';
 import './OnboardingLayout.css';
 
 interface OnboardingLayoutProps {
   children: React.ReactNode;
+  currentStep: number;
+  totalSteps: number;
 }
 
-export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ children }) => {
-  const { currentStep, totalSteps } = useOnboarding();
-
+export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
+  children,
+  currentStep,
+  totalSteps,
+}) => {
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   return (
@@ -17,14 +20,14 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ children }) 
         {/* Header avec progression */}
         <div className="onboarding-header">
           <h1 className="onboarding-title">Configuration de votre Hub</h1>
-          
+
           <div className="step-indicator">
             <div className="step-text">
               Étape {currentStep} sur {totalSteps}
             </div>
             <div className="progress-bar">
-              <div 
-                className="progress-fill" 
+              <div
+                className="progress-fill"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>
@@ -32,9 +35,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({ children }) 
         </div>
 
         {/* Contenu de l'étape actuelle */}
-        <div className="onboarding-step-content">
-          {children}
-        </div>
+        <div className="onboarding-step-content">{children}</div>
       </div>
     </div>
   );
