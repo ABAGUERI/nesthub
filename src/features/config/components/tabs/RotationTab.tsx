@@ -4,6 +4,7 @@ import { Input } from '@/shared/components/Input';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import { supabase } from '@/shared/utils/supabase';
+import { getAvatarUrl } from '../../services/avatar.service';
 
 interface RotationTask {
   id: string;
@@ -18,6 +19,8 @@ interface Child {
   id: string;
   first_name: string;
   icon: string;
+  avatar_url?: string | null;
+  role: 'child' | 'adult';
 }
 
 interface Assignment {
@@ -32,6 +35,15 @@ const TASK_ICONS = ['🍽️', '🧹', '🗑️', '🐶', '🧺', '🚿', '🛏�
 const getDayName = (day: number): string => {
   const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   return days[day] ?? '—';
+};
+
+const formatWeekRange = (weekStartDate: Date, weekEndDate: Date): string => {
+  const formatter = new Intl.DateTimeFormat('fr-CA', { weekday: 'short', day: '2-digit', month: 'short' });
+  return `Semaine du ${formatter.format(weekStartDate)} au ${formatter.format(weekEndDate)}`;
+};
+
+const formatResetLabel = (rotationResetDay: number): string => {
+  return `Réinitialisation : ${getDayName(rotationResetDay)}`;
 };
 
 /**
@@ -96,8 +108,9 @@ export const RotationTab: React.FC = () => {
   const { config, updateConfig } = useClientConfig();
 
   const [tasks, setTasks] = useState<RotationTask[]>([]);
-  const [children, setChildren] = useState<Child[]>([]);
+  const [familyMembers, setFamilyMembers] = useState<Child[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [openMenuTaskId, setOpenMenuTaskId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -105,6 +118,7 @@ export const RotationTab: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [rotationResetDay, setRotationResetDay] = useState<number>(config?.rotationResetDay ?? 1);
+  const [rotationParticipants, setRotationParticipants] = useState<string[] | null>(config?.rotationParticipants ?? null);
   const [editingTask, setEditingTask] = useState<string | null>(null);
   const [newTaskName, setNewTaskName] = useState('');
   const [newTaskIcon, setNewTaskIcon] = useState('🍽️');
@@ -122,7 +136,41 @@ export const RotationTab: React.FC = () => {
     if (config?.rotationResetDay !== undefined) {
       setRotationResetDay(config.rotationResetDay);
     }
-  }, [config?.rotationResetDay]);
+    if (config?.rotationParticipants !== undefined) {
+      setRotationParticipants(config.rotationParticipants ?? null);
+    }
+  }, [config?.rotationParticipants, config?.rotationResetDay]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest('[data-rotation-card="true"]')) {
+        setOpenMenuTaskId(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpenMenuTaskId(null);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const resolveParticipants = (members: Child[], participants: string[] | null): Child[] => {
+    if (participants && participants.length > 0) {
+      const selected = new Set(participants);
+      return members.filter((member) => selected.has(member.id));
+    }
+    return members.filter((member) => member.role === 'child');
+  };
 
   const fetchActiveAssignmentsThisWeek = async () => {
     if (!user) return [];
@@ -167,19 +215,20 @@ export const RotationTab: React.FC = () => {
       // 2) Charger enfants
       const { data: childrenData, error: childrenError } = await supabase
         .from('family_members')
-        .select('id, first_name, icon')
+        .select('id, first_name, icon, avatar_url, role')
         .eq('user_id', user.id)
-        .eq('role', 'child')
         .order('created_at', { ascending: true });
 
       if (childrenError) throw childrenError;
-      setChildren(childrenData || []);
+      const members = (childrenData as Child[]) || [];
+      setFamilyMembers(members);
+      const participantsForWeek = resolveParticipants(members, config?.rotationParticipants ?? null);
 
       // 3) Charger assignations actives semaine courante
       let deduped = await fetchActiveAssignmentsThisWeek();
 
       // 4) Auto-génération si aucune rotation active
-      if (deduped.length === 0 && (tasksData?.length ?? 0) > 0 && (childrenData?.length ?? 0) > 0) {
+      if (deduped.length === 0 && (tasksData?.length ?? 0) > 0 && participantsForWeek.length > 0) {
         await ensureWeeklyRotationIfMissing();
         deduped = await fetchActiveAssignmentsThisWeek();
       }
@@ -378,7 +427,7 @@ export const RotationTab: React.FC = () => {
   const handleGenerateRandom = async () => {
     if (!user) return;
 
-    if (tasks.length === 0 || children.length === 0) {
+    if (tasks.length === 0 || participants.length === 0) {
       setError("Ajoutez des tâches et des membres d'abord");
       return;
     }
@@ -406,6 +455,57 @@ export const RotationTab: React.FC = () => {
 
   const getAssignedChild = (taskId: string): string => {
     return assignments.find((a) => a.task_id === taskId)?.child_id || '';
+  };
+
+  const getChildById = (childId: string): Child | undefined => {
+    return familyMembers.find((child) => child.id === childId);
+  };
+
+  const renderAvatarContent = (child?: Child): React.ReactNode => {
+    if (child?.avatar_url) {
+      return (
+        <img
+          src={getAvatarUrl(child.avatar_url) || ''}
+          alt={`Avatar de ${child.first_name}`}
+          className="rotation-avatar-img"
+        />
+      );
+    }
+    if (child?.icon) return <span className="rotation-avatar-fallback">{child.icon}</span>;
+    if (child?.first_name) return <span className="rotation-avatar-fallback">{child.first_name.charAt(0).toUpperCase()}</span>;
+    return <span className="rotation-avatar-fallback">—</span>;
+  };
+
+  const participants = useMemo(
+    () => resolveParticipants(familyMembers, rotationParticipants),
+    [familyMembers, rotationParticipants]
+  );
+
+  const persistParticipants = async (nextParticipants: string[] | null) => {
+    const normalized = nextParticipants && nextParticipants.length > 0 ? nextParticipants : null;
+    setRotationParticipants(normalized);
+    await updateConfig({ rotationParticipants: normalized });
+  };
+
+  const handleToggleParticipant = async (memberId: string) => {
+    const current = rotationParticipants ?? [];
+    const isSelected = current.includes(memberId);
+    const next = isSelected ? current.filter((id) => id !== memberId) : [...current, memberId];
+    await persistParticipants(next);
+  };
+
+  const handleSelectChildren = async () => {
+    const childIds = familyMembers.filter((member) => member.role === 'child').map((member) => member.id);
+    await persistParticipants(childIds);
+  };
+
+  const handleSelectAll = async () => {
+    const allIds = familyMembers.map((member) => member.id);
+    await persistParticipants(allIds);
+  };
+
+  const handleResetParticipants = async () => {
+    await persistParticipants(null);
   };
 
   const updateAssignment = (taskId: string, childId: string) => {
@@ -563,40 +663,152 @@ export const RotationTab: React.FC = () => {
       </div>
 
       {/* Assignations */}
-      {tasks.length > 0 && children.length > 0 && (
+      {tasks.length > 0 && (
+        <div className="config-card">
+          <div className="config-card-header">
+            <div>
+              <h3>👨‍👩‍👧‍👦 Membres inclus dans la rotation</h3>
+              <p>Choisissez qui peut recevoir une tâche. Si rien n’est choisi, la rotation utilise les enfants.</p>
+            </div>
+          </div>
+
+          <div className="rotation-participant-actions">
+            <button type="button" className="rotation-participant-action" onClick={handleSelectChildren} disabled={saving}>
+              Enfants
+            </button>
+            <button type="button" className="rotation-participant-action" onClick={handleSelectAll} disabled={saving}>
+              Tous
+            </button>
+            <button type="button" className="rotation-participant-action" onClick={handleResetParticipants} disabled={saving}>
+              Réinitialiser
+            </button>
+          </div>
+
+          <div className="rotation-participants-grid">
+            {familyMembers.map((member) => {
+              const isSelected = (rotationParticipants ?? []).includes(member.id);
+              return (
+                <button
+                  key={member.id}
+                  type="button"
+                  className={`rotation-participant-card ${isSelected ? 'selected' : ''}`}
+                  onClick={() => handleToggleParticipant(member.id)}
+                  disabled={saving}
+                >
+                  <div className="rotation-participant-avatar">{renderAvatarContent(member)}</div>
+                  <div className="rotation-participant-info">
+                    <span className="rotation-participant-name">{member.first_name}</span>
+                    <span className={`rotation-participant-role ${member.role}`}>
+                      {member.role === 'child' ? 'Enfant' : 'Adulte'}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Assignations */}
+      {tasks.length > 0 && participants.length > 0 && (
         <div className="config-card">
           <div className="config-card-header">
             <div>
               <h3>👥 Assignations de cette semaine</h3>
               <p>Chaque tâche ne peut être assignée qu&apos;à un seul membre</p>
-              <p className="input-hint" style={{ marginTop: 6 }}>
-                Semaine: {weekStartISO} → {weekEndISO}
-              </p>
+              <div className="rotation-week-pill" style={{ marginTop: 8 }}>
+                <div className="rotation-week-title">{formatWeekRange(weekWindow.weekStartDate, weekWindow.weekEndDate)}</div>
+                <div className="rotation-week-sub">{formatResetLabel(rotationResetDay)}</div>
+              </div>
             </div>
           </div>
 
-          <div className="assignments-list">
-            {tasks.map((task) => (
-              <div key={task.id} className="assignment-row">
-                <span className="assignment-task">
-                  <span className="task-icon">{task.icon}</span>
-                  <span>{task.name}</span>
-                </span>
-                <select
-                  className="assignment-select"
-                  value={getAssignedChild(task.id)}
-                  onChange={(e) => updateAssignment(task.id, e.target.value)}
-                  disabled={saving}
+          <div className="rotation-assignments-grid">
+            {tasks.map((task) => {
+              const assignedChildId = getAssignedChild(task.id);
+              const assignedChild = assignedChildId ? getChildById(assignedChildId) : undefined;
+
+              return (
+                <div
+                  key={task.id}
+                  className="rotation-assignment-card"
+                  data-rotation-card="true"
+                  data-task-id={task.id}
                 >
-                  <option value="">— Non assigné —</option>
-                  {children.map((child) => (
-                    <option key={child.id} value={child.id}>
-                      {child.first_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
+                  <div className="rotation-assignment-header">
+                    <span className="rotation-task-badge">{task.icon}</span>
+                    <span className="rotation-task-title">{task.name}</span>
+                  </div>
+
+                  <div className="rotation-assignee-row">
+                    <button
+                      type="button"
+                      className="rotation-assignee-chip"
+                      aria-haspopup="menu"
+                      aria-expanded={openMenuTaskId === task.id}
+                      onClick={() =>
+                        setOpenMenuTaskId((prev) => (prev === task.id ? null : task.id))
+                      }
+                      disabled={saving}
+                    >
+                      <span className="rotation-assignee-avatar">{renderAvatarContent(assignedChild)}</span>
+                      <span className="rotation-assignee-name">{assignedChild?.first_name ?? 'Non assigné'}</span>
+                      <span className="rotation-assignee-chevron">▾</span>
+                    </button>
+
+                    {openMenuTaskId === task.id && (
+                      <div className="rotation-assignee-menu" role="menu">
+                        <div
+                          className={`rotation-assignee-item ${assignedChildId ? '' : 'selected'}`}
+                          role="menuitem"
+                          tabIndex={0}
+                          onClick={() => {
+                            updateAssignment(task.id, '');
+                            setOpenMenuTaskId(null);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              updateAssignment(task.id, '');
+                              setOpenMenuTaskId(null);
+                            }
+                          }}
+                        >
+                          <span>Non assigné</span>
+                          {!assignedChildId && <span className="rotation-assignee-check">✓</span>}
+                        </div>
+                        {participants.map((child) => {
+                          const isSelected = assignedChildId === child.id;
+                          return (
+                            <div
+                              key={child.id}
+                              className={`rotation-assignee-item ${isSelected ? 'selected' : ''}`}
+                              role="menuitem"
+                              tabIndex={0}
+                              onClick={() => {
+                                updateAssignment(task.id, child.id);
+                                setOpenMenuTaskId(null);
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                  event.preventDefault();
+                                  updateAssignment(task.id, child.id);
+                                  setOpenMenuTaskId(null);
+                                }
+                              }}
+                            >
+                              <span className="rotation-assignee-avatar">{renderAvatarContent(child)}</span>
+                              <span className="rotation-assignee-name">{child.first_name}</span>
+                              {isSelected && <span className="rotation-assignee-check">✓</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="rotation-actions">
@@ -610,11 +822,12 @@ export const RotationTab: React.FC = () => {
         </div>
       )}
 
-      {(tasks.length === 0 || children.length === 0) && !loading && (
+      {(tasks.length === 0 || familyMembers.length === 0 || participants.length === 0) && !loading && (
         <div className="config-card">
           <div className="config-placeholder">
             {tasks.length === 0 && 'Ajoutez des tâches de rotation ci-dessus'}
-            {tasks.length > 0 && children.length === 0 && "Ajoutez des membres dans l'onglet Famille"}
+            {tasks.length > 0 && familyMembers.length === 0 && "Ajoutez des membres dans l'onglet Famille"}
+            {tasks.length > 0 && familyMembers.length > 0 && participants.length === 0 && "Sélectionnez des participants pour la rotation"}
           </div>
         </div>
       )}

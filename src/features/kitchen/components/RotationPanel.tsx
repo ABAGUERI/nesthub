@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { supabase } from '@/shared/utils/supabase';
+import { getAvatarUrl } from '../../config/services/avatar.service';
 import './RotationPanel.css';
 
-interface Child {
+interface FamilyMember {
   id: string;
   name: string;
   icon: string;
   color: string;
-  avatar_url?: string;
+  avatar_url?: string | null;
+  role?: 'child' | 'adult';
 }
 
 interface RotationTask {
@@ -29,6 +31,13 @@ const DEFAULT_COLORS: Record<string, string> = {
   ladybug: '#10b981',
   butterfly: '#a855f7',
   caterpillar: '#fb923c',
+};
+
+const ICON_EMOJIS: Record<string, string> = {
+  bee: '🐝',
+  ladybug: '🐞',
+  butterfly: '🦋',
+  caterpillar: '🐛',
 };
 
 type RotationRow = {
@@ -88,7 +97,7 @@ const getWeekEndISOFromStart = (weekStartISO: string) => {
   return end.toISOString();
 };
 
-const dedupeLatestByChildTask = (rows: RotationRow[]) => {
+const dedupeLatestByMemberTask = (rows: RotationRow[]) => {
   const map = new Map<string, RotationRow>();
 
   for (const r of rows) {
@@ -118,7 +127,7 @@ const dedupeLatestByChildTask = (rows: RotationRow[]) => {
 
 export const RotationPanel: React.FC = () => {
   const { user } = useAuth();
-  const [children, setChildren] = useState<Child[]>([]);
+  const [members, setMembers] = useState<FamilyMember[]>([]);
   const [assignments, setAssignments] = useState<Map<string, TaskWithCompletion[]>>(new Map());
   const [loading, setLoading] = useState(true);
 
@@ -140,7 +149,7 @@ export const RotationPanel: React.FC = () => {
       //    Hypothèse: rotation_reset_day stocké en 0..6 (0=dimanche ... 4=jeudi)
       const { data: cfg, error: cfgError } = await supabase
         .from('client_config')
-        .select('rotation_reset_day')
+        .select('rotation_reset_day, rotation_participants')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -152,25 +161,36 @@ export const RotationPanel: React.FC = () => {
           ? rotationResetDayRaw
           : 1; // fallback: lundi
 
-      // 1) Charger les enfants
-      const { data: childrenData, error: childrenError } = await supabase
+      const rotationParticipants = Array.isArray(cfg?.rotation_participants) ? cfg?.rotation_participants : null;
+      const hasSelectedParticipants = Boolean(rotationParticipants && rotationParticipants.length > 0);
+
+      // 1) Charger les membres
+      let membersQuery = supabase
         .from('family_members')
-        .select('id, first_name, icon, avatar_url')
+        .select('id, first_name, icon, avatar_url, role')
         .eq('user_id', user.id)
-        .eq('role', 'child')
         .order('created_at', { ascending: true });
 
-      if (childrenError) throw childrenError;
+      if (hasSelectedParticipants) {
+        membersQuery = membersQuery.in('id', rotationParticipants);
+      } else {
+        membersQuery = membersQuery.eq('role', 'child');
+      }
 
-      const childrenWithColors: Child[] = (childrenData || []).map((child: any) => ({
-        id: child.id,
-        name: child.first_name,
-        icon: child.icon,
-        avatar_url: child.avatar_url,
-        color: DEFAULT_COLORS[child.icon] || '#64748b',
+      const { data: membersData, error: membersError } = await membersQuery;
+
+      if (membersError) throw membersError;
+
+      const membersWithColors: FamilyMember[] = (membersData || []).map((member: any) => ({
+        id: member.id,
+        name: member.first_name,
+        icon: member.icon,
+        avatar_url: member.avatar_url,
+        role: member.role,
+        color: DEFAULT_COLORS[member.icon] || '#64748b',
       }));
 
-      setChildren(childrenWithColors);
+      setMembers(membersWithColors);
 
       // 2) Fenêtre semaine basée sur rotation_reset_day
       const weekStartISO = getWeekStartISOWithResetDay(rotationResetDay);
@@ -205,7 +225,7 @@ export const RotationPanel: React.FC = () => {
 
       if (rotationError) throw rotationError;
 
-      const rotationRows = dedupeLatestByChildTask((rotationData || []) as RotationRow[]);
+      const rotationRows = dedupeLatestByMemberTask((rotationData || []) as RotationRow[]);
 
       // 3) Charger complétions du jour (début de journée locale → converti en UTC 00:00Z du jour local)
       const now = new Date();
@@ -223,12 +243,12 @@ export const RotationPanel: React.FC = () => {
       const completionSet = new Set((completionsData || []).map((c: any) => `${c.child_id}-${c.task_id}`));
 
       // 4) Organiser par enfant
-      const assignmentsByChild = new Map<string, TaskWithCompletion[]>();
+      const assignmentsByMember = new Map<string, TaskWithCompletion[]>();
 
       rotationRows.forEach((assignment) => {
         if (!assignment.rotation_tasks) return;
 
-        const childId = assignment.child_id;
+        const memberId = assignment.child_id;
 
         const task: RotationTask = {
           id: assignment.rotation_tasks.id,
@@ -239,15 +259,15 @@ export const RotationPanel: React.FC = () => {
 
         const taskWithCompletion: TaskWithCompletion = {
           task,
-          completed_today: completionSet.has(`${childId}-${task.id}`),
+          completed_today: completionSet.has(`${memberId}-${task.id}`),
           assignment_id: assignment.id,
         };
 
-        if (!assignmentsByChild.has(childId)) assignmentsByChild.set(childId, []);
-        assignmentsByChild.get(childId)!.push(taskWithCompletion);
+        if (!assignmentsByMember.has(memberId)) assignmentsByMember.set(memberId, []);
+        assignmentsByMember.get(memberId)!.push(taskWithCompletion);
       });
 
-      setAssignments(assignmentsByChild);
+      setAssignments(assignmentsByMember);
     } catch (err) {
       console.error('Error loading rotation data:', err);
     } finally {
@@ -255,17 +275,17 @@ export const RotationPanel: React.FC = () => {
     }
   };
 
-  const toggleTask = async (childId: string, task: RotationTask, currentlyCompleted: boolean) => {
+  const toggleTask = async (memberId: string, task: RotationTask, currentlyCompleted: boolean) => {
     if (!user) return;
 
     // Optimistic update
     setAssignments((prev) => {
       const newMap = new Map(prev);
-      const childTasks = newMap.get(childId) || [];
-      const updatedTasks = childTasks.map((t) =>
+      const memberTasks = newMap.get(memberId) || [];
+      const updatedTasks = memberTasks.map((t) =>
         t.task.id === task.id ? { ...t, completed_today: !currentlyCompleted } : t
       );
-      newMap.set(childId, updatedTasks);
+      newMap.set(memberId, updatedTasks);
       return newMap;
     });
 
@@ -273,7 +293,7 @@ export const RotationPanel: React.FC = () => {
       if (!currentlyCompleted) {
         const { error } = await supabase.from('rotation_completions').insert({
           user_id: user.id,
-          child_id: childId,
+          child_id: memberId,
           task_id: task.id,
           completed_at: new Date().toISOString(),
         });
@@ -287,7 +307,7 @@ export const RotationPanel: React.FC = () => {
           .from('rotation_completions')
           .delete()
           .eq('user_id', user.id)
-          .eq('child_id', childId)
+          .eq('child_id', memberId)
           .eq('task_id', task.id)
           .gte('completed_at', todayISO);
 
@@ -299,15 +319,24 @@ export const RotationPanel: React.FC = () => {
       // Rollback
       setAssignments((prev) => {
         const newMap = new Map(prev);
-        const childTasks = newMap.get(childId) || [];
-        const updatedTasks = childTasks.map((t) =>
+        const memberTasks = newMap.get(memberId) || [];
+        const updatedTasks = memberTasks.map((t) =>
           t.task.id === task.id ? { ...t, completed_today: currentlyCompleted } : t
         );
-        newMap.set(childId, updatedTasks);
+        newMap.set(memberId, updatedTasks);
         return newMap;
       });
     }
   };
+
+  const getInitials = (name: string) =>
+    name
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
 
   if (loading) {
     return (
@@ -319,33 +348,35 @@ export const RotationPanel: React.FC = () => {
 
   return (
     <div className="rotation-panel-columns">
-      {children.map((child) => {
-        const childTasks = assignments.get(child.id) || [];
+      {members.map((member) => {
+        const memberTasks = assignments.get(member.id) || [];
 
         return (
-          <div key={child.id} className="rotation-column">
-            <div className="rotation-column-header" style={{ '--child-color': child.color } as React.CSSProperties}>
+          <div key={member.id} className="rotation-column">
+            <div className="rotation-column-header" style={{ '--child-color': member.color } as React.CSSProperties}>
               <div className="rotation-avatar">
-                {child.avatar_url ? (
-                  <img src={child.avatar_url} alt={child.name} className="rotation-avatar-img" />
+                {member.avatar_url ? (
+                  <img src={getAvatarUrl(member.avatar_url) || ''} alt={member.name} className="rotation-avatar-img" />
                 ) : (
-                  <div className="rotation-avatar-placeholder">{child.name.charAt(0)}</div>
+                  <div className="rotation-avatar-placeholder">
+                    {ICON_EMOJIS[member.icon] ?? getInitials(member.name)}
+                  </div>
                 )}
               </div>
-              <div className="rotation-name">{child.name}</div>
+              <div className="rotation-name">{member.name}</div>
             </div>
 
             <div className="rotation-tasks-list">
-              {childTasks.length === 0 ? (
+              {memberTasks.length === 0 ? (
                 <div className="rotation-empty">Aucune tâche assignée</div>
               ) : (
-                childTasks.map(({ task, completed_today, assignment_id }) => (
+                memberTasks.map(({ task, completed_today, assignment_id }) => (
                   <button
                     key={assignment_id}
                     className={`rotation-task-card ${completed_today ? 'completed' : ''}`}
-                    onClick={() => toggleTask(child.id, task, completed_today)}
+                    onClick={() => toggleTask(member.id, task, completed_today)}
                     type="button"
-                    style={{ '--child-color': child.color } as React.CSSProperties}
+                    style={{ '--child-color': member.color } as React.CSSProperties}
                   >
                     <div className="task-checkbox">{completed_today && <span className="task-check">✓</span>}</div>
                     <div className="task-icon">{task.icon}</div>
