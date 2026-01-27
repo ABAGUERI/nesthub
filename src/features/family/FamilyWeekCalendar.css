@@ -1,13 +1,13 @@
 /* FamilyWeekCalendar.css */
 
 .family-week-calendar {
-  /* important: ton fichier n'avait pas display/flex => layout instable */
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: 16px;
 
-  /* grille d'heures */
+  /* ↓ avant: 16px */
+  gap: 12px;
+
   --hour-height: 52px;
   --total-hours: 24;
 }
@@ -17,55 +17,72 @@
 .family-week-header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
+
+  /* ↓ avant: margin-bottom/padding-bottom 8px */
+  margin-bottom: 2px;
+  padding-bottom: 0px;
 }
 
 .family-week-header-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+
+  /* ↓ avant: 2px */
+  gap: 1px;
+
   min-width: 0;
 }
 
 .family-week-calendar-name {
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
+  /* plus subtil / premium */
+  font-size: 13px;        /* ↓ avant 14 */
+  font-weight: 750;       /* ↓ avant 800 */
+  letter-spacing: 0.15px;
   color: var(--text-heading);
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .family-week-range {
-  font-size: 12px;
-  color: rgba(226, 232, 240, 0.6);
+  font-size: 11px;        /* ↓ avant 12 */
+  color: rgba(226, 232, 240, 0.58); /* un cran plus discret */
 }
 
 .family-week-actions {
   display: flex;
-  gap: 8px;
+
+  /* ↓ avant: 8px */
+  gap: 6px;
+
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
 .family-week-btn {
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: rgba(15, 23, 42, 0.45);
-  color: #e2e8f0;
-  padding: 6px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+
+  /* plus “compact + premium” */
+  background: rgba(15, 23, 42, 0.35);
+  color: rgba(248, 250, 252, 0.92);
+
+  /* ↓ avant 6px 12px */
+  padding: 5px 10px;
+
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11px; /* ↓ avant 12 */
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .family-week-btn:hover {
-  border-color: rgba(226, 232, 240, 0.6);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.18);
+  border-color: rgba(226, 232, 240, 0.55);
+  background: rgba(15, 23, 42, 0.45);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.14);
   transform: translateY(-1px);
 }
 
@@ -74,8 +91,8 @@
 }
 
 .family-week-btn.primary {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(168, 85, 247, 0.28));
-  border-color: rgba(56, 189, 248, 0.45);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(168, 85, 247, 0.22));
+  border-color: rgba(56, 189, 248, 0.42);
 }
 
 /* ===== Body (scroll interne agenda) ===== */
@@ -83,11 +100,14 @@
 .family-week-body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+
+  /* ↓ avant: 16px */
+  gap: 12px;
+
   flex: 1;
-  min-height: 0; /* clé pour scroll interne */
-  overflow: auto; /* scroll ICI, pas sur la page */
-  padding-right: 2px; /* évite coupe scrollbar */
+  min-height: 0;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 /* ===== Grid ===== */
@@ -97,7 +117,6 @@
   gap: 10px;
 }
 
-/* header / all-day / time-grid alignés */
 .family-week-grid-header,
 .family-all-day-row,
 .family-time-grid {
@@ -107,31 +126,36 @@
   align-items: stretch;
 }
 
-/* ===== Sticky header des jours (rendu propre) ===== */
+/* ===== Sticky header des jours (plus compact) ===== */
 
 .family-week-grid-header {
   position: sticky;
   top: 0;
   z-index: 30;
 
-  /* rail glass */
-  background: linear-gradient(180deg, rgba(2, 6, 23, 0.86), rgba(2, 6, 23, 0.66));
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.82), rgba(2, 6, 23, 0.62));
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  border-radius: 18px;
-  padding: 8px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+
+  border: 1px solid rgba(148, 163, 184, 0.10);
+
+  /* ↓ avant: 18px + padding 8px */
+  border-radius: 16px;
+  padding: 6px;
+
+  /* plus subtil */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
 }
 
-/* cellule vide au-dessus de la colonne d'heures */
 .family-time-header {
-  min-height: 44px;
+  min-height: 40px; /* ↓ avant 44 */
 }
 
 .family-day-header {
-  padding: 10px 12px;
-  border-radius: 16px;
-  background: rgba(15, 23, 42, 0.48);
+  /* ↓ avant: 10px 12px */
+  padding: 8px 10px;
+
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.46);
   border: 1px solid rgba(148, 163, 184, 0.12);
   text-align: center;
   text-transform: capitalize;
@@ -140,62 +164,67 @@
 
 .family-day-header:hover,
 .family-day-header:focus-visible {
-  border-color: rgba(226, 232, 240, 0.4);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08);
+  border-color: rgba(226, 232, 240, 0.38);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.07);
 }
 
 .family-day-header.today {
-  border-color: rgba(56, 189, 248, 0.5);
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.48);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.16);
   position: relative;
 }
 
 .family-day-header.today::after {
   content: '';
   position: absolute;
-  top: 7px;
-  right: 9px;
-  width: 8px;
-  height: 8px;
+  top: 6px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: rgba(56, 189, 248, 0.9);
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.55);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
   animation: familyPulse 2.1s ease-in-out infinite;
 }
 
 .family-day-name {
-  font-size: 12px;
+  font-size: 11px; /* ↓ avant 12 */
   letter-spacing: 0.5px;
-  color: rgba(226, 232, 240, 0.7);
+  color: rgba(226, 232, 240, 0.68);
 }
 
 .family-day-date {
-  font-size: 14px;
+  font-size: 13px; /* ↓ avant 14 */
   font-weight: 800;
   color: #f8fafc;
-  margin-top: 4px;
+  margin-top: 3px; /* ↓ avant 4 */
 }
 
-/* ===== All-day ===== */
+/* ===== All-day (plus compact) ===== */
 
 .family-all-day-row {
   align-items: center;
 }
 
 .family-time-label {
-  font-size: 12px;
-  color: rgba(226, 232, 240, 0.6);
+  font-size: 11px; /* ↓ avant 12 */
+  color: rgba(226, 232, 240, 0.58);
   text-transform: uppercase;
   letter-spacing: 0.6px;
   padding-left: 6px;
 }
 
 .family-all-day-cell {
-  min-height: 54px;
-  padding: 6px;
+  /* ↓ avant 54px */
+  min-height: 48px;
+
+  /* ↓ avant 6px */
+  padding: 5px;
+
   border-radius: 12px;
   border: 1px dashed rgba(148, 163, 184, 0.2);
-  background: rgba(15, 23, 42, 0.25);
+  background: rgba(15, 23, 42, 0.22);
+
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -203,14 +232,17 @@
 
 .family-all-day-empty {
   color: rgba(148, 163, 184, 0.5);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .family-all-day-event {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 8px;
+
+  /* ↓ avant 6px 8px */
+  padding: 5px 8px;
+
   border-radius: 12px;
   font-size: 12px;
   background: rgba(148, 163, 184, 0.12);
@@ -224,7 +256,6 @@
   align-items: flex-start;
 }
 
-/* colonne des heures sticky à gauche */
 .family-time-column {
   display: flex;
   flex-direction: column;
@@ -251,19 +282,16 @@
   padding-right: 6px;
 }
 
-/* colonnes jour */
 .family-day-column {
   border-left: 1px solid rgba(148, 163, 184, 0.12);
   padding-left: 6px;
 }
 
-/* highlight colonne aujourd’hui */
 .family-day-column.today-column .family-day-grid {
   border-color: rgba(56, 189, 248, 0.28);
   box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.1);
 }
 
-/* grille jour : lignes d'heures */
 .family-day-grid {
   position: relative;
   height: calc(var(--total-hours) * var(--hour-height));
@@ -284,7 +312,6 @@
   overflow: hidden;
 }
 
-/* optionnel : ligne "maintenant" si ton TSX la rend */
 .family-now-line {
   position: absolute;
   left: 6px;

@@ -4,7 +4,10 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+
+  /* ↓ avant: 20px — on récupère de la hauteur utile */
+  gap: 14px;
+
   overflow: hidden;
 }
 
@@ -18,11 +21,14 @@
   min-height: 0;
 }
 
+/* zone tâches : un peu plus compacte */
 .family-tasks-section {
   display: flex;
   justify-content: stretch;
   align-items: stretch;
-  padding-bottom: 12px;
+
+  /* ↓ avant: 12px */
+  padding-bottom: 8px;
 }
 
 @media (max-width: 900px) {

@@ -21,7 +21,7 @@ interface RotationTask {
 interface TaskWithCompletion {
   task: RotationTask;
   completed_today: boolean;
-  assignment_id: string; // identifiant unique par ligne d'assignation
+  assignment_id: string;
 }
 
 const DEFAULT_COLORS: Record<string, string> = {
@@ -39,7 +39,7 @@ type RotationRow = {
   updated_at?: string | null;
   created_at?: string | null;
   sort_order?: number | null;
-  task_end_date?: string | null; // ✅ nouvelle colonne
+  task_end_date?: string | null;
   rotation_tasks?: {
     id: string;
     name: string;
@@ -48,28 +48,47 @@ type RotationRow = {
   } | null;
 };
 
-const getWeekStartISO = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
+/**
+ * Utilitaire: crée un ISO en UTC à 00:00:00Z pour une date "locale" (Y/M/D)
+ * (évite les décalages bizarres liés à toISOString() sur une date locale)
+ */
+const utcMidnightIsoFromLocalYMD = (y: number, m0: number, d: number) => {
+  // m0 = month 0-based
+  return new Date(Date.UTC(y, m0, d, 0, 0, 0, 0)).toISOString();
+};
 
-  // ISO week start (Monday 00:00)
-  const day = d.getDay(); // 0=Sunday
-  const diffToMonday = (day === 0 ? -6 : 1) - day;
+/**
+ * Calcule le début de semaine selon le jour de reset:
+ * resetDay: 0=dimanche, 1=lundi, ..., 4=jeudi, ..., 6=samedi
+ * Exemple: resetDay=4 => la semaine commence jeudi 00:00.
+ */
+const getWeekStartISOWithResetDay = (resetDay: number) => {
+  const now = new Date();
 
-  d.setDate(d.getDate() + diffToMonday);
-  return d.toISOString();
+  // Date locale à minuit (on raisonne en "jour" local)
+  const localMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+
+  const todayDow = localMidnight.getDay(); // 0..6
+
+  // Combien de jours remonter pour atteindre le dernier resetDay (incluant aujourd’hui si même jour)
+  const diff = (todayDow - resetDay + 7) % 7;
+
+  const startLocal = new Date(localMidnight);
+  startLocal.setDate(startLocal.getDate() - diff);
+
+  // Convertir ce jour local (Y/M/D) en "00:00Z" stable
+  return utcMidnightIsoFromLocalYMD(startLocal.getFullYear(), startLocal.getMonth(), startLocal.getDate());
 };
 
 const getWeekEndISOFromStart = (weekStartISO: string) => {
   const start = new Date(weekStartISO);
   const end = new Date(start);
-  end.setDate(start.getDate() + 7);
-  end.setHours(0, 0, 0, 0);
+  end.setUTCDate(start.getUTCDate() + 7);
+  end.setUTCHours(0, 0, 0, 0);
   return end.toISOString();
 };
 
 const dedupeLatestByChildTask = (rows: RotationRow[]) => {
-  // garde 1 ligne par (child_id, task_id), la plus récente via updated_at (fallback created_at)
   const map = new Map<string, RotationRow>();
 
   for (const r of rows) {
@@ -117,6 +136,22 @@ export const RotationPanel: React.FC = () => {
     setLoading(true);
 
     try {
+      // 0) Charger config client (rotation_reset_day)
+      //    Hypothèse: rotation_reset_day stocké en 0..6 (0=dimanche ... 4=jeudi)
+      const { data: cfg, error: cfgError } = await supabase
+        .from('client_config')
+        .select('rotation_reset_day')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (cfgError) throw cfgError;
+
+      const rotationResetDayRaw = cfg?.rotation_reset_day;
+      const rotationResetDay =
+        typeof rotationResetDayRaw === 'number' && rotationResetDayRaw >= 0 && rotationResetDayRaw <= 6
+          ? rotationResetDayRaw
+          : 1; // fallback: lundi
+
       // 1) Charger les enfants
       const { data: childrenData, error: childrenError } = await supabase
         .from('family_members')
@@ -137,10 +172,8 @@ export const RotationPanel: React.FC = () => {
 
       setChildren(childrenWithColors);
 
-      // 2) Charger rotation actuelle - uniquement semaine courante
-      // ✅ + ne sélectionner que les lignes non terminées (task_end_date IS NULL)
-      // ✅ + fenêtre semaine: [weekStart, weekEnd)
-      const weekStartISO = getWeekStartISO();
+      // 2) Fenêtre semaine basée sur rotation_reset_day
+      const weekStartISO = getWeekStartISOWithResetDay(rotationResetDay);
       const weekEndISO = getWeekEndISOFromStart(weekStartISO);
 
       const { data: rotationData, error: rotationError } = await supabase
@@ -166,7 +199,7 @@ export const RotationPanel: React.FC = () => {
         .eq('user_id', user.id)
         .gte('week_start', weekStartISO)
         .lt('week_start', weekEndISO)
-        .is('task_end_date', null) // ✅ uniquement les assignations actives
+        .is('task_end_date', null)
         .order('updated_at', { ascending: false, nullsFirst: false })
         .order('sort_order', { ascending: true });
 
@@ -174,10 +207,10 @@ export const RotationPanel: React.FC = () => {
 
       const rotationRows = dedupeLatestByChildTask((rotationData || []) as RotationRow[]);
 
-      // 3) Charger complétions du jour
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayISO = today.toISOString();
+      // 3) Charger complétions du jour (début de journée locale → converti en UTC 00:00Z du jour local)
+      const now = new Date();
+      const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      const todayISO = utcMidnightIsoFromLocalYMD(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate());
 
       const { data: completionsData, error: completionsError } = await supabase
         .from('rotation_completions')
@@ -207,12 +240,10 @@ export const RotationPanel: React.FC = () => {
         const taskWithCompletion: TaskWithCompletion = {
           task,
           completed_today: completionSet.has(`${childId}-${task.id}`),
-          assignment_id: assignment.id, // ✅ clé unique par ligne
+          assignment_id: assignment.id,
         };
 
-        if (!assignmentsByChild.has(childId)) {
-          assignmentsByChild.set(childId, []);
-        }
+        if (!assignmentsByChild.has(childId)) assignmentsByChild.set(childId, []);
         assignmentsByChild.get(childId)!.push(taskWithCompletion);
       });
 
@@ -240,24 +271,27 @@ export const RotationPanel: React.FC = () => {
 
     try {
       if (!currentlyCompleted) {
-        await supabase.from('rotation_completions').insert({
+        const { error } = await supabase.from('rotation_completions').insert({
           user_id: user.id,
           child_id: childId,
           task_id: task.id,
           completed_at: new Date().toISOString(),
         });
+        if (error) throw error;
       } else {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayISO = today.toISOString();
+        const now = new Date();
+        const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        const todayISO = utcMidnightIsoFromLocalYMD(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate());
 
-        await supabase
+        const { error } = await supabase
           .from('rotation_completions')
           .delete()
           .eq('user_id', user.id)
           .eq('child_id', childId)
           .eq('task_id', task.id)
           .gte('completed_at', todayISO);
+
+        if (error) throw error;
       }
     } catch (err) {
       console.error('Error toggling task:', err);

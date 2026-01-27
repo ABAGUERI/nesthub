@@ -27,24 +27,7 @@ interface Assignment {
 
 type WeekWindow = { weekStartISO: string; weekEndISO: string; weekStartDate: Date; weekEndDate: Date };
 
-const TASK_ICONS = [
-  '🍽️',
-  '🧹',
-  '🗑️',
-  '🐶',
-  '🧺',
-  '🚿',
-  '🛏️',
-  '🧽',
-  '🪴',
-  '📚',
-  '🚗',
-  '🏃',
-  '🎮',
-  '🎨',
-  '🎵',
-  '⚽',
-];
+const TASK_ICONS = ['🍽️', '🧹', '🗑️', '🐶', '🧺', '🚿', '🛏️', '🧽', '🪴', '📚', '🚗', '🏃', '🎮', '🎨', '🎵', '⚽'];
 
 const getDayName = (day: number): string => {
   const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
@@ -55,6 +38,9 @@ const getDayName = (day: number): string => {
  * Calcule la fenêtre [weekStart, weekEnd) basée sur rotationResetDay.
  * rotationResetDay: 0=Dimanche ... 6=Samedi
  * Retourne des ISO générées à partir de minuit (heure locale), puis toISOString (UTC).
+ *
+ * NOTE: la génération DB (RPC) calcule aussi week_start selon rotation_reset_day (America/Montreal).
+ * Ici on garde cette fenêtre pour filtrer l'affichage. La RPC est la source de vérité pour créer.
  */
 const getWeekWindow = (rotationResetDay: number): WeekWindow => {
   const now = new Date();
@@ -66,11 +52,6 @@ const getWeekWindow = (rotationResetDay: number): WeekWindow => {
   const currentDow = today.getDay(); // 0..6
   const resetDow = Number.isFinite(rotationResetDay) ? rotationResetDay : 1;
 
-  // Diff pour revenir au dernier resetDow (début de semaine)
-  // Exemple: resetDow=1 (Lundi)
-  // - si aujourd'hui Lundi: diff=0
-  // - si aujourd'hui Dimanche (0): diff = -6
-  // - si aujourd'hui Mardi (2): diff=-1
   const diff = (currentDow - resetDow + 7) % 7;
   const weekStartDate = new Date(today);
   weekStartDate.setDate(today.getDate() - diff);
@@ -143,6 +124,29 @@ export const RotationTab: React.FC = () => {
     }
   }, [config?.rotationResetDay]);
 
+  const fetchActiveAssignmentsThisWeek = async () => {
+    if (!user) return [];
+
+    const { data, error: assignmentsError } = await supabase
+      .from('rotation_assignments')
+      .select('task_id, child_id, updated_at, created_at')
+      .eq('user_id', user.id)
+      .gte('week_start', weekStartISO)
+      .lt('week_start', weekEndISO)
+      .is('task_end_date', null)
+      .order('updated_at', { ascending: false, nullsFirst: false });
+
+    if (assignmentsError) throw assignmentsError;
+
+    return dedupeAssignmentsByTaskMostRecent((data as any[]) || []);
+  };
+
+  const ensureWeeklyRotationIfMissing = async () => {
+    // Si aucune assignation active pour la semaine, on demande à la DB de générer automatiquement (shuffle + round-robin)
+    const { error: rpcError } = await supabase.rpc('ensure_weekly_rotation_random', { p_force: false });
+    if (rpcError) throw rpcError;
+  };
+
   const loadData = async () => {
     if (!user) return;
     setLoading(true);
@@ -171,21 +175,15 @@ export const RotationTab: React.FC = () => {
       if (childrenError) throw childrenError;
       setChildren(childrenData || []);
 
-      // 3) Charger assignations "actives" de la semaine courante
-      // Stratégie: week_start dans [weekStartISO, weekEndISO) ET task_end_date IS NULL
-      const { data: assignmentsData, error: assignmentsError } = await supabase
-        .from('rotation_assignments')
-        .select('task_id, child_id, updated_at, created_at')
-        .eq('user_id', user.id)
-        .gte('week_start', weekStartISO)
-        .lt('week_start', weekEndISO)
-        .is('task_end_date', null)
-        .order('updated_at', { ascending: false, nullsFirst: false });
+      // 3) Charger assignations actives semaine courante
+      let deduped = await fetchActiveAssignmentsThisWeek();
 
-      if (assignmentsError) throw assignmentsError;
+      // 4) Auto-génération si aucune rotation active
+      if (deduped.length === 0 && (tasksData?.length ?? 0) > 0 && (childrenData?.length ?? 0) > 0) {
+        await ensureWeeklyRotationIfMissing();
+        deduped = await fetchActiveAssignmentsThisWeek();
+      }
 
-      // Safety: 1 ligne par task_id en priorisant updated_at le plus récent
-      const deduped = dedupeAssignmentsByTaskMostRecent((assignmentsData as any[]) || []);
       setAssignments(deduped);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur de chargement';
@@ -203,6 +201,10 @@ export const RotationTab: React.FC = () => {
       setRotationResetDay(day);
       setSuccessMessage(`Réinitialisation: ${getDayName(day)}`);
       setTimeout(() => setSuccessMessage(null), 3000);
+
+      // Optionnel: si tu veux regénérer immédiatement après changement de jour, tu peux forcer (reroll) :
+      // await supabase.rpc('ensure_weekly_rotation_random', { p_force: true });
+      // void loadData();
     } catch (err) {
       console.error('Failed to save reset day:', err);
       setError('Erreur lors de la sauvegarde');
@@ -293,10 +295,16 @@ export const RotationTab: React.FC = () => {
     }
   };
 
+  /**
+   * Sauvegarde manuelle :
+   * - clôture les actives de la fenêtre
+   * - insert les assignations actuellement sélectionnées
+   *
+   * (on garde ta logique, elle est correcte et utile)
+   */
   const handleSaveAssignments = async () => {
     if (!user) return;
 
-    // ✅ VALIDATION : 1 tâche = 1 assignation (unicité task_id)
     const taskIds = assignments.map((a) => a.task_id);
     const uniqueTaskIds = new Set(taskIds);
     if (taskIds.length !== uniqueTaskIds.size) {
@@ -309,12 +317,8 @@ export const RotationTab: React.FC = () => {
     setError(null);
 
     try {
-      console.log('📅 Fenêtre semaine courante:', { weekStartISO, weekEndISO });
-
-      // ✅ NOUVELLE STRATÉGIE :
-      // 1) Clôturer les assignations ACTIVES de la semaine courante (task_end_date = now)
-      // (On ne supprime plus, on garde l'historique intra-semaine)
       const nowISO = new Date().toISOString();
+
       const { error: closeError } = await supabase
         .from('rotation_assignments')
         .update({ task_end_date: nowISO })
@@ -323,13 +327,8 @@ export const RotationTab: React.FC = () => {
         .lt('week_start', weekEndISO)
         .is('task_end_date', null);
 
-      if (closeError) {
-        console.error('Erreur CLOSE (update task_end_date):', closeError);
-        throw closeError;
-      }
-      console.log('✅ Assignations actives clôturées pour cette semaine');
+      if (closeError) throw closeError;
 
-      // 2) Préparer insert des nouvelles assignations (actives => task_end_date = null)
       let insertData = assignments
         .filter((a) => a.child_id && a.task_id)
         .map((a, index) => ({
@@ -338,10 +337,8 @@ export const RotationTab: React.FC = () => {
           task_id: a.task_id,
           child_id: a.child_id,
           sort_order: index,
-          // task_end_date: null (omis => null)
         }));
 
-      // 3) Sécurité: dédup par task_id
       const seen = new Set<string>();
       insertData = insertData.filter((row) => {
         if (seen.has(row.task_id)) return false;
@@ -349,45 +346,24 @@ export const RotationTab: React.FC = () => {
         return true;
       });
 
-      console.log(`📊 ${insertData.length} assignations à insérer`);
-
-      // 4) Insert
       if (insertData.length > 0) {
         const { error: insertError } = await supabase.from('rotation_assignments').insert(insertData);
 
         if (insertError) {
-          console.error('Erreur INSERT:', insertError);
-
-          // En cas de contrainte unique (partial index actif), le plus fréquent :
           if ((insertError as any).code === '23505') {
             throw new Error('Conflit: une assignation active existe déjà pour une tâche. Réessayez après rafraîchissement.');
           }
-
-          throw new Error(`Erreur insertion: ${(insertError as any).message ?? 'unknown'}`);
+          throw insertError;
         }
-        console.log('✅ Nouvelles assignations insérées');
       }
 
-      // 5) Reload DB (actives uniquement, dédup sécurité)
-      const { data: freshAssignments, error: freshError } = await supabase
-        .from('rotation_assignments')
-        .select('task_id, child_id, updated_at, created_at')
-        .eq('user_id', user.id)
-        .gte('week_start', weekStartISO)
-        .lt('week_start', weekEndISO)
-        .is('task_end_date', null)
-        .order('updated_at', { ascending: false, nullsFirst: false });
-
-      if (freshError) throw freshError;
-
-      const deduped = dedupeAssignmentsByTaskMostRecent((freshAssignments as any[]) || []);
-      setAssignments(deduped);
+      const dedupedFresh = await fetchActiveAssignmentsThisWeek();
+      setAssignments(dedupedFresh);
 
       setSuccessMessage(`✅ ${insertData.length} assignations sauvegardées`);
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur sauvegarde';
-      console.error('❌ ERREUR:', message);
       setError(message);
       setTimeout(() => setError(null), 5000);
     } finally {
@@ -395,27 +371,37 @@ export const RotationTab: React.FC = () => {
     }
   };
 
-  const handleGenerateRandom = () => {
+  /**
+   * 🎲 Maintenant, on déclenche la génération côté DB (source de vérité),
+   * avec clôture automatique des actives de la semaine (p_force=true).
+   */
+  const handleGenerateRandom = async () => {
+    if (!user) return;
+
     if (tasks.length === 0 || children.length === 0) {
       setError("Ajoutez des tâches et des membres d'abord");
       return;
     }
 
-    // ✅ Distribution round-robin (1 tâche = 1 membre)
-    const shuffledTasks = [...tasks].sort(() => Math.random() - 0.5);
+    setSaving(true);
+    setError(null);
 
-    const newAssignments: Assignment[] = [];
-    shuffledTasks.forEach((task, index) => {
-      const childIndex = index % children.length;
-      newAssignments.push({
-        task_id: task.id,
-        child_id: children[childIndex].id,
-      });
-    });
+    try {
+      const { error: rpcError } = await supabase.rpc('ensure_weekly_rotation_random', { p_force: true });
+      if (rpcError) throw rpcError;
 
-    setAssignments(newAssignments);
-    setSuccessMessage('✅ Rotation générée (1 tâche = 1 membre)');
-    setTimeout(() => setSuccessMessage(null), 3000);
+      const dedupedFresh = await fetchActiveAssignmentsThisWeek();
+      setAssignments(dedupedFresh);
+
+      setSuccessMessage('✅ Rotation générée aléatoirement');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur génération';
+      setError(message);
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const getAssignedChild = (taskId: string): string => {
@@ -432,7 +418,6 @@ export const RotationTab: React.FC = () => {
 
   return (
     <div className="rotation-tab">
-      {/* Messages */}
       {error && (
         <div className="config-alert config-alert-error">
           <span>⚠️</span>
