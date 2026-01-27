@@ -34,6 +34,15 @@ const getDayName = (day: number): string => {
   return days[day] ?? '—';
 };
 
+const formatWeekRange = (weekStartDate: Date, weekEndDate: Date): string => {
+  const formatter = new Intl.DateTimeFormat('fr-CA', { weekday: 'short', day: '2-digit', month: 'short' });
+  return `Semaine du ${formatter.format(weekStartDate)} au ${formatter.format(weekEndDate)}`;
+};
+
+const formatResetLabel = (rotationResetDay: number): string => {
+  return `Réinitialisation : ${getDayName(rotationResetDay)}`;
+};
+
 /**
  * Calcule la fenêtre [weekStart, weekEnd) basée sur rotationResetDay.
  * rotationResetDay: 0=Dimanche ... 6=Samedi
@@ -98,6 +107,7 @@ export const RotationTab: React.FC = () => {
   const [tasks, setTasks] = useState<RotationTask[]>([]);
   const [children, setChildren] = useState<Child[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [openMenuTaskId, setOpenMenuTaskId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -123,6 +133,29 @@ export const RotationTab: React.FC = () => {
       setRotationResetDay(config.rotationResetDay);
     }
   }, [config?.rotationResetDay]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest('[data-rotation-card="true"]')) {
+        setOpenMenuTaskId(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpenMenuTaskId(null);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const fetchActiveAssignmentsThisWeek = async () => {
     if (!user) return [];
@@ -408,6 +441,16 @@ export const RotationTab: React.FC = () => {
     return assignments.find((a) => a.task_id === taskId)?.child_id || '';
   };
 
+  const getChildById = (childId: string): Child | undefined => {
+    return children.find((child) => child.id === childId);
+  };
+
+  const renderAvatar = (child?: Child): string => {
+    if (child?.icon) return child.icon;
+    if (child?.first_name) return child.first_name.charAt(0).toUpperCase();
+    return '—';
+  };
+
   const updateAssignment = (taskId: string, childId: string) => {
     setAssignments((prev) => {
       const filtered = prev.filter((a) => a.task_id !== taskId);
@@ -569,34 +612,99 @@ export const RotationTab: React.FC = () => {
             <div>
               <h3>👥 Assignations de cette semaine</h3>
               <p>Chaque tâche ne peut être assignée qu&apos;à un seul membre</p>
-              <p className="input-hint" style={{ marginTop: 6 }}>
-                Semaine: {weekStartISO} → {weekEndISO}
-              </p>
+              <div className="rotation-week-pill" style={{ marginTop: 8 }}>
+                <div className="rotation-week-title">{formatWeekRange(weekWindow.weekStartDate, weekWindow.weekEndDate)}</div>
+                <div className="rotation-week-sub">{formatResetLabel(rotationResetDay)}</div>
+              </div>
             </div>
           </div>
 
-          <div className="assignments-list">
-            {tasks.map((task) => (
-              <div key={task.id} className="assignment-row">
-                <span className="assignment-task">
-                  <span className="task-icon">{task.icon}</span>
-                  <span>{task.name}</span>
-                </span>
-                <select
-                  className="assignment-select"
-                  value={getAssignedChild(task.id)}
-                  onChange={(e) => updateAssignment(task.id, e.target.value)}
-                  disabled={saving}
+          <div className="rotation-assignments-grid">
+            {tasks.map((task) => {
+              const assignedChildId = getAssignedChild(task.id);
+              const assignedChild = assignedChildId ? getChildById(assignedChildId) : undefined;
+
+              return (
+                <div
+                  key={task.id}
+                  className="rotation-assignment-card"
+                  data-rotation-card="true"
+                  data-task-id={task.id}
                 >
-                  <option value="">— Non assigné —</option>
-                  {children.map((child) => (
-                    <option key={child.id} value={child.id}>
-                      {child.first_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
+                  <div className="rotation-assignment-header">
+                    <span className="rotation-task-badge">{task.icon}</span>
+                    <span className="rotation-task-title">{task.name}</span>
+                  </div>
+
+                  <div className="rotation-assignee-row">
+                    <button
+                      type="button"
+                      className="rotation-assignee-chip"
+                      aria-haspopup="menu"
+                      aria-expanded={openMenuTaskId === task.id}
+                      onClick={() =>
+                        setOpenMenuTaskId((prev) => (prev === task.id ? null : task.id))
+                      }
+                      disabled={saving}
+                    >
+                      <span className="rotation-assignee-avatar">{renderAvatar(assignedChild)}</span>
+                      <span className="rotation-assignee-name">{assignedChild?.first_name ?? 'Non assigné'}</span>
+                      <span className="rotation-assignee-chevron">▾</span>
+                    </button>
+
+                    {openMenuTaskId === task.id && (
+                      <div className="rotation-assignee-menu" role="menu">
+                        <div
+                          className={`rotation-assignee-item ${assignedChildId ? '' : 'selected'}`}
+                          role="menuitem"
+                          tabIndex={0}
+                          onClick={() => {
+                            updateAssignment(task.id, '');
+                            setOpenMenuTaskId(null);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              updateAssignment(task.id, '');
+                              setOpenMenuTaskId(null);
+                            }
+                          }}
+                        >
+                          <span>Non assigné</span>
+                          {!assignedChildId && <span className="rotation-assignee-check">✓</span>}
+                        </div>
+                        {children.map((child) => {
+                          const isSelected = assignedChildId === child.id;
+                          return (
+                            <div
+                              key={child.id}
+                              className={`rotation-assignee-item ${isSelected ? 'selected' : ''}`}
+                              role="menuitem"
+                              tabIndex={0}
+                              onClick={() => {
+                                updateAssignment(task.id, child.id);
+                                setOpenMenuTaskId(null);
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                  event.preventDefault();
+                                  updateAssignment(task.id, child.id);
+                                  setOpenMenuTaskId(null);
+                                }
+                              }}
+                            >
+                              <span className="rotation-assignee-avatar">{renderAvatar(child)}</span>
+                              <span className="rotation-assignee-name">{child.first_name}</span>
+                              {isSelected && <span className="rotation-assignee-check">✓</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="rotation-actions">
