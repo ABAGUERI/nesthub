@@ -56,6 +56,7 @@ export interface ClientConfig {
   
   // Config rotation des tâches
   rotationResetDay: number; // 0=Dimanche, 1=Lundi, 2=Mardi, etc.
+  rotationParticipants?: string[] | null;
   
   // Config récompenses
   rewardSystem: 'points' | 'money' | 'hybrid' | 'none';
