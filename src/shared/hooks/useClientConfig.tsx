@@ -83,6 +83,7 @@ export const ClientConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
       weatherCity: data.weather_city,
       weatherPostalCode: data.weather_postal_code,
       rotationResetDay: data.rotation_reset_day ?? 1,
+      rotationParticipants: data.rotation_participants ?? null,
       rewardSystem: data.reward_system,
       rewardPointsToMoneyRate: data.reward_points_to_money_rate,
       rewardEnableLevels: data.reward_enable_levels,
@@ -122,6 +123,7 @@ export const ClientConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (data.weatherCity !== undefined) dbData.weather_city = data.weatherCity;
     if (data.weatherPostalCode !== undefined) dbData.weather_postal_code = data.weatherPostalCode;
     if (data.rotationResetDay !== undefined) dbData.rotation_reset_day = data.rotationResetDay;
+    if (data.rotationParticipants !== undefined) dbData.rotation_participants = data.rotationParticipants;
     if (data.rewardSystem !== undefined) dbData.reward_system = data.rewardSystem;
     if (data.rewardPointsToMoneyRate !== undefined) dbData.reward_points_to_money_rate = data.rewardPointsToMoneyRate;
     if (data.rewardEnableLevels !== undefined) dbData.reward_enable_levels = data.rewardEnableLevels;
