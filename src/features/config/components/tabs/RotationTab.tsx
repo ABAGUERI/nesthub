@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import { supabase } from '@/shared/utils/supabase';
+import { getAvatarUrl } from '../../services/avatar.service';
 
 interface RotationTask {
   id: string;
@@ -18,6 +19,8 @@ interface Child {
   id: string;
   first_name: string;
   icon: string;
+  avatar_url?: string | null;
+  role: 'child' | 'adult';
 }
 
 interface Assignment {
@@ -25,53 +28,172 @@ interface Assignment {
   child_id: string;
 }
 
-const TASK_ICONS = [
-  '🍽️', '🧹', '🗑️', '🐶', '🧺', '🚿', '🛏️', '🧽',
-  '🪴', '📚', '🚗', '🏃', '🎮', '🎨', '🎵', '⚽'
-];
+type WeekWindow = { weekStartISO: string; weekEndISO: string; weekStartDate: Date; weekEndDate: Date };
+
+const TASK_ICONS = ['🍽️', '🧹', '🗑️', '🐶', '🧺', '🚿', '🛏️', '🧽', '🪴', '📚', '🚗', '🏃', '🎮', '🎨', '🎵', '⚽'];
 
 const getDayName = (day: number): string => {
   const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-  return days[day];
+  return days[day] ?? '—';
 };
 
-const getWeekStart = (): string => {
-  const date = new Date();
-  const day = date.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const monday = new Date(date);
-  monday.setDate(date.getDate() + diff);
-  monday.setHours(0, 0, 0, 0);
-  return monday.toISOString();
+const formatWeekRange = (weekStartDate: Date, weekEndDate: Date): string => {
+  const formatter = new Intl.DateTimeFormat('fr-CA', { weekday: 'short', day: '2-digit', month: 'short' });
+  return `Semaine du ${formatter.format(weekStartDate)} au ${formatter.format(weekEndDate)}`;
+};
+
+const formatResetLabel = (rotationResetDay: number): string => {
+  return `Réinitialisation : ${getDayName(rotationResetDay)}`;
+};
+
+/**
+ * Calcule la fenêtre [weekStart, weekEnd) basée sur rotationResetDay.
+ * rotationResetDay: 0=Dimanche ... 6=Samedi
+ * Retourne des ISO générées à partir de minuit (heure locale), puis toISOString (UTC).
+ *
+ * NOTE: la génération DB (RPC) calcule aussi week_start selon rotation_reset_day (America/Montreal).
+ * Ici on garde cette fenêtre pour filtrer l'affichage. La RPC est la source de vérité pour créer.
+ */
+const getWeekWindow = (rotationResetDay: number): WeekWindow => {
+  const now = new Date();
+
+  // Minuit local aujourd'hui
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+
+  const currentDow = today.getDay(); // 0..6
+  const resetDow = Number.isFinite(rotationResetDay) ? rotationResetDay : 1;
+
+  const diff = (currentDow - resetDow + 7) % 7;
+  const weekStartDate = new Date(today);
+  weekStartDate.setDate(today.getDate() - diff);
+  weekStartDate.setHours(0, 0, 0, 0);
+
+  const weekEndDate = new Date(weekStartDate);
+  weekEndDate.setDate(weekStartDate.getDate() + 7);
+  weekEndDate.setHours(0, 0, 0, 0);
+
+  return {
+    weekStartISO: weekStartDate.toISOString(),
+    weekEndISO: weekEndDate.toISOString(),
+    weekStartDate,
+    weekEndDate,
+  };
+};
+
+/**
+ * Déduplique côté client pour garantir 1 ligne par task_id,
+ * en priorisant updated_at (ou created_at) le plus récent.
+ */
+const dedupeAssignmentsByTaskMostRecent = (
+  rows: Array<{ task_id: string; child_id: string; updated_at?: string | null; created_at?: string | null }>
+): Assignment[] => {
+  const bestByTask = new Map<string, { task_id: string; child_id: string; ts: number }>();
+
+  for (const r of rows) {
+    const tsStr = r.updated_at ?? r.created_at ?? null;
+    const ts = tsStr ? new Date(tsStr).getTime() : 0;
+
+    const prev = bestByTask.get(r.task_id);
+    if (!prev || ts >= prev.ts) {
+      bestByTask.set(r.task_id, { task_id: r.task_id, child_id: r.child_id, ts });
+    }
+  }
+
+  return Array.from(bestByTask.values()).map(({ task_id, child_id }) => ({ task_id, child_id }));
 };
 
 export const RotationTab: React.FC = () => {
   const { user } = useAuth();
   const { config, updateConfig } = useClientConfig();
-  
+
   const [tasks, setTasks] = useState<RotationTask[]>([]);
-  const [children, setChildren] = useState<Child[]>([]);
+  const [familyMembers, setFamilyMembers] = useState<Child[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  
+  const [openMenuTaskId, setOpenMenuTaskId] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  
+
   const [rotationResetDay, setRotationResetDay] = useState<number>(config?.rotationResetDay ?? 1);
+  const [rotationParticipants, setRotationParticipants] = useState<string[] | null>(config?.rotationParticipants ?? null);
   const [editingTask, setEditingTask] = useState<string | null>(null);
   const [newTaskName, setNewTaskName] = useState('');
   const [newTaskIcon, setNewTaskIcon] = useState('🍽️');
 
+  const weekWindow = useMemo(() => getWeekWindow(rotationResetDay), [rotationResetDay]);
+  const weekStartISO = weekWindow.weekStartISO;
+  const weekEndISO = weekWindow.weekEndISO;
+
   useEffect(() => {
-    loadData();
-  }, [user]);
+    void loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, weekStartISO, weekEndISO]);
 
   useEffect(() => {
     if (config?.rotationResetDay !== undefined) {
       setRotationResetDay(config.rotationResetDay);
     }
-  }, [config?.rotationResetDay]);
+    if (config?.rotationParticipants !== undefined) {
+      setRotationParticipants(config.rotationParticipants ?? null);
+    }
+  }, [config?.rotationParticipants, config?.rotationResetDay]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest('[data-rotation-card="true"]')) {
+        setOpenMenuTaskId(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpenMenuTaskId(null);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const resolveParticipants = (members: Child[], participants: string[] | null): Child[] => {
+    if (participants && participants.length > 0) {
+      const selected = new Set(participants);
+      return members.filter((member) => selected.has(member.id));
+    }
+    return members.filter((member) => member.role === 'child');
+  };
+
+  const fetchActiveAssignmentsThisWeek = async () => {
+    if (!user) return [];
+
+    const { data, error: assignmentsError } = await supabase
+      .from('rotation_assignments')
+      .select('task_id, child_id, updated_at, created_at')
+      .eq('user_id', user.id)
+      .gte('week_start', weekStartISO)
+      .lt('week_start', weekEndISO)
+      .is('task_end_date', null)
+      .order('updated_at', { ascending: false, nullsFirst: false });
+
+    if (assignmentsError) throw assignmentsError;
+
+    return dedupeAssignmentsByTaskMostRecent((data as any[]) || []);
+  };
+
+  const ensureWeeklyRotationIfMissing = async () => {
+    // Si aucune assignation active pour la semaine, on demande à la DB de générer automatiquement (shuffle + round-robin)
+    const { error: rpcError } = await supabase.rpc('ensure_weekly_rotation_random', { p_force: false });
+    if (rpcError) throw rpcError;
+  };
 
   const loadData = async () => {
     if (!user) return;
@@ -79,7 +201,7 @@ export const RotationTab: React.FC = () => {
     setError(null);
 
     try {
-      // Charger tâches rotation
+      // 1) Charger tâches rotation
       const { data: tasksData, error: tasksError } = await supabase
         .from('rotation_tasks')
         .select('*')
@@ -90,28 +212,28 @@ export const RotationTab: React.FC = () => {
       if (tasksError) throw tasksError;
       setTasks(tasksData || []);
 
-      // Charger enfants
+      // 2) Charger enfants
       const { data: childrenData, error: childrenError } = await supabase
         .from('family_members')
-        .select('id, first_name, icon')
+        .select('id, first_name, icon, avatar_url, role')
         .eq('user_id', user.id)
-        .eq('role', 'child')
         .order('created_at', { ascending: true });
 
       if (childrenError) throw childrenError;
-      setChildren(childrenData || []);
+      const members = (childrenData as Child[]) || [];
+      setFamilyMembers(members);
+      const participantsForWeek = resolveParticipants(members, config?.rotationParticipants ?? null);
 
-      // Charger assignations semaine courante
-      const weekStart = getWeekStart();
-      const { data: assignmentsData, error: assignmentsError } = await supabase
-        .from('rotation_assignments')
-        .select('task_id, child_id')
-        .eq('user_id', user.id)
-        .eq('week_start', weekStart);
+      // 3) Charger assignations actives semaine courante
+      let deduped = await fetchActiveAssignmentsThisWeek();
 
-      if (assignmentsError) throw assignmentsError;
-      setAssignments(assignmentsData || []);
+      // 4) Auto-génération si aucune rotation active
+      if (deduped.length === 0 && (tasksData?.length ?? 0) > 0 && participantsForWeek.length > 0) {
+        await ensureWeeklyRotationIfMissing();
+        deduped = await fetchActiveAssignmentsThisWeek();
+      }
 
+      setAssignments(deduped);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur de chargement';
       setError(message);
@@ -122,12 +244,16 @@ export const RotationTab: React.FC = () => {
 
   const handleSaveResetDay = async (day: number) => {
     if (!user) return;
-    
+
     try {
       await updateConfig({ rotationResetDay: day });
       setRotationResetDay(day);
       setSuccessMessage(`Réinitialisation: ${getDayName(day)}`);
       setTimeout(() => setSuccessMessage(null), 3000);
+
+      // Optionnel: si tu veux regénérer immédiatement après changement de jour, tu peux forcer (reroll) :
+      // await supabase.rpc('ensure_weekly_rotation_random', { p_force: true });
+      // void loadData();
     } catch (err) {
       console.error('Failed to save reset day:', err);
       setError('Erreur lors de la sauvegarde');
@@ -179,11 +305,7 @@ export const RotationTab: React.FC = () => {
     setError(null);
 
     try {
-      const { error } = await supabase
-        .from('rotation_tasks')
-        .update(updates)
-        .eq('id', taskId)
-        .eq('user_id', user.id);
+      const { error } = await supabase.from('rotation_tasks').update(updates).eq('id', taskId).eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -206,11 +328,7 @@ export const RotationTab: React.FC = () => {
     setError(null);
 
     try {
-      const { error } = await supabase
-        .from('rotation_tasks')
-        .delete()
-        .eq('id', taskId)
-        .eq('user_id', user.id);
+      const { error } = await supabase.from('rotation_tasks').delete().eq('id', taskId).eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -226,160 +344,180 @@ export const RotationTab: React.FC = () => {
     }
   };
 
+  /**
+   * Sauvegarde manuelle :
+   * - clôture les actives de la fenêtre
+   * - insert les assignations actuellement sélectionnées
+   *
+   * (on garde ta logique, elle est correcte et utile)
+   */
   const handleSaveAssignments = async () => {
-  if (!user) return;
+    if (!user) return;
 
-  // ✅ VALIDATION : Vérifier unicité
-  const taskIds = assignments.map(a => a.task_id);
-  const uniqueTaskIds = new Set(taskIds);
-
-  if (taskIds.length !== uniqueTaskIds.size) {
-    console.error('❌ Doublons détectés dans le state');
-    setError('❌ Erreur : Certaines tâches sont assignées plusieurs fois !');
-    setTimeout(() => setError(null), 5000);
-    return;
-  }
-
-  setSaving(true);
-  setError(null);
-
-  try {
-    const weekStart = getWeekStart();
-    console.log('📅 Semaine en cours:', weekStart);
-
-    // ✅ 1. SUPPRIMER assignations de LA SEMAINE EN COURS uniquement
-    const { error: deleteError } = await supabase
-      .from('rotation_assignments')
-      .delete()
-      .eq('user_id', user.id)
-      .eq('week_start', weekStart);  // ← Seulement cette semaine
-
-    if (deleteError) {
-      console.error('Erreur DELETE:', deleteError);
-      throw deleteError;
-    }
-    console.log('✅ Assignations de cette semaine supprimées');
-
-    // ✅ 2. PRÉPARER nouvelles assignations
-    let insertData = assignments
-      .filter((a) => a.child_id && a.task_id)
-      .map((a, index) => ({
-        user_id: user.id,
-        week_start: weekStart,
-        task_id: a.task_id,
-        child_id: a.child_id,
-        sort_order: index,
-      }));
-
-    // ✅ 3. DÉDUPLIQUER (sécurité contre doublons dans state)
-    const seen = new Set<string>();
-    const originalLength = insertData.length;
-    
-    insertData = insertData.filter(item => {
-      if (seen.has(item.task_id)) {
-        console.warn('⚠️ Doublon supprimé:', item.task_id);
-        return false;
-      }
-      seen.add(item.task_id);
-      return true;
-    });
-
-    if (insertData.length !== originalLength) {
-      console.warn(`⚠️ ${originalLength - insertData.length} doublons supprimés`);
-    }
-
-    console.log(`📊 ${insertData.length} assignations à insérer`);
-
-    // ✅ 4. INSÉRER nouvelles assignations
-    if (insertData.length > 0) {
-      const { error: insertError } = await supabase
-        .from('rotation_assignments')
-        .insert(insertData);
-
-      if (insertError) {
-        console.error('Erreur INSERT:', insertError);
-        
-        // Erreur de contrainte unique
-        if (insertError.code === '23505') {
-          throw new Error('Doublons détectés ! Vérifiez vos assignations.');
-        }
-        
-        throw new Error(`Erreur insertion: ${insertError.message}`);
-      }
-      console.log('✅ Assignations sauvegardées');
-    }
-
-    // ✅ 5. RECHARGER depuis DB pour synchroniser state
-    const { data: freshAssignments } = await supabase
-      .from('rotation_assignments')
-      .select('task_id, child_id')
-      .eq('user_id', user.id)
-      .eq('week_start', weekStart);
-
-    console.log(`🔄 Rechargé: ${freshAssignments?.length || 0} assignations`);
-    setAssignments(freshAssignments || []);
-
-    setSuccessMessage(`✅ ${insertData.length} assignations sauvegardées`);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur sauvegarde';
-    console.error('❌ ERREUR:', message);
-    setError(message);
-    setTimeout(() => setError(null), 5000);
-  } finally {
-    setSaving(false);
-  }
-};
-
-  const handleGenerateRandom = () => {
-    if (tasks.length === 0 || children.length === 0) {
-      setError('Ajoutez des tâches et des membres d\'abord');
+    const taskIds = assignments.map((a) => a.task_id);
+    const uniqueTaskIds = new Set(taskIds);
+    if (taskIds.length !== uniqueTaskIds.size) {
+      setError('❌ Erreur : Certaines tâches sont assignées plusieurs fois !');
+      setTimeout(() => setError(null), 5000);
       return;
     }
 
-    // ✅ DISTRIBUTION ÉQUITABLE : 1 tâche = 1 membre unique
-    
-    // 1. Mélanger les tâches aléatoirement
-    const shuffledTasks = [...tasks].sort(() => Math.random() - 0.5);
-    
-    // 2. Distribuer en round-robin (tour par tour)
-    const newAssignments: Assignment[] = [];
-    
-    shuffledTasks.forEach((task, index) => {
-      const childIndex = index % children.length;
-      newAssignments.push({
-        task_id: task.id,
-        child_id: children[childIndex].id,
-      });
-    });
+    setSaving(true);
+    setError(null);
 
-    setAssignments(newAssignments);
-    setSuccessMessage('✅ Rotation générée (1 tâche = 1 membre)');
-    setTimeout(() => setSuccessMessage(null), 3000);
+    try {
+      const nowISO = new Date().toISOString();
+
+      const { error: closeError } = await supabase
+        .from('rotation_assignments')
+        .update({ task_end_date: nowISO })
+        .eq('user_id', user.id)
+        .gte('week_start', weekStartISO)
+        .lt('week_start', weekEndISO)
+        .is('task_end_date', null);
+
+      if (closeError) throw closeError;
+
+      let insertData = assignments
+        .filter((a) => a.child_id && a.task_id)
+        .map((a, index) => ({
+          user_id: user.id,
+          week_start: weekStartISO,
+          task_id: a.task_id,
+          child_id: a.child_id,
+          sort_order: index,
+        }));
+
+      const seen = new Set<string>();
+      insertData = insertData.filter((row) => {
+        if (seen.has(row.task_id)) return false;
+        seen.add(row.task_id);
+        return true;
+      });
+
+      if (insertData.length > 0) {
+        const { error: insertError } = await supabase.from('rotation_assignments').insert(insertData);
+
+        if (insertError) {
+          if ((insertError as any).code === '23505') {
+            throw new Error('Conflit: une assignation active existe déjà pour une tâche. Réessayez après rafraîchissement.');
+          }
+          throw insertError;
+        }
+      }
+
+      const dedupedFresh = await fetchActiveAssignmentsThisWeek();
+      setAssignments(dedupedFresh);
+
+      setSuccessMessage(`✅ ${insertData.length} assignations sauvegardées`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur sauvegarde';
+      setError(message);
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /**
+   * 🎲 Maintenant, on déclenche la génération côté DB (source de vérité),
+   * avec clôture automatique des actives de la semaine (p_force=true).
+   */
+  const handleGenerateRandom = async () => {
+    if (!user) return;
+
+    if (tasks.length === 0 || participants.length === 0) {
+      setError("Ajoutez des tâches et des membres d'abord");
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const { error: rpcError } = await supabase.rpc('ensure_weekly_rotation_random', { p_force: true });
+      if (rpcError) throw rpcError;
+
+      const dedupedFresh = await fetchActiveAssignmentsThisWeek();
+      setAssignments(dedupedFresh);
+
+      setSuccessMessage('✅ Rotation générée aléatoirement');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur génération';
+      setError(message);
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const getAssignedChild = (taskId: string): string => {
     return assignments.find((a) => a.task_id === taskId)?.child_id || '';
   };
 
+  const getChildById = (childId: string): Child | undefined => {
+    return familyMembers.find((child) => child.id === childId);
+  };
+
+  const renderAvatarContent = (child?: Child): React.ReactNode => {
+    if (child?.avatar_url) {
+      return (
+        <img
+          src={getAvatarUrl(child.avatar_url) || ''}
+          alt={`Avatar de ${child.first_name}`}
+          className="rotation-avatar-img"
+        />
+      );
+    }
+    if (child?.icon) return <span className="rotation-avatar-fallback">{child.icon}</span>;
+    if (child?.first_name) return <span className="rotation-avatar-fallback">{child.first_name.charAt(0).toUpperCase()}</span>;
+    return <span className="rotation-avatar-fallback">—</span>;
+  };
+
+  const participants = useMemo(
+    () => resolveParticipants(familyMembers, rotationParticipants),
+    [familyMembers, rotationParticipants]
+  );
+
+  const persistParticipants = async (nextParticipants: string[] | null) => {
+    const normalized = nextParticipants && nextParticipants.length > 0 ? nextParticipants : null;
+    setRotationParticipants(normalized);
+    await updateConfig({ rotationParticipants: normalized });
+  };
+
+  const handleToggleParticipant = async (memberId: string) => {
+    const current = rotationParticipants ?? [];
+    const isSelected = current.includes(memberId);
+    const next = isSelected ? current.filter((id) => id !== memberId) : [...current, memberId];
+    await persistParticipants(next);
+  };
+
+  const handleSelectChildren = async () => {
+    const childIds = familyMembers.filter((member) => member.role === 'child').map((member) => member.id);
+    await persistParticipants(childIds);
+  };
+
+  const handleSelectAll = async () => {
+    const allIds = familyMembers.map((member) => member.id);
+    await persistParticipants(allIds);
+  };
+
+  const handleResetParticipants = async () => {
+    await persistParticipants(null);
+  };
+
   const updateAssignment = (taskId: string, childId: string) => {
     setAssignments((prev) => {
-      // ✅ GARANTIR UNICITÉ : Supprimer toute assignation existante de cette tâche
       const filtered = prev.filter((a) => a.task_id !== taskId);
-      
-      if (childId) {
-        // Ajouter nouvelle assignation unique
-        return [...filtered, { task_id: taskId, child_id: childId }];
-      }
-      
-      // Si childId vide = désassigner
+      if (childId) return [...filtered, { task_id: taskId, child_id: childId }];
       return filtered;
     });
   };
 
   return (
     <div className="rotation-tab">
-      {/* Messages */}
       {error && (
         <div className="config-alert config-alert-error">
           <span>⚠️</span>
@@ -404,9 +542,7 @@ export const RotationTab: React.FC = () => {
 
         <label className="input-label">
           Jour de réinitialisation hebdomadaire
-          <span className="input-hint">
-            La rotation se réinitialisera chaque {getDayName(rotationResetDay)}
-          </span>
+          <span className="input-hint">La rotation se réinitialisera chaque {getDayName(rotationResetDay)}</span>
         </label>
         <div className="day-selector">
           {[
@@ -466,9 +602,7 @@ export const RotationTab: React.FC = () => {
                         <Input
                           value={task.name}
                           onChange={(e) =>
-                            setTasks((prev) =>
-                              prev.map((t) => (t.id === task.id ? { ...t, name: e.target.value } : t))
-                            )
+                            setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, name: e.target.value } : t)))
                           }
                           placeholder="Nom de la tâche"
                         />
@@ -480,11 +614,7 @@ export const RotationTab: React.FC = () => {
                         >
                           ✓
                         </button>
-                        <button
-                          className="task-btn task-btn-cancel"
-                          onClick={() => setEditingTask(null)}
-                          type="button"
-                        >
+                        <button className="task-btn task-btn-cancel" onClick={() => setEditingTask(null)} type="button">
                           ✕
                         </button>
                       </>
@@ -516,22 +646,14 @@ export const RotationTab: React.FC = () => {
             </div>
 
             <div className="add-task-form">
-              <select
-                className="task-icon-select"
-                value={newTaskIcon}
-                onChange={(e) => setNewTaskIcon(e.target.value)}
-              >
+              <select className="task-icon-select" value={newTaskIcon} onChange={(e) => setNewTaskIcon(e.target.value)}>
                 {TASK_ICONS.map((icon) => (
                   <option key={icon} value={icon}>
                     {icon}
                   </option>
                 ))}
               </select>
-              <Input
-                placeholder="Ex: Cuisine, Balayer..."
-                value={newTaskName}
-                onChange={(e) => setNewTaskName(e.target.value)}
-              />
+              <Input placeholder="Ex: Cuisine, Balayer..." value={newTaskName} onChange={(e) => setNewTaskName(e.target.value)} />
               <Button onClick={handleAddTask} disabled={!newTaskName.trim() || saving}>
                 + Ajouter
               </Button>
@@ -541,37 +663,152 @@ export const RotationTab: React.FC = () => {
       </div>
 
       {/* Assignations */}
-      {tasks.length > 0 && children.length > 0 && (
+      {tasks.length > 0 && (
+        <div className="config-card">
+          <div className="config-card-header">
+            <div>
+              <h3>👨‍👩‍👧‍👦 Membres inclus dans la rotation</h3>
+              <p>Choisissez qui peut recevoir une tâche. Si rien n’est choisi, la rotation utilise les enfants.</p>
+            </div>
+          </div>
+
+          <div className="rotation-participant-actions">
+            <button type="button" className="rotation-participant-action" onClick={handleSelectChildren} disabled={saving}>
+              Enfants
+            </button>
+            <button type="button" className="rotation-participant-action" onClick={handleSelectAll} disabled={saving}>
+              Tous
+            </button>
+            <button type="button" className="rotation-participant-action" onClick={handleResetParticipants} disabled={saving}>
+              Réinitialiser
+            </button>
+          </div>
+
+          <div className="rotation-participants-grid">
+            {familyMembers.map((member) => {
+              const isSelected = (rotationParticipants ?? []).includes(member.id);
+              return (
+                <button
+                  key={member.id}
+                  type="button"
+                  className={`rotation-participant-card ${isSelected ? 'selected' : ''}`}
+                  onClick={() => handleToggleParticipant(member.id)}
+                  disabled={saving}
+                >
+                  <div className="rotation-participant-avatar">{renderAvatarContent(member)}</div>
+                  <div className="rotation-participant-info">
+                    <span className="rotation-participant-name">{member.first_name}</span>
+                    <span className={`rotation-participant-role ${member.role}`}>
+                      {member.role === 'child' ? 'Enfant' : 'Adulte'}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Assignations */}
+      {tasks.length > 0 && participants.length > 0 && (
         <div className="config-card">
           <div className="config-card-header">
             <div>
               <h3>👥 Assignations de cette semaine</h3>
-              <p>Chaque tâche ne peut être assignée qu'à un seul membre</p>
+              <p>Chaque tâche ne peut être assignée qu&apos;à un seul membre</p>
+              <div className="rotation-week-pill" style={{ marginTop: 8 }}>
+                <div className="rotation-week-title">{formatWeekRange(weekWindow.weekStartDate, weekWindow.weekEndDate)}</div>
+                <div className="rotation-week-sub">{formatResetLabel(rotationResetDay)}</div>
+              </div>
             </div>
           </div>
 
-          <div className="assignments-list">
-            {tasks.map((task) => (
-              <div key={task.id} className="assignment-row">
-                <span className="assignment-task">
-                  <span className="task-icon">{task.icon}</span>
-                  <span>{task.name}</span>
-                </span>
-                <select
-                  className="assignment-select"
-                  value={getAssignedChild(task.id)}
-                  onChange={(e) => updateAssignment(task.id, e.target.value)}
-                  disabled={saving}
+          <div className="rotation-assignments-grid">
+            {tasks.map((task) => {
+              const assignedChildId = getAssignedChild(task.id);
+              const assignedChild = assignedChildId ? getChildById(assignedChildId) : undefined;
+
+              return (
+                <div
+                  key={task.id}
+                  className="rotation-assignment-card"
+                  data-rotation-card="true"
+                  data-task-id={task.id}
                 >
-                  <option value="">— Non assigné —</option>
-                  {children.map((child) => (
-                    <option key={child.id} value={child.id}>
-                      {child.first_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
+                  <div className="rotation-assignment-header">
+                    <span className="rotation-task-badge">{task.icon}</span>
+                    <span className="rotation-task-title">{task.name}</span>
+                  </div>
+
+                  <div className="rotation-assignee-row">
+                    <button
+                      type="button"
+                      className="rotation-assignee-chip"
+                      aria-haspopup="menu"
+                      aria-expanded={openMenuTaskId === task.id}
+                      onClick={() =>
+                        setOpenMenuTaskId((prev) => (prev === task.id ? null : task.id))
+                      }
+                      disabled={saving}
+                    >
+                      <span className="rotation-assignee-avatar">{renderAvatarContent(assignedChild)}</span>
+                      <span className="rotation-assignee-name">{assignedChild?.first_name ?? 'Non assigné'}</span>
+                      <span className="rotation-assignee-chevron">▾</span>
+                    </button>
+
+                    {openMenuTaskId === task.id && (
+                      <div className="rotation-assignee-menu" role="menu">
+                        <div
+                          className={`rotation-assignee-item ${assignedChildId ? '' : 'selected'}`}
+                          role="menuitem"
+                          tabIndex={0}
+                          onClick={() => {
+                            updateAssignment(task.id, '');
+                            setOpenMenuTaskId(null);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              updateAssignment(task.id, '');
+                              setOpenMenuTaskId(null);
+                            }
+                          }}
+                        >
+                          <span>Non assigné</span>
+                          {!assignedChildId && <span className="rotation-assignee-check">✓</span>}
+                        </div>
+                        {participants.map((child) => {
+                          const isSelected = assignedChildId === child.id;
+                          return (
+                            <div
+                              key={child.id}
+                              className={`rotation-assignee-item ${isSelected ? 'selected' : ''}`}
+                              role="menuitem"
+                              tabIndex={0}
+                              onClick={() => {
+                                updateAssignment(task.id, child.id);
+                                setOpenMenuTaskId(null);
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                  event.preventDefault();
+                                  updateAssignment(task.id, child.id);
+                                  setOpenMenuTaskId(null);
+                                }
+                              }}
+                            >
+                              <span className="rotation-assignee-avatar">{renderAvatarContent(child)}</span>
+                              <span className="rotation-assignee-name">{child.first_name}</span>
+                              {isSelected && <span className="rotation-assignee-check">✓</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="rotation-actions">
@@ -585,11 +822,12 @@ export const RotationTab: React.FC = () => {
         </div>
       )}
 
-      {(tasks.length === 0 || children.length === 0) && !loading && (
+      {(tasks.length === 0 || familyMembers.length === 0 || participants.length === 0) && !loading && (
         <div className="config-card">
           <div className="config-placeholder">
             {tasks.length === 0 && 'Ajoutez des tâches de rotation ci-dessus'}
-            {tasks.length > 0 && children.length === 0 && 'Ajoutez des membres dans l\'onglet Famille'}
+            {tasks.length > 0 && familyMembers.length === 0 && "Ajoutez des membres dans l'onglet Famille"}
+            {tasks.length > 0 && familyMembers.length > 0 && participants.length === 0 && "Sélectionnez des participants pour la rotation"}
           </div>
         </div>
       )}
