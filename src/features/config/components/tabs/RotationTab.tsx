@@ -172,29 +172,6 @@ export const RotationTab: React.FC = () => {
     return members.filter((member) => member.role === 'child');
   };
 
-  useEffect(() => {
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target?.closest('[data-rotation-card="true"]')) {
-        setOpenMenuTaskId(null);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setOpenMenuTaskId(null);
-      }
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
   const fetchActiveAssignmentsThisWeek = async () => {
     if (!user) return [];
 
