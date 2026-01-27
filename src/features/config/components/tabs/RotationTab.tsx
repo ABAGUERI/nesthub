@@ -4,6 +4,7 @@ import { Input } from '@/shared/components/Input';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
 import { supabase } from '@/shared/utils/supabase';
+import { getAvatarUrl } from '../../services/avatar.service';
 
 interface RotationTask {
   id: string;
@@ -18,6 +19,7 @@ interface Child {
   id: string;
   first_name: string;
   icon: string;
+  avatar_url?: string | null;
 }
 
 interface Assignment {
@@ -200,7 +202,7 @@ export const RotationTab: React.FC = () => {
       // 2) Charger enfants
       const { data: childrenData, error: childrenError } = await supabase
         .from('family_members')
-        .select('id, first_name, icon')
+        .select('id, first_name, icon, avatar_url')
         .eq('user_id', user.id)
         .eq('role', 'child')
         .order('created_at', { ascending: true });
@@ -445,7 +447,16 @@ export const RotationTab: React.FC = () => {
     return children.find((child) => child.id === childId);
   };
 
-  const renderAvatar = (child?: Child): string => {
+  const renderAvatarContent = (child?: Child): React.ReactNode => {
+    if (child?.avatar_url) {
+      return (
+        <img
+          src={getAvatarUrl(child.avatar_url) || ''}
+          alt={`Avatar de ${child.first_name}`}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '999px' }}
+        />
+      );
+    }
     if (child?.icon) return child.icon;
     if (child?.first_name) return child.first_name.charAt(0).toUpperCase();
     return '—';
@@ -647,7 +658,7 @@ export const RotationTab: React.FC = () => {
                       }
                       disabled={saving}
                     >
-                      <span className="rotation-assignee-avatar">{renderAvatar(assignedChild)}</span>
+                      <span className="rotation-assignee-avatar">{renderAvatarContent(assignedChild)}</span>
                       <span className="rotation-assignee-name">{assignedChild?.first_name ?? 'Non assigné'}</span>
                       <span className="rotation-assignee-chevron">▾</span>
                     </button>
@@ -693,7 +704,7 @@ export const RotationTab: React.FC = () => {
                                 }
                               }}
                             >
-                              <span className="rotation-assignee-avatar">{renderAvatar(child)}</span>
+                              <span className="rotation-assignee-avatar">{renderAvatarContent(child)}</span>
                               <span className="rotation-assignee-name">{child.first_name}</span>
                               {isSelected && <span className="rotation-assignee-check">✓</span>}
                             </div>
