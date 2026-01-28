@@ -40,10 +40,14 @@ export const initiateGoogleOAuth = () => {
   authUrl.searchParams.append('state', requestId);
 
   sessionStorage.setItem('google_oauth_rid', requestId);
+  const origin = window.location.origin;
+  const redirectOrigin = new URL(redirectUri).origin;
   console.info('[GoogleOAuth] init', {
     rid: requestId,
     redirectUri,
-    origin: window.location.origin,
+    origin,
+    redirectOrigin,
+    originMismatch: origin !== redirectOrigin,
     timestamp: new Date().toISOString(),
   });
 

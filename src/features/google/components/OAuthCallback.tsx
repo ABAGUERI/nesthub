@@ -106,6 +106,7 @@ export const OAuthCallback: React.FC = () => {
         redirectUri,
         codeLength: code.length,
         currentUrl,
+        origin: window.location.origin,
         timestamp: new Date().toISOString(),
       });
 
