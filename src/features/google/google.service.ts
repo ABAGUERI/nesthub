@@ -29,9 +29,10 @@ const SCOPES = [
 export const initiateGoogleOAuth = () => {
   const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
   const requestId = crypto.randomUUID();
+  const redirectUri = GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
   
   authUrl.searchParams.append('client_id', GOOGLE_CLIENT_ID);
-  authUrl.searchParams.append('redirect_uri', GOOGLE_REDIRECT_URI);
+  authUrl.searchParams.append('redirect_uri', redirectUri);
   authUrl.searchParams.append('response_type', 'code');
   authUrl.searchParams.append('scope', SCOPES);
   authUrl.searchParams.append('access_type', 'offline');
@@ -41,7 +42,7 @@ export const initiateGoogleOAuth = () => {
   sessionStorage.setItem('google_oauth_rid', requestId);
   console.info('[GoogleOAuth] init', {
     rid: requestId,
-    redirectUri: GOOGLE_REDIRECT_URI,
+    redirectUri,
     origin: window.location.origin,
     timestamp: new Date().toISOString(),
   });

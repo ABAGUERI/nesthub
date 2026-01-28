@@ -18,7 +18,7 @@ export const OAuthCallback: React.FC = () => {
   const inFlightRef = useRef(false);
 
   // Correlation id pour logs (utile si tu compares avec logs edge)
-  const requestId = useMemo(() => crypto.randomUUID(), []);
+  const fallbackRid = useMemo(() => crypto.randomUUID(), []);
 
   const redirectUri = useMemo(() => {
     return import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
@@ -33,19 +33,20 @@ export const OAuthCallback: React.FC = () => {
     url.searchParams.delete('prompt');
     url.searchParams.delete('error');
     url.searchParams.delete('error_description');
+    url.searchParams.delete('state');
     window.history.replaceState({}, document.title, url.pathname);
   }, []);
 
   const logAndCleanUrl = useCallback(
-    (rid: string | null, beforeUrl: string) => {
+    (rid: string | null, beforeUrl: string, logId: string) => {
       cleanUrl();
-      console.info(`[OAuthCallback:${requestId}] cleanup`, {
+      console.info(`[OAuthCallback:${logId}] cleanup`, {
         rid,
         before: beforeUrl,
         after: window.location.pathname,
       });
     },
-    [cleanUrl, requestId]
+    [cleanUrl]
   );
 
   const restartGoogleConnect = useCallback(() => {
@@ -61,20 +62,21 @@ export const OAuthCallback: React.FC = () => {
     const errorDescription = searchParams.get('error_description');
     const ridParam = searchParams.get('state');
     const storedRid = sessionStorage.getItem('google_oauth_rid');
-    const rid = ridParam || storedRid || requestId;
+    const rid = ridParam || storedRid || fallbackRid;
+    const logId = rid;
     const currentUrl = window.location.href;
 
     if (errorParam) {
       setUiState('error');
       setError(errorDescription ? `Connexion Google annulée: ${errorDescription}` : 'Connexion Google annulée');
-      logAndCleanUrl(rid, currentUrl);
+      logAndCleanUrl(rid, currentUrl, logId);
       return;
     }
 
     if (!code) {
       setUiState('error');
       setError('Code OAuth manquant');
-      logAndCleanUrl(rid, currentUrl);
+      logAndCleanUrl(rid, currentUrl, logId);
       return;
     }
 
@@ -97,7 +99,7 @@ export const OAuthCallback: React.FC = () => {
       }
       inFlightRef.current = true;
 
-      console.info(`[OAuthCallback:${requestId}] exchange start`, {
+      console.info(`[OAuthCallback:${logId}] exchange start`, {
         rid,
         hasUser: !!supabaseUser,
         hasSession: !!session,
@@ -111,29 +113,29 @@ export const OAuthCallback: React.FC = () => {
 
       if (!result?.ok) {
         const exchangeError = result as GoogleOAuthExchangeError;
-        console.error(`[OAuthCallback:${requestId}] exchange failed`, exchangeError);
+        console.error(`[OAuthCallback:${logId}] exchange failed`, exchangeError);
 
         setUiState('error');
         setError(`${exchangeError.error}: ${exchangeError.description}`);
 
-        logAndCleanUrl(rid, currentUrl);
+        logAndCleanUrl(rid, currentUrl, logId);
         return;
       }
 
-      console.info(`[OAuthCallback:${requestId}] exchange success`);
+      console.info(`[OAuthCallback:${logId}] exchange success`);
       setUiState('success');
 
-      logAndCleanUrl(rid, currentUrl);
+      logAndCleanUrl(rid, currentUrl, logId);
       navigate('/onboarding', { replace: true });
     } catch (err: any) {
-      console.error(`[OAuthCallback:${requestId}] unexpected error`, err);
+      console.error(`[OAuthCallback:${logId}] unexpected error`, err);
       setUiState('error');
       setError('Erreur OAuth: impossible de finaliser la connexion.');
-      logAndCleanUrl(rid, currentUrl);
+      logAndCleanUrl(rid, currentUrl, logId);
     } finally {
       inFlightRef.current = false;
     }
-  }, [logAndCleanUrl, navigate, redirectUri, requestId, searchParams, session, supabaseUser]);
+  }, [fallbackRid, logAndCleanUrl, navigate, redirectUri, searchParams, session, supabaseUser]);
 
   useEffect(() => {
     if (loading) return;
