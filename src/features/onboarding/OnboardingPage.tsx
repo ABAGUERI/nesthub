@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { OnboardingLayout } from './components/OnboardingLayout';
 import { FamilyStep } from './components/FamilyStep';
 import { GoogleStep } from './components/GoogleStep';
@@ -9,6 +9,7 @@ import { supabase } from '@/shared/utils/supabase';
 import { createChild } from '@/shared/utils/children.service';
 import {
   createDefaultTaskLists,
+  googleOAuthExchange,
   initiateGoogleOAuth,
 } from '@/features/google/google.service';
 
@@ -21,6 +22,7 @@ const TOTAL_STEPS = 3;
 
 export const OnboardingPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading: authLoading, refreshUser } = useAuth();
 
   // ✅ Source unique de vérité pour l'onboarding
@@ -31,12 +33,28 @@ export const OnboardingPage: React.FC = () => {
   const [hydrating, setHydrating] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const hasHydratedRef = useRef<string | null>(null);
+  const oauthHandledRef = useRef(false);
+
+  const redirectUri = useMemo(() => {
+    return import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
+  }, []);
 
   const isBusy = loading || hydrating;
   const logDev = useCallback((message: string, payload?: Record<string, unknown>) => {
     if (import.meta.env.DEV) {
       console.info(`[Onboarding] ${message}`, payload ?? {});
     }
+  }, []);
+
+  const cleanOAuthParams = useCallback(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('code');
+    url.searchParams.delete('scope');
+    url.searchParams.delete('authuser');
+    url.searchParams.delete('prompt');
+    url.searchParams.delete('error');
+    url.searchParams.delete('error_description');
+    window.history.replaceState({}, document.title, url.pathname);
   }, []);
 
   const hydrateOnboardingState = useCallback(async () => {
@@ -123,8 +141,96 @@ export const OnboardingPage: React.FC = () => {
 
   useEffect(() => {
     if (authLoading || !user) return;
+
+    const code = searchParams.get('code');
+    const errorParam = searchParams.get('error');
+    if ((code || errorParam) && !oauthHandledRef.current) {
+      return;
+    }
+
     void hydrateOnboardingState();
-  }, [authLoading, hydrateOnboardingState, user]);
+  }, [authLoading, hydrateOnboardingState, searchParams, user]);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+
+    const code = searchParams.get('code');
+    const errorParam = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+
+    if (!code && !errorParam) {
+      return;
+    }
+
+    if (oauthHandledRef.current) {
+      return;
+    }
+    oauthHandledRef.current = true;
+
+    if (errorParam) {
+      setError(errorDescription ? `Connexion Google annulée: ${errorDescription}` : 'Connexion Google annulée');
+      cleanOAuthParams();
+      return;
+    }
+
+    const dedupeKey = `google_oauth_processed_${code}`;
+    if (sessionStorage.getItem(dedupeKey)) {
+      cleanOAuthParams();
+      void hydrateOnboardingState();
+      return;
+    }
+    sessionStorage.setItem(dedupeKey, '1');
+
+    setLoading(true);
+    setError(null);
+
+    const runExchange = async () => {
+      logDev('oauth exchange start', {
+        codeLength: code?.length ?? 0,
+        redirectUri,
+        userId: user.id,
+      });
+
+      const result = await googleOAuthExchange(code, redirectUri);
+
+      if (!result?.ok) {
+        const errorResult = result as { error: string; description: string };
+        setError(`${errorResult.error}: ${errorResult.description}`);
+        cleanOAuthParams();
+        return;
+      }
+
+      logDev('oauth exchange success');
+      cleanOAuthParams();
+      await hydrateOnboardingState();
+    };
+
+    runExchange()
+      .catch((err) => {
+        console.error('Erreur OAuth onboarding:', err);
+        setError('Erreur OAuth: impossible de finaliser la connexion.');
+        cleanOAuthParams();
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [
+    authLoading,
+    cleanOAuthParams,
+    hydrateOnboardingState,
+    logDev,
+    redirectUri,
+    searchParams,
+    user,
+  ]);
+
+  useEffect(() => {
+    logDev('state change', {
+      currentStep,
+      childrenCount: children.length,
+      googleConnected,
+    });
+  }, [children.length, currentStep, googleConnected, logDev]);
 
   useEffect(() => {
     logDev('state change', {
