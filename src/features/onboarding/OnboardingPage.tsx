@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { OnboardingLayout } from './components/OnboardingLayout';
 import { FamilyStep } from './components/FamilyStep';
@@ -30,16 +30,34 @@ export const OnboardingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [hydrating, setHydrating] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasHydratedRef = useRef<string | null>(null);
 
   const isBusy = loading || hydrating;
+  const logDev = useCallback((message: string, payload?: Record<string, unknown>) => {
+    if (import.meta.env.DEV) {
+      console.info(`[Onboarding] ${message}`, payload ?? {});
+    }
+  }, []);
 
   const hydrateOnboardingState = useCallback(async () => {
     if (!user) return;
+
+    if (hasHydratedRef.current === user.id) {
+      return;
+    }
+    hasHydratedRef.current = user.id;
 
     setHydrating(true);
     setError(null);
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      logDev('hydrate start', {
+        userId: user.id,
+        hasSession: !!sessionData?.session,
+        onboardingCompleted: user.onboardingCompleted,
+      });
+
       // ✅ Re-hydratation DB au mount
       const [childrenResult, googleResult, taskListsResult] = await Promise.all([
         supabase
@@ -47,11 +65,7 @@ export const OnboardingPage: React.FC = () => {
           .select('first_name, icon')
           .eq('user_id', user.id)
           .eq('role', 'child'),
-        supabase
-          .from('google_connections')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle(),
+        supabase.rpc('get_google_connection'),
         supabase.from('task_lists').select('id').eq('user_id', user.id),
       ]);
 
@@ -68,11 +82,17 @@ export const OnboardingPage: React.FC = () => {
         setChildren(dbChildren);
       }
 
+      const googleConnection = Array.isArray(googleResult.data) ? googleResult.data[0] : googleResult.data;
       const hasChildren = dbChildren.length > 0;
-      const hasGoogleConnection = Boolean(googleResult.data);
+      const hasGoogleConnection = Boolean(googleConnection);
       const hasTaskLists = (taskListsResult.data || []).length > 0;
 
       setGoogleConnected(hasGoogleConnection);
+      logDev('hydrate result', {
+        childrenCount: dbChildren.length,
+        googleConnected: hasGoogleConnection,
+        taskListsCount: taskListsResult.data?.length ?? 0,
+      });
 
       // ✅ Déterminer l'étape depuis la DB
       if (!hasChildren) {
@@ -99,12 +119,20 @@ export const OnboardingPage: React.FC = () => {
     } finally {
       setHydrating(false);
     }
-  }, [navigate, user]);
+  }, [logDev, navigate, user]);
 
   useEffect(() => {
     if (authLoading || !user) return;
     void hydrateOnboardingState();
   }, [authLoading, hydrateOnboardingState, user]);
+
+  useEffect(() => {
+    logDev('state change', {
+      currentStep,
+      childrenCount: children.length,
+      googleConnected,
+    });
+  }, [children.length, currentStep, googleConnected, logDev]);
 
   const saveFamily = useCallback(async () => {
     if (!user) return false;
@@ -158,22 +186,12 @@ export const OnboardingPage: React.FC = () => {
       setError(null);
 
       try {
-        // ✅ Idempotent : ne créer les listes que si elles n'existent pas
-        const { data: existingTaskLists, error: taskListError } = await supabase
-          .from('task_lists')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
+        // ✅ Idempotent : ne créer que les listes manquantes
+        const childrenNames = children
+          .filter((c) => c.name.trim() !== '')
+          .map((c) => c.name.trim());
 
-        if (taskListError) throw taskListError;
-
-        if (!existingTaskLists || existingTaskLists.length === 0) {
-          const childrenNames = children
-            .filter((c) => c.name.trim() !== '')
-            .map((c) => c.name.trim());
-
-          await createDefaultTaskLists(user.id, childrenNames);
-        }
+        await createDefaultTaskLists(user.id, childrenNames);
 
         const { error: calendarError } = await supabase
           .from('google_connections')
