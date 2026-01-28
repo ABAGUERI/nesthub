@@ -2,14 +2,15 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
-import { GoogleOAuthExchangeError, googleOAuthExchange } from '../google.service';
+import { ensureSession } from '@/shared/utils/supabase';
+import { GoogleOAuthExchangeError, googleOAuthExchange, waitForGoogleConnection } from '../google.service';
 
 type UiState = 'idle' | 'processing' | 'success' | 'error';
 
 export const OAuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { supabaseUser, session, loading } = useAuth() as any; // adapte si ton hook expose déjà session
+  const { supabaseUser, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [uiState, setUiState] = useState<UiState>('idle');
 
@@ -77,7 +78,6 @@ export const OAuthCallback: React.FC = () => {
     try {
       console.info(`[OAuthCallback:${requestId}] exchange start`, {
         hasUser: !!supabaseUser,
-        hasSession: !!session,
         redirectUri,
         codeLength: code.length,
       });
@@ -106,24 +106,36 @@ export const OAuthCallback: React.FC = () => {
       setError('Erreur OAuth: impossible de finaliser la connexion.');
       cleanUrl();
     }
-  }, [cleanUrl, navigate, redirectUri, requestId, searchParams, session, supabaseUser]);
+  }, [cleanUrl, navigate, redirectUri, requestId, searchParams, supabaseUser]);
 
   useEffect(() => {
     if (loading) return;
 
-    // Important : ne pas lancer tant qu’on n’a pas une session valide.
-    // Si ton useAuth ne fournit pas session, garde supabaseUser mais c’est moins robuste.
-    if (!supabaseUser || !session) {
-      const nextUrl = `/auth/callback${window.location.search}`;
-      navigate(`/login?next=${encodeURIComponent(nextUrl)}`, { replace: true });
-      return;
-    }
-
     if (hasRunRef.current) return;
     hasRunRef.current = true;
 
-    void handleCallback();
-  }, [handleCallback, loading, navigate, session, supabaseUser]);
+    const ensureSessionAndRun = async () => {
+      const session = await ensureSession();
+      if (!session) {
+        const nextUrl = `/auth/callback${window.location.search}`;
+        navigate(`/login?next=${encodeURIComponent(nextUrl)}`, { replace: true });
+        return;
+      }
+
+      await handleCallback();
+
+      const connection = await waitForGoogleConnection();
+      if (!connection) {
+        console.warn(`[OAuthCallback:${requestId}] connection not detected after exchange`);
+      } else {
+        console.info(`[OAuthCallback:${requestId}] connection detected`, {
+          gmailAddress: connection.gmailAddress,
+        });
+      }
+    };
+
+    void ensureSessionAndRun();
+  }, [handleCallback, loading, navigate, requestId, supabaseUser]);
 
   const isLoading = uiState === 'processing' || loading;
 

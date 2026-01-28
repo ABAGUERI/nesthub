@@ -9,6 +9,24 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+export const ensureSession = async () => {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) {
+    return null;
+  }
+
+  if (data.session) {
+    return data.session;
+  }
+
+  const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+  if (refreshError) {
+    return null;
+  }
+
+  return refreshedData.session ?? null;
+};
+
 // Helper pour obtenir l'utilisateur actuel
 export const getCurrentUser = async () => {
   const { data: { user }, error } = await supabase.auth.getUser();
