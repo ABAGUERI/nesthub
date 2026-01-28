@@ -5,12 +5,14 @@ import { FamilyStep } from './components/FamilyStep';
 import { GoogleStep } from './components/GoogleStep';
 import { OnboardingChild, OnboardingNextPayload } from './types';
 import { useAuth } from '@/shared/hooks/useAuth';
-import { supabase } from '@/shared/utils/supabase';
+import { ensureSession, supabase } from '@/shared/utils/supabase';
 import { createChild } from '@/shared/utils/children.service';
 import {
   createDefaultTaskLists,
   googleOAuthExchange,
   initiateGoogleOAuth,
+  updateGoogleConnectionSettings,
+  waitForGoogleConnection,
 } from '@/features/google/google.service';
 
 const DEFAULT_CHILDREN: OnboardingChild[] = [
@@ -34,6 +36,7 @@ export const OnboardingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const hasHydratedRef = useRef<string | null>(null);
   const oauthHandledRef = useRef(false);
+  const hydrationRequestId = useRef(crypto.randomUUID());
 
   const redirectUri = useMemo(() => {
     return import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
@@ -69,12 +72,18 @@ export const OnboardingPage: React.FC = () => {
     setError(null);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
+      const session = await ensureSession();
       logDev('hydrate start', {
+        requestId: hydrationRequestId.current,
         userId: user.id,
-        hasSession: !!sessionData?.session,
+        hasSession: !!session,
         onboardingCompleted: user.onboardingCompleted,
       });
+
+      if (!session) {
+        setError('Session expirée. Merci de vous reconnecter.');
+        return;
+      }
 
       // ✅ Re-hydratation DB au mount
       const [childrenResult, googleResult, taskListsResult] = await Promise.all([
@@ -201,6 +210,12 @@ export const OnboardingPage: React.FC = () => {
       }
 
       logDev('oauth exchange success');
+      const connection = await waitForGoogleConnection();
+      logDev('oauth exchange connection', {
+        requestId: hydrationRequestId.current,
+        found: !!connection,
+        gmailAddress: connection?.gmailAddress ?? null,
+      });
       cleanOAuthParams();
       await hydrateOnboardingState();
     };
@@ -223,14 +238,6 @@ export const OnboardingPage: React.FC = () => {
     searchParams,
     user,
   ]);
-
-  useEffect(() => {
-    logDev('state change', {
-      currentStep,
-      childrenCount: children.length,
-      googleConnected,
-    });
-  }, [children.length, currentStep, googleConnected, logDev]);
 
   useEffect(() => {
     logDev('state change', {
@@ -299,14 +306,9 @@ export const OnboardingPage: React.FC = () => {
 
         await createDefaultTaskLists(user.id, childrenNames);
 
-        const { error: calendarError } = await supabase
-          .from('google_connections')
-          .update({
-            selected_calendar_id: selectedCalendars[0],
-          })
-          .eq('user_id', user.id);
-
-        if (calendarError) throw calendarError;
+        await updateGoogleConnectionSettings({
+          selectedCalendarId: selectedCalendars[0],
+        });
 
         const { error: profileError } = await supabase
           .from('profiles')
