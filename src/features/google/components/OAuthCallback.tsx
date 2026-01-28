@@ -3,13 +3,23 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
 import { GoogleOAuthExchangeError, googleOAuthExchange } from '../google.service';
+import { supabase } from '@/shared/utils/supabase';
 
 type UiState = 'idle' | 'processing' | 'success' | 'error';
 
+console.error('🔥 OAuthCallback MODULE LOADED 🔥', window.location.href);
+
 export const OAuthCallback: React.FC = () => {
+  console.error('✅ OAuthCallback RENDER', window.location.href);
+
+  React.useEffect(() => {
+    console.error('✅ OAuthCallback MOUNTED (useEffect)', window.location.href);
+  }, []);
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { supabaseUser, session, loading } = useAuth() as any; // adapte si ton hook expose déjà session
+  const { supabaseUser, session, loading } = useAuth() as any;
+
   const [error, setError] = useState<string | null>(null);
   const [uiState, setUiState] = useState<UiState>('idle');
 
@@ -17,7 +27,7 @@ export const OAuthCallback: React.FC = () => {
   const hasRunRef = useRef(false);
   const inFlightRef = useRef(false);
 
-  // Correlation id pour logs (utile si tu compares avec logs edge)
+  // Correlation id pour logs (utile côté edge)
   const fallbackRid = useMemo(() => crypto.randomUUID(), []);
 
   const redirectUri = useMemo(() => {
@@ -25,7 +35,6 @@ export const OAuthCallback: React.FC = () => {
   }, []);
 
   const cleanUrl = useCallback(() => {
-    // Retire les params OAuth pour empêcher tout replay
     const url = new URL(window.location.href);
     url.searchParams.delete('code');
     url.searchParams.delete('scope');
@@ -50,42 +59,49 @@ export const OAuthCallback: React.FC = () => {
   );
 
   const restartGoogleConnect = useCallback(() => {
-    // Ici tu peux rediriger vers ton bouton / route "connect google"
-    // Exemple : /onboarding ou /settings/integrations
     cleanUrl();
     navigate('/onboarding', { replace: true });
   }, [cleanUrl, navigate]);
 
   const handleCallback = useCallback(async () => {
+    // Ne traite qu’une seule fois
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+
     const code = searchParams.get('code');
     const errorParam = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
     const ridParam = searchParams.get('state');
     const storedRid = sessionStorage.getItem('google_oauth_rid');
+
     const rid = ridParam || storedRid || fallbackRid;
     const logId = rid;
     const currentUrl = window.location.href;
+
+    // Si l’URL est déjà “clean” (pas de code), on n’a rien à faire ici => on sort.
+    // IMPORTANT: sinon tu te tires une balle dans le pied après un cleanUrl().
+    if (!code && !errorParam) {
+      console.info(`[OAuthCallback:${logId}] no code in url -> redirect to onboarding`);
+      navigate('/onboarding', { replace: true });
+      inFlightRef.current = false;
+      return;
+    }
 
     if (errorParam) {
       setUiState('error');
       setError(errorDescription ? `Connexion Google annulée: ${errorDescription}` : 'Connexion Google annulée');
       logAndCleanUrl(rid, currentUrl, logId);
-      return;
-    }
-
-    if (!code) {
-      setUiState('error');
-      setError('Code OAuth manquant');
-      logAndCleanUrl(rid, currentUrl, logId);
+      inFlightRef.current = false;
       return;
     }
 
     // Dedupe par code (survit aux remounts / refresh)
     const dedupeKey = `google_oauth_processed_${code}`;
     if (sessionStorage.getItem(dedupeKey)) {
-      // Déjà traité : on évite de rappeler l’edge function
+      console.info(`[OAuthCallback:${logId}] already processed -> redirect onboarding`);
       cleanUrl();
       navigate('/onboarding', { replace: true });
+      inFlightRef.current = false;
       return;
     }
     sessionStorage.setItem(dedupeKey, '1');
@@ -94,11 +110,6 @@ export const OAuthCallback: React.FC = () => {
     setError(null);
 
     try {
-      if (inFlightRef.current) {
-        return;
-      }
-      inFlightRef.current = true;
-
       console.info(`[OAuthCallback:${logId}] exchange start`, {
         rid,
         hasUser: !!supabaseUser,
@@ -126,6 +137,7 @@ export const OAuthCallback: React.FC = () => {
       console.info(`[OAuthCallback:${logId}] exchange success`);
       setUiState('success');
 
+      // Clean + redirect hors de /auth/callback
       logAndCleanUrl(rid, currentUrl, logId);
       navigate('/onboarding', { replace: true });
     } catch (err: any) {
@@ -136,24 +148,36 @@ export const OAuthCallback: React.FC = () => {
     } finally {
       inFlightRef.current = false;
     }
-  }, [fallbackRid, logAndCleanUrl, navigate, redirectUri, searchParams, session, supabaseUser]);
+  }, [
+    cleanUrl,
+    fallbackRid,
+    logAndCleanUrl,
+    navigate,
+    redirectUri,
+    searchParams,
+    session,
+    supabaseUser,
+  ]);
 
   useEffect(() => {
     if (loading) return;
-
-    // Important : ne pas lancer tant qu’on n’a pas une session valide.
-    // Si ton useAuth ne fournit pas session, garde supabaseUser mais c’est moins robuste.
-    if (!supabaseUser || !session) {
-      const nextUrl = `/auth/callback${window.location.search}`;
-      navigate(`/login?next=${encodeURIComponent(nextUrl)}`, { replace: true });
-      return;
-    }
-
     if (hasRunRef.current) return;
     hasRunRef.current = true;
 
-    void handleCallback();
-  }, [handleCallback, loading, navigate, session, supabaseUser]);
+    (async () => {
+      // Vérifie la session “live” (plus fiable au moment T)
+      const { data } = await supabase.auth.getSession();
+      const liveSession = data.session;
+
+      if (!liveSession) {
+        const nextUrl = `/auth/callback${window.location.search}`;
+        navigate(`/login?next=${encodeURIComponent(nextUrl)}`, { replace: true });
+        return;
+      }
+
+      await handleCallback();
+    })();
+  }, [handleCallback, loading, navigate]);
 
   const isLoading = uiState === 'processing' || loading;
 

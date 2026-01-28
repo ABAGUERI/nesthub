@@ -121,8 +121,9 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({
     setError(null);
 
     try {
+      console.log('✅ completeOnboarding: start');
       // Vérifier que Google est connecté
-      const googleConnection = await getGoogleConnection(user.id);
+      const googleConnection = await getGoogleConnection();
       if (!googleConnection) {
         throw new Error('Veuillez connecter votre compte Google');
       }
@@ -132,27 +133,34 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({
         .filter((c) => c.name.trim() !== '')
         .map((c) => c.name.trim());
 
+      console.log('✅ completeOnboarding: creating task lists...');
+
       await createDefaultTaskLists(user.id, childrenNames);
 
+      console.log('✅ completeOnboarding: task lists created');
+
+      console.log('✅ completeOnboarding: saving calendar...');
       // Sauvegarder les calendriers sélectionnés
       if (selectedCalendars.length > 0) {
-        await supabase
+        const { error: calErr } = await supabase
           .from('google_connections')
-          .update({
-            selected_calendar_id: selectedCalendars[0], // Premier = principal
-          })
+          .update({ selected_calendar_id: selectedCalendars[0] })
           .eq('user_id', user.id);
+
+        console.log('✅ completeOnboarding: calendar update error?', calErr);
+        if (calErr) throw calErr;
       }
 
-      // Marquer l'onboarding comme complété
-      await supabase
+      console.log('✅ completeOnboarding: marking profile completed...');
+      const { error: profErr } = await supabase
         .from('profiles')
         .update({ onboarding_completed: true })
         .eq('id', user.id);
 
-      console.log('✅ Onboarding terminé');
+      console.log('✅ completeOnboarding: profile update error?', profErr);
+      if (profErr) throw profErr;
 
-      // Rediriger vers le dashboard
+      console.log('✅ completeOnboarding: redirecting dashboard');
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message);

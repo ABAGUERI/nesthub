@@ -42,7 +42,7 @@ export const GoogleStep: React.FC = () => {
 
     setLoadingCalendars(true);
     try {
-      const connection = await getGoogleConnection(user.id);
+      const connection = await getGoogleConnection();
 
       if (connection) {
         setGoogleConnected(true);

@@ -112,18 +112,29 @@ export const googleOAuthExchange = async (
 /**
  * Récupérer la connexion Google de l'utilisateur
  */
-export const getGoogleConnection = async (userId: string) => {
-  const connection = await getGoogleConnectionSafe(userId);
+export const getGoogleConnection = async () => {
+  const { data, error } = await supabase.rpc('get_google_connection');
+
+  if (error) {
+    console.error('[getGoogleConnection:rnc] rpc error', error);
+    throw error;
+  }
+
+  const connection = data?.[0];
   if (!connection) return null;
 
   return {
     id: connection.id,
-    userId: connection.userId,
-    gmailAddress: connection.gmailAddress,
-    selectedCalendarId: connection.selectedCalendarId,
-    selectedCalendarName: connection.selectedCalendarName,
-    groceryListId: connection.groceryListId,
-    groceryListName: connection.groceryListName,
+    userId: connection.user_id,
+    gmailAddress: connection.gmail_address,
+    selectedCalendarId: connection.selected_calendar_id,
+    selectedCalendarName: connection.selected_calendar_name,
+    groceryListId: connection.grocery_list_id,
+    groceryListName: connection.grocery_list_name,
+    // optionnel: expiresAt/scope si tu veux les afficher
+    expiresAt: connection.expires_at,
+    scope: connection.scope,
+    updatedAt: connection.updated_at,
   };
 };
 
