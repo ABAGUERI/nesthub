@@ -13,7 +13,8 @@ import {
  */
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI || '';
+const GOOGLE_REDIRECT_URI =
+  import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
 
 // Scopes nécessaires
 const SCOPES = [
@@ -95,18 +96,38 @@ export const googleOAuthExchange = async (
 /**
  * Récupérer la connexion Google de l'utilisateur
  */
-export const getGoogleConnection = async (userId: string) => {
-  const connection = await getGoogleConnectionSafe(userId);
-  if (!connection) return null;
+export const getGoogleConnection = async (userId?: string) => {
+  const { data, error } = await supabase.rpc('get_google_connection');
+  if (error) {
+    return null;
+  }
+
+  const baseConnection = Array.isArray(data) ? data[0] : data;
+  if (!baseConnection) return null;
+
+  if (userId) {
+    const connection = await getGoogleConnectionSafe(userId);
+    if (connection) {
+      return {
+        id: connection.id,
+        userId: connection.userId,
+        gmailAddress: connection.gmailAddress,
+        selectedCalendarId: connection.selectedCalendarId,
+        selectedCalendarName: connection.selectedCalendarName,
+        groceryListId: connection.groceryListId,
+        groceryListName: connection.groceryListName,
+      };
+    }
+  }
 
   return {
-    id: connection.id,
-    userId: connection.userId,
-    gmailAddress: connection.gmailAddress,
-    selectedCalendarId: connection.selectedCalendarId,
-    selectedCalendarName: connection.selectedCalendarName,
-    groceryListId: connection.groceryListId,
-    groceryListName: connection.groceryListName,
+    id: baseConnection.id,
+    userId: baseConnection.user_id,
+    gmailAddress: baseConnection.gmail_address,
+    selectedCalendarId: baseConnection.selected_calendar_id,
+    selectedCalendarName: baseConnection.selected_calendar_name,
+    groceryListId: null,
+    groceryListName: null,
   };
 };
 
@@ -186,42 +207,71 @@ export const createDefaultTaskLists = async (
     }
   });
 
-  const createdLists = [];
+  const { data: existingLists, error: existingError } = await supabase
+    .from('task_lists')
+    .select('id, name, google_task_list_id, type')
+    .eq('user_id', userId);
+
+  if (existingError) throw existingError;
+
+  const existingByName = new Map(
+    (existingLists || []).map((list) => [list.name, list])
+  );
+
+  const createdLists: Array<{ id: string; name: string; type: string }> = [];
 
   // Créer chaque liste dans Google Tasks
   for (const list of listsToCreate) {
-    try {
-      const googleList = await createTaskList(list.name);
-      
-      // Sauvegarder dans Supabase
-      const { error } = await supabase.from('task_lists').insert({
-        user_id: userId,
-        google_task_list_id: googleList.id,
-        name: googleList.title,
-        type: list.type,
-      });
-
-      if (error) {
-        console.error(`Error saving task list ${list.name}:`, error);
-      } else {
-        createdLists.push({
-          id: googleList.id,
-          name: googleList.title,
-          type: list.type,
-        });
+    if (existingByName.has(list.name)) {
+      const existing = existingByName.get(list.name);
+      if (existing) {
+        if (existing.google_task_list_id) {
+          createdLists.push({
+            id: existing.google_task_list_id,
+            name: existing.name,
+            type: list.type,
+          });
+        }
       }
-    } catch (error) {
-      console.error(`Error creating task list ${list.name}:`, error);
+      continue;
     }
+
+    const googleList = await createTaskList(list.name);
+
+    const { error } = await supabase.from('task_lists').insert({
+      user_id: userId,
+      google_task_list_id: googleList.id,
+      name: googleList.title,
+      type: list.type,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    createdLists.push({
+      id: googleList.id,
+      name: googleList.title,
+      type: list.type,
+    });
   }
 
   // Mettre à jour la connexion Google avec l'ID de la liste Épicerie
-  const groceryList = createdLists.find((l) => l.type === 'grocery');
-  if (groceryList) {
+  const groceryList =
+    createdLists.find((l) => l.type === 'grocery') ||
+    (existingLists || []).find((l) => l.type === 'grocery');
+  if (
+    groceryList &&
+    (('google_task_list_id' in groceryList && groceryList.google_task_list_id) ||
+      (!('google_task_list_id' in groceryList) && groceryList.id))
+  ) {
     await supabase
       .from('google_connections')
       .update({
-        grocery_list_id: groceryList.id,
+        grocery_list_id:
+          'google_task_list_id' in groceryList
+            ? groceryList.google_task_list_id
+            : groceryList.id,
         grocery_list_name: groceryList.name,
       })
       .eq('user_id', userId);

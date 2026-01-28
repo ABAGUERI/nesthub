@@ -31,6 +31,11 @@ export const GoogleStep: React.FC<GoogleStepProps> = ({
   const [calendars, setCalendars] = useState<Calendar[]>([]);
   const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
   const [googleError, setGoogleError] = useState<string | null>(null);
+  const logDev = (message: string, payload?: Record<string, unknown>) => {
+    if (import.meta.env.DEV) {
+      console.info(`[Onboarding:GoogleStep] ${message}`, payload ?? {});
+    }
+  };
 
   useEffect(() => {
     if (!user || !googleConnected) return;
@@ -41,6 +46,11 @@ export const GoogleStep: React.FC<GoogleStepProps> = ({
         const connection = await getGoogleConnection(user.id);
 
         if (connection) {
+          logDev('google connection loaded', {
+            gmailAddress: connection.gmailAddress,
+            selectedCalendarId: connection.selectedCalendarId,
+          });
+          setGoogleError(null);
           const calendarId = connection.selectedCalendarId || 'primary';
           const calendarName = connection.selectedCalendarName || 'Calendrier principal';
           setCalendars([
@@ -53,9 +63,13 @@ export const GoogleStep: React.FC<GoogleStepProps> = ({
             },
           ]);
           setSelectedCalendars([calendarId]);
+        } else {
+          logDev('google connection missing');
+          setGoogleError("Connexion Google introuvable. Réessaie la connexion.");
         }
       } catch (err) {
         console.error('Error checking Google connection:', err);
+        setGoogleError("Impossible de récupérer la connexion Google. Réessaie ou reconnecte-toi.");
       } finally {
         setLoadingCalendars(false);
       }
