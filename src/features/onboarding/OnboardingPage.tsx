@@ -232,6 +232,14 @@ export const OnboardingPage: React.FC = () => {
     });
   }, [children.length, currentStep, googleConnected, logDev]);
 
+  useEffect(() => {
+    logDev('state change', {
+      currentStep,
+      childrenCount: children.length,
+      googleConnected,
+    });
+  }, [children.length, currentStep, googleConnected, logDev]);
+
   const saveFamily = useCallback(async () => {
     if (!user) return false;
 
