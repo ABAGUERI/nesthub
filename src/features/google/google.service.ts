@@ -28,13 +28,24 @@ const SCOPES = [
  */
 export const initiateGoogleOAuth = () => {
   const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+  const requestId = crypto.randomUUID();
+  const redirectUri = GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
   
   authUrl.searchParams.append('client_id', GOOGLE_CLIENT_ID);
-  authUrl.searchParams.append('redirect_uri', GOOGLE_REDIRECT_URI);
+  authUrl.searchParams.append('redirect_uri', redirectUri);
   authUrl.searchParams.append('response_type', 'code');
   authUrl.searchParams.append('scope', SCOPES);
   authUrl.searchParams.append('access_type', 'offline');
   authUrl.searchParams.append('prompt', 'consent'); // Force l'affichage du consentement
+  authUrl.searchParams.append('state', requestId);
+
+  sessionStorage.setItem('google_oauth_rid', requestId);
+  console.info('[GoogleOAuth] init', {
+    rid: requestId,
+    redirectUri,
+    origin: window.location.origin,
+    timestamp: new Date().toISOString(),
+  });
 
   // Rediriger vers Google OAuth
   window.location.href = authUrl.toString();
@@ -59,7 +70,8 @@ export type GoogleOAuthExchangeResult = GoogleOAuthExchangeSuccess | GoogleOAuth
  */
 export const googleOAuthExchange = async (
   code: string,
-  redirectUri: string
+  redirectUri: string,
+  requestId?: string | null
 ): Promise<GoogleOAuthExchangeResult> => {
   // 1) Forcer récupération session
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -76,8 +88,9 @@ export const googleOAuthExchange = async (
   const { data, error } = await supabase.functions.invoke('google-oauth-exchange', {
     headers: {
       Authorization: `Bearer ${accessToken}`,
+      ...(requestId ? { 'x-request-id': requestId } : {}),
     },
-    body: { code, redirectUri },
+    body: { code, redirectUri, rid: requestId ?? null },
   });
 
   if (error) {

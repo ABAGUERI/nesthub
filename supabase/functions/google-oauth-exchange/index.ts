@@ -15,6 +15,7 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization') ?? '';
+    const headerRid = req.headers.get('x-request-id');
     if (!authHeader) {
       return jsonResponse(401, {
         error: 'unauthorized',
@@ -25,6 +26,8 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => null);
     const code = body?.code as string | undefined;
     const redirectUri = body?.redirectUri as string | undefined;
+    const bodyRid = body?.rid as string | undefined;
+    const rid = headerRid || bodyRid || null;
 
     if (!code || !redirectUri) {
       return jsonResponse(400, {
@@ -53,6 +56,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.info('google-oauth-exchange request', {
+      rid,
+      redirectUri,
+      codeLength: code.length,
+      userId: authData.user.id,
+      timestamp: new Date().toISOString(),
+    });
+
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
@@ -70,9 +81,11 @@ Deno.serve(async (req) => {
     if (!tokenResponse.ok) {
       const errorBody = await tokenResponse.json().catch(() => null);
       console.error('google-oauth-exchange token error', {
+        rid,
         status: tokenResponse.status,
         error: errorBody?.error,
         description: errorBody?.error_description,
+        redirectUri,
       });
       return jsonResponse(tokenResponse.status, {
         error: errorBody?.error ?? 'oauth_error',
@@ -93,6 +106,7 @@ Deno.serve(async (req) => {
     if (!userInfoResponse.ok) {
       const errorText = await userInfoResponse.text();
       console.error('google-oauth-exchange userinfo error', {
+        rid,
         status: userInfoResponse.status,
         message: errorText,
       });
@@ -121,12 +135,23 @@ Deno.serve(async (req) => {
     });
 
     if (upsertError) {
-      console.error('google-oauth-exchange upsert error', upsertError);
+      console.error('google-oauth-exchange upsert error', {
+        rid,
+        code: upsertError.code,
+        message: upsertError.message,
+        details: upsertError.details,
+      });
       return jsonResponse(500, {
         error: 'server_error',
         description: 'Erreur sauvegarde Google',
       });
     }
+
+    console.info('google-oauth-exchange upsert ok', {
+      rid,
+      userId: authData.user.id,
+      timestamp: new Date().toISOString(),
+    });
 
     return jsonResponse(200, {
       ok: true,
