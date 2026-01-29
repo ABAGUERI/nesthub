@@ -1,14 +1,18 @@
 import React from 'react';
-import { useOnboarding } from '../hooks/useOnboarding';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
+import { OnboardingStepProps } from '../types';
 import './FamilyStep.css';
 
 type ChildIcon = 'bee' | 'ladybug' | 'butterfly' | 'caterpillar';
 
-export const FamilyStep: React.FC = () => {
-  const { children, setChildren, nextStep, isLoading, error } = useOnboarding();
-
+export const FamilyStep: React.FC<OnboardingStepProps> = ({
+  children,
+  setChildren,
+  onNext,
+  loading,
+  error,
+}) => {
   const iconOptions: { value: ChildIcon; emoji: string; label: string }[] = [
     { value: 'bee', emoji: '🐝', label: 'Abeille' },
     { value: 'ladybug', emoji: '🐞', label: 'Coccinelle' },
@@ -30,7 +34,7 @@ export const FamilyStep: React.FC = () => {
 
   const addChild = () => {
     if (children.length >= 4) return;
-    
+
     const usedIcons = children.map((c) => c.icon);
     const nextIcon = iconOptions.find((icon) => !usedIcons.includes(icon.value));
 
@@ -68,7 +72,7 @@ export const FamilyStep: React.FC = () => {
                 </button>
               )}
             </div>
-            
+
             <Input
               label="Prénom"
               placeholder="Prénom"
@@ -105,17 +109,10 @@ export const FamilyStep: React.FC = () => {
         )}
       </div>
 
-      {error && (
-        <div className="error-message">{error}</div>
-      )}
+      {error && <div className="error-message">{error}</div>}
 
       <div className="step-actions">
-        <Button
-          onClick={nextStep}
-          isLoading={isLoading}
-          fullWidth
-          size="large"
-        >
+        <Button onClick={() => onNext()} isLoading={loading} fullWidth size="large">
           Suivant →
         </Button>
       </div>

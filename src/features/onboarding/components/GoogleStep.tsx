@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useOnboarding } from '../hooks/useOnboarding';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
-import {
-  getGoogleConnection,
-} from '@/features/google/google.service';
+import { getGoogleConnection } from '@/features/google/google.service';
+import { OnboardingStepProps } from '../types';
 import './GoogleStep.css';
 
 interface Calendar {
@@ -15,58 +13,73 @@ interface Calendar {
   primary: boolean;
 }
 
-export const GoogleStep: React.FC = () => {
-  const { user } = useAuth();
-  const {
-    connectGoogle,
-    selectedCalendars,
-    setSelectedCalendars,
-    completeOnboarding,
-    prevStep,
-    isLoading,
-    error,
-    children,
-  } = useOnboarding();
+interface GoogleStepProps extends OnboardingStepProps {
+  googleConnected: boolean;
+}
 
-  const [googleConnected, setGoogleConnected] = useState(false);
+export const GoogleStep: React.FC<GoogleStepProps> = ({
+  children,
+  onNext,
+  onBack,
+  loading,
+  error,
+  googleConnected,
+}) => {
+  const { user } = useAuth();
+
   const [loadingCalendars, setLoadingCalendars] = useState(false);
   const [calendars, setCalendars] = useState<Calendar[]>([]);
+  const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
   const [googleError, setGoogleError] = useState<string | null>(null);
-
-  useEffect(() => {
-    checkGoogleConnection();
-  }, [user]);
-
-  const checkGoogleConnection = async () => {
-    if (!user) return;
-
-    setLoadingCalendars(true);
-    try {
-      const connection = await getGoogleConnection(user.id);
-
-      if (connection) {
-        setGoogleConnected(true);
-        const calendarId = connection.selectedCalendarId || 'primary';
-        const calendarName = connection.selectedCalendarName || 'Calendrier principal';
-        setCalendars([
-          {
-            id: calendarId,
-            name: calendarName,
-            description: '',
-            backgroundColor: '#3b82f6',
-            primary: calendarId === 'primary',
-          },
-        ]);
-        setSelectedCalendars([calendarId]);
-      }
-    } catch (err) {
-      console.error('Error checking Google connection:', err);
-    } finally {
-      setLoadingCalendars(false);
+  const logDev = (message: string, payload?: Record<string, unknown>) => {
+    if (import.meta.env.DEV) {
+      console.info(`[Onboarding:GoogleStep] ${message}`, payload ?? {});
     }
   };
 
+  useEffect(() => {
+    if (!user || !googleConnected) return;
+
+    const loadCalendars = async () => {
+      setLoadingCalendars(true);
+      try {
+        const connection = await getGoogleConnection(user.id);
+
+        if (connection) {
+          logDev('google connection loaded', {
+            gmailAddress: connection.gmailAddress,
+            selectedCalendarId: connection.selectedCalendarId,
+          });
+          setGoogleError(null);
+          const calendarId = connection.selectedCalendarId || 'primary';
+          const calendarName = connection.selectedCalendarName || 'Calendrier principal';
+          setCalendars([
+            {
+              id: calendarId,
+              name: calendarName,
+              description: '',
+              backgroundColor: '#3b82f6',
+              primary: calendarId === 'primary',
+            },
+          ]);
+          setSelectedCalendars([calendarId]);
+        } else {
+          logDev('google connection missing');
+          setGoogleError("Connexion Google introuvable. Réessaie la connexion.");
+        }
+      } catch (err) {
+        console.error('Error checking Google connection:', err);
+        setGoogleError("Impossible de récupérer la connexion Google. Réessaie ou reconnecte-toi.");
+      } finally {
+        setLoadingCalendars(false);
+      }
+    };
+
+    void loadCalendars();
+  }, [googleConnected, user]);
+
   const toggleCalendar = (calendarId: string) => {
+    setGoogleError(null);
     if (selectedCalendars.includes(calendarId)) {
       setSelectedCalendars(selectedCalendars.filter((id) => id !== calendarId));
     } else {
@@ -74,19 +87,19 @@ export const GoogleStep: React.FC = () => {
     }
   };
 
-  const handleComplete = async () => {
+  const handleComplete = () => {
     if (selectedCalendars.length === 0) {
       setGoogleError('Veuillez sélectionner au moins un calendrier');
       return;
     }
 
-    await completeOnboarding();
+    onNext({ selectedCalendars });
   };
 
   // Calculer les noms des listes qui seront créées
   const getTaskListsToCreate = () => {
     const lists = ['📝 Épicerie', '👨‍👩‍👧 Familiale'];
-    
+
     const avatarEmoji: Record<'bee' | 'ladybug' | 'butterfly' | 'caterpillar', string> = {
       bee: '🐝',
       ladybug: '🐞',
@@ -100,7 +113,7 @@ export const GoogleStep: React.FC = () => {
         lists.push(`${emoji} Tâches ${child.name}`);
       }
     });
-    
+
     return lists;
   };
 
@@ -114,7 +127,7 @@ export const GoogleStep: React.FC = () => {
 
         <div className="google-connect-box">
           <div className="google-icon">🔗</div>
-          
+
           <p className="google-description">
             Après connexion, nous créerons automatiquement les listes de tâches suivantes:
           </p>
@@ -127,20 +140,13 @@ export const GoogleStep: React.FC = () => {
             ))}
           </div>
 
-          <Button
-            onClick={connectGoogle}
-            fullWidth
-            size="large"
-          >
+          <Button onClick={() => onNext()} fullWidth size="large">
             🔗 Connecter Google
           </Button>
         </div>
 
         <div className="step-actions">
-          <Button
-            variant="secondary"
-            onClick={prevStep}
-          >
+          <Button variant="secondary" onClick={onBack} disabled={loading}>
             ← Retour
           </Button>
         </div>
@@ -178,18 +184,14 @@ export const GoogleStep: React.FC = () => {
                   <div className="calendar-checkbox">
                     {selectedCalendars.includes(calendar.id) && <span>✓</span>}
                   </div>
-                  
+
                   <div className="calendar-info">
                     <div className="calendar-name">
                       {calendar.name}
-                      {calendar.primary && (
-                        <span className="calendar-badge">Principal</span>
-                      )}
+                      {calendar.primary && <span className="calendar-badge">Principal</span>}
                     </div>
                     {calendar.description && (
-                      <div className="calendar-description">
-                        {calendar.description}
-                      </div>
+                      <div className="calendar-description">{calendar.description}</div>
                     )}
                   </div>
 
@@ -202,26 +204,18 @@ export const GoogleStep: React.FC = () => {
             )}
           </div>
 
-          {googleError && (
-            <div className="error-message">{googleError}</div>
-          )}
+          {googleError && <div className="error-message">{googleError}</div>}
 
-          {error && (
-            <div className="error-message">{error}</div>
-          )}
+          {error && <div className="error-message">{error}</div>}
 
           <div className="step-actions">
-            <Button
-              variant="secondary"
-              onClick={prevStep}
-              disabled={isLoading}
-            >
+            <Button variant="secondary" onClick={onBack} disabled={loading}>
               ← Retour
             </Button>
 
             <Button
               onClick={handleComplete}
-              isLoading={isLoading}
+              isLoading={loading}
               disabled={selectedCalendars.length === 0}
             >
               Terminer ✓

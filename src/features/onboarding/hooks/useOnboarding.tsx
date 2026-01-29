@@ -7,6 +7,7 @@ import {
   initiateGoogleOAuth,
   createDefaultTaskLists,
   getGoogleConnection,
+  updateGoogleConnectionSettings,
 } from '@/features/google/google.service';
 
 interface OnboardingContextType {
@@ -136,12 +137,9 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Sauvegarder les calendriers sélectionnés
       if (selectedCalendars.length > 0) {
-        await supabase
-          .from('google_connections')
-          .update({
-            selected_calendar_id: selectedCalendars[0], // Premier = principal
-          })
-          .eq('user_id', user.id);
+        await updateGoogleConnectionSettings({
+          selectedCalendarId: selectedCalendars[0],
+        });
       }
 
       // Marquer l'onboarding comme complété

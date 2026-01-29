@@ -1,4 +1,4 @@
-import { supabase } from '@/shared/utils/supabase';
+import { ensureSession, supabase } from '@/shared/utils/supabase';
 import {
   createTaskInList,
   createTaskList as createTaskListViaEdge,
@@ -13,7 +13,8 @@ import {
  */
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI || '';
+const GOOGLE_REDIRECT_URI =
+  import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/auth/callback`;
 
 // Scopes nécessaires
 const SCOPES = [
@@ -62,10 +63,10 @@ export const googleOAuthExchange = async (
   redirectUri: string
 ): Promise<GoogleOAuthExchangeResult> => {
   // 1) Forcer récupération session
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  const accessToken = sessionData?.session?.access_token;
+  const session = await ensureSession();
+  const accessToken = session?.access_token;
 
-  if (sessionError || !accessToken) {
+  if (!accessToken) {
     return {
       error: 'unauthorized',
       description: 'Session Supabase absente. Reconnecte-toi puis réessaie.',
@@ -91,22 +92,69 @@ export const googleOAuthExchange = async (
   return { error: 'unknown_error', description: 'Réponse inattendue du serveur OAuth.' };
 };
 
+export const waitForGoogleConnection = async (attempts: number = 5, delayMs: number = 500) => {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const connection = await getGoogleConnection();
+    if (connection) {
+      return connection;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+
+  return null;
+};
+
+export const updateGoogleConnectionSettings = async (payload: {
+  selectedCalendarId?: string | null;
+  groceryListId?: string | null;
+  groceryListName?: string | null;
+}) => {
+  const { error } = await supabase.rpc('update_google_connection_settings', {
+    p_selected_calendar_id: payload.selectedCalendarId ?? null,
+    p_grocery_list_id: payload.groceryListId ?? null,
+    p_grocery_list_name: payload.groceryListName ?? null,
+  });
+
+  if (error) throw error;
+};
+
 
 /**
  * Récupérer la connexion Google de l'utilisateur
  */
-export const getGoogleConnection = async (userId: string) => {
-  const connection = await getGoogleConnectionSafe(userId);
-  if (!connection) return null;
+export const getGoogleConnection = async (userId?: string) => {
+  const { data, error } = await supabase.rpc('get_google_connection');
+  if (error) {
+    return null;
+  }
+
+  const baseConnection = Array.isArray(data) ? data[0] : data;
+  if (!baseConnection) return null;
+
+  if (userId) {
+    const connection = await getGoogleConnectionSafe(userId);
+    if (connection) {
+      return {
+        id: connection.id,
+        userId: connection.userId,
+        gmailAddress: connection.gmailAddress,
+        selectedCalendarId: connection.selectedCalendarId,
+        selectedCalendarName: connection.selectedCalendarName,
+        groceryListId: connection.groceryListId,
+        groceryListName: connection.groceryListName,
+      };
+    }
+  }
 
   return {
-    id: connection.id,
-    userId: connection.userId,
-    gmailAddress: connection.gmailAddress,
-    selectedCalendarId: connection.selectedCalendarId,
-    selectedCalendarName: connection.selectedCalendarName,
-    groceryListId: connection.groceryListId,
-    groceryListName: connection.groceryListName,
+    id: baseConnection.id,
+    userId: baseConnection.user_id,
+    gmailAddress: baseConnection.gmail_address,
+    selectedCalendarId: baseConnection.selected_calendar_id,
+    selectedCalendarName: baseConnection.selected_calendar_name,
+    groceryListId: null,
+    groceryListName: null,
   };
 };
 
@@ -133,19 +181,14 @@ export const updateGroceryListSelection = async (
   listId: string,
   listName: string
 ): Promise<void> => {
-  const { error } = await supabase
-    .from('google_connections')
-    .upsert(
-      {
-        user_id: userId,
-        grocery_list_id: listId,
-        grocery_list_name: listName,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id' }
-    );
+  if (!userId) {
+    throw new Error('userId manquant pour mettre à jour la liste épicerie');
+  }
 
-  if (error) throw error;
+  await updateGoogleConnectionSettings({
+    groceryListId: listId,
+    groceryListName: listName,
+  });
 };
 
 /**
@@ -186,45 +229,69 @@ export const createDefaultTaskLists = async (
     }
   });
 
-  const createdLists = [];
+  const { data: existingLists, error: existingError } = await supabase
+    .from('task_lists')
+    .select('id, name, google_task_list_id, type')
+    .eq('user_id', userId);
+
+  if (existingError) throw existingError;
+
+  const existingByName = new Map(
+    (existingLists || []).map((list) => [list.name, list])
+  );
+
+  const createdLists: Array<{ id: string; name: string; type: string }> = [];
 
   // Créer chaque liste dans Google Tasks
   for (const list of listsToCreate) {
-    try {
-      const googleList = await createTaskList(list.name);
-      
-      // Sauvegarder dans Supabase
-      const { error } = await supabase.from('task_lists').insert({
-        user_id: userId,
-        google_task_list_id: googleList.id,
-        name: googleList.title,
-        type: list.type,
-      });
-
-      if (error) {
-        console.error(`Error saving task list ${list.name}:`, error);
-      } else {
-        createdLists.push({
-          id: googleList.id,
-          name: googleList.title,
-          type: list.type,
-        });
+    if (existingByName.has(list.name)) {
+      const existing = existingByName.get(list.name);
+      if (existing) {
+        if (existing.google_task_list_id) {
+          createdLists.push({
+            id: existing.google_task_list_id,
+            name: existing.name,
+            type: list.type,
+          });
+        }
       }
-    } catch (error) {
-      console.error(`Error creating task list ${list.name}:`, error);
+      continue;
     }
+
+    const googleList = await createTaskList(list.name);
+
+    const { error } = await supabase.from('task_lists').insert({
+      user_id: userId,
+      google_task_list_id: googleList.id,
+      name: googleList.title,
+      type: list.type,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    createdLists.push({
+      id: googleList.id,
+      name: googleList.title,
+      type: list.type,
+    });
   }
 
   // Mettre à jour la connexion Google avec l'ID de la liste Épicerie
-  const groceryList = createdLists.find((l) => l.type === 'grocery');
-  if (groceryList) {
-    await supabase
-      .from('google_connections')
-      .update({
-        grocery_list_id: groceryList.id,
-        grocery_list_name: groceryList.name,
-      })
-      .eq('user_id', userId);
+  const groceryList =
+    createdLists.find((l) => l.type === 'grocery') ||
+    (existingLists || []).find((l) => l.type === 'grocery');
+  if (
+    groceryList &&
+    (('google_task_list_id' in groceryList && groceryList.google_task_list_id) ||
+      (!('google_task_list_id' in groceryList) && groceryList.id))
+  ) {
+    await updateGoogleConnectionSettings({
+      groceryListId:
+        'google_task_list_id' in groceryList ? groceryList.google_task_list_id : groceryList.id,
+      groceryListName: groceryList.name,
+    });
   }
 
   return createdLists;
