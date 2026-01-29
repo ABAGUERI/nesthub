@@ -154,6 +154,16 @@ export function NestHubLandingPage() {
                         <div className="mockup-task__meta">Bonus</div>
                       </div>
                     </div>
+
+                    <span className="mockup-task__check" aria-hidden="true">
+                      ✔
+                    </span>
+                    <span className="mockup-task__xp" aria-hidden="true">
+                      +20 XP
+                    </span>
+                    <span className="mockup-task__heart" aria-hidden="true">
+                      ❤️
+                    </span>
                   </div>
 
                   <div className="mockup-card mockup-card--hearts">
