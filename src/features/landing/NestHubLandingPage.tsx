@@ -129,6 +129,9 @@ export function NestHubLandingPage() {
                       <span>🧹</span>
                       <span>📖</span>
                     </div>
+                    <button className="mockup-cta" type="button">
+                      🐷 Ma tirelire
+                    </button>
                   </div>
                   <div className="carousel-grid">
                     <div className="carousel-task mockup-task mockup-task--complete">
