@@ -470,6 +470,98 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
+        <section className="nesthub-landing__section nesthub-landing__features scroll-reveal">
+          <div className="nesthub-landing__section-copy">
+            <h2>Une progression ludique, inspirée du jeu vidéo</h2>
+            <ul className="nesthub-landing__list">
+              <li>Phases et niveaux visibles</li>
+              <li>Objectifs hebdomadaires clairs</li>
+              <li>Récompenses motivantes</li>
+              <li>Sentiment d'avancer, semaine après semaine</li>
+            </ul>
+            <p>
+              👉 Plus un enfant devient autonome, plus il progresse.
+              <br />
+              👉 Et naturellement, il a envie d'aller plus vite.
+            </p>
+          </div>
+
+          <div className="nesthub-landing__feature-cards">
+            <div className="feature-card scroll-reveal scroll-reveal--delay-1">
+              <div className="feature-card__mockup">
+                <div className="xp-bar">
+                  <span style={{ ['--w' as string]: '68%' }} />
+                </div>
+                <div className="xp-meta">
+                  <span>Lvl 4</span>
+                  <span>680 / 1000 XP</span>
+                </div>
+                <div className="xp-reward">Récompense: 🎮 20 min</div>
+              </div>
+              <div>
+                <h3>Progression style jeu vidéo</h3>
+                <p>Barre XP, niveaux et bonus visibles par toute la famille.</p>
+              </div>
+            </div>
+
+            <div className="feature-card scroll-reveal scroll-reveal--delay-2">
+              <div className="feature-card__mockup">
+                <div className="screen-time">
+                  <div className="screen-time__top">
+                    <span>Temps d'écran</span>
+                    <span className="screen-time__tokens">
+                      <span className="token" />
+                      <span className="token" />
+                      <span className="token-label">2 jetons</span>
+                    </span>
+                  </div>
+                  <div className="screen-time__slider">
+                    <span style={{ ['--w' as string]: '55%' }} />
+                  </div>
+                  <div className="screen-time__rules">
+                    <span>✔️ Devoirs faits</span>
+                    <span>⏰ 60 min max</span>
+                  </div>
+                  <div className="screen-time__hearts" aria-label="Vies disponibles">
+                    <span className="life is-full is-gain">❤️</span>
+                    <span className="life is-full">❤️</span>
+                    <span className="life is-warning is-loss">🤍</span>
+                    <span className="life-label">vies</span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3>Temps d'écran démocratique</h3>
+                <p>Jetons gagnés et règles claires pour négocier sereinement.</p>
+              </div>
+            </div>
+
+            <div className="feature-card scroll-reveal scroll-reveal--delay-3">
+              <div className="feature-card__mockup">
+                <div className="piggy piggy--active">
+                  <span className="piggy__coin" aria-hidden="true">🪙</span>
+                  <span className="piggy__sparkle" aria-hidden="true">✦</span>
+                  <div className="piggy__icon" aria-hidden="true">🐷</div>
+                  <div>
+                    <div className="piggy__amount">
+                      <span>28 CAD</span>
+                    </div>
+                    <div className="piggy__meta">Projet long terme</div>
+                  </div>
+                </div>
+                <div className="piggy__progress">
+                  <span style={{ ['--w' as string]: '42%' }} />
+                </div>
+                <div className="piggy__goal">Objectif: vélo familial</div>
+              </div>
+              <div>
+                <h3>Cochon & projets</h3>
+                <p>Épargne collective et décisions concrètes à la maison.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Financial Education Section - Enhanced */}
         <section className="nesthub-landing__section nesthub-landing__finance scroll-reveal">
           <div className="finance-header">
@@ -482,21 +574,33 @@ export function NestHubLandingPage() {
                 <strong>Cet argent est réel, dans sa tirelire à la maison.</strong>
               </p>
             </div>
-            <div className="finance-header__piggy">
-              <div className="finance-piggy">
-                <span className="finance-piggy__icon" aria-hidden="true">🐷</span>
-                <span className="finance-piggy__coin finance-piggy__coin--1" aria-hidden="true">🪙</span>
-                <span className="finance-piggy__coin finance-piggy__coin--2" aria-hidden="true">🪙</span>
+            <div className="finance-header__card">
+              <div className="finance-header__piggy">
+                <div className="finance-piggy">
+                  <span className="finance-piggy__icon" aria-hidden="true">🐷</span>
+                  <span className="finance-piggy__coin finance-piggy__coin--1" aria-hidden="true">🪙</span>
+                  <span className="finance-piggy__coin finance-piggy__coin--2" aria-hidden="true">🪙</span>
+                </div>
+                <div className="finance-total">
+                  <span className="finance-total__amount">28 $</span>
+                  <span className="finance-total__label">Épargne totale</span>
+                </div>
               </div>
-              <div className="finance-total">
-                <span className="finance-total__amount">28 $</span>
-                <span className="finance-total__label">Épargne totale</span>
+              <div className="finance-header__meta">
+                <span className="finance-header__pill">+ 6 $ cette semaine</span>
+                <span className="finance-header__pill">2 projets actifs</span>
               </div>
             </div>
           </div>
 
           <div className="finance-projects">
-            <h3 className="finance-projects__title">Projets en cours de Sifaw</h3>
+            <div className="finance-projects__header">
+              <div className="family-member__avatar family-member__avatar--sifaw finance-avatar">👧</div>
+              <div>
+                <h3 className="finance-projects__title">Projets en cours de Sifaw</h3>
+                <p className="finance-projects__subtitle">Ses objectifs motivants du moment</p>
+              </div>
+            </div>
             <div className="finance-projects__grid">
               <div className="savings-project scroll-reveal scroll-reveal--delay-1">
                 <div className="savings-project__icon">✈️</div>
@@ -537,13 +641,14 @@ export function NestHubLandingPage() {
               </div>
 
               <div className="savings-project savings-project--new scroll-reveal scroll-reveal--delay-3">
-                <div className="savings-project__icon">➕</div>
+                <div className="savings-project__icon">✨</div>
                 <div className="savings-project__info">
                   <div className="savings-project__name">Nouveau projet</div>
                   <div className="savings-project__remaining">
-                    Crée un objectif motivant !
+                    Crée un objectif motivant et visible par tous !
                   </div>
                 </div>
+                <button type="button" className="savings-project__cta">Créer un projet</button>
               </div>
             </div>
           </div>
@@ -657,110 +762,25 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
-        <section className="nesthub-landing__section nesthub-landing__features scroll-reveal">
-          <div className="nesthub-landing__section-copy">
-            <h2>Une progression ludique, inspirée du jeu vidéo</h2>
-            <ul className="nesthub-landing__list">
-              <li>Phases et niveaux visibles</li>
-              <li>Objectifs hebdomadaires clairs</li>
-              <li>Récompenses motivantes</li>
-              <li>Sentiment d'avancer, semaine après semaine</li>
-            </ul>
-            <p>
-              👉 Plus un enfant devient autonome, plus il progresse.
-              <br />
-              👉 Et naturellement, il a envie d'aller plus vite.
-            </p>
-          </div>
-
-          <div className="nesthub-landing__feature-cards">
-            <div className="feature-card scroll-reveal scroll-reveal--delay-1">
-              <div className="feature-card__mockup">
-                <div className="xp-bar">
-                  <span style={{ ['--w' as string]: '68%' }} />
-                </div>
-                <div className="xp-meta">
-                  <span>Lvl 4</span>
-                  <span>680 / 1000 XP</span>
-                </div>
-                <div className="xp-reward">Récompense: 🎮 20 min</div>
-              </div>
-              <div>
-                <h3>Progression style jeu vidéo</h3>
-                <p>Barre XP, niveaux et bonus visibles par toute la famille.</p>
-              </div>
-            </div>
-
-            <div className="feature-card scroll-reveal scroll-reveal--delay-2">
-              <div className="feature-card__mockup">
-                <div className="screen-time">
-                  <div className="screen-time__top">
-                    <span>Temps d'écran</span>
-                    <span className="screen-time__tokens">
-                      <span className="token" />
-                      <span className="token" />
-                      <span className="token-label">2 jetons</span>
-                    </span>
-                  </div>
-                  <div className="screen-time__slider">
-                    <span style={{ ['--w' as string]: '55%' }} />
-                  </div>
-                  <div className="screen-time__rules">
-                    <span>✔️ Devoirs faits</span>
-                    <span>⏰ 60 min max</span>
-                  </div>
-                  <div className="screen-time__hearts" aria-label="Vies disponibles">
-                    <span className="life is-full is-gain">❤️</span>
-                    <span className="life is-full">❤️</span>
-                    <span className="life is-warning is-loss">🤍</span>
-                    <span className="life-label">vies</span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h3>Temps d'écran démocratique</h3>
-                <p>Jetons gagnés et règles claires pour négocier sereinement.</p>
-              </div>
-            </div>
-
-            <div className="feature-card scroll-reveal scroll-reveal--delay-3">
-              <div className="feature-card__mockup">
-                <div className="piggy piggy--active">
-                  <span className="piggy__coin" aria-hidden="true">🪙</span>
-                  <span className="piggy__sparkle" aria-hidden="true">✦</span>
-                  <div className="piggy__icon" aria-hidden="true">🐷</div>
-                  <div>
-                    <div className="piggy__amount">
-                      <span>28 CAD</span>
-                    </div>
-                    <div className="piggy__meta">Projet long terme</div>
-                  </div>
-                </div>
-                <div className="piggy__progress">
-                  <span style={{ ['--w' as string]: '42%' }} />
-                </div>
-                <div className="piggy__goal">Objectif: vélo familial</div>
-              </div>
-              <div>
-                <h3>Cochon & projets</h3>
-                <p>Épargne collective et décisions concrètes à la maison.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <section className="nesthub-landing__section scroll-reveal">
           <div className="nesthub-landing__section-copy">
             <h2>Le temps d'écran, géré de façon démocratique</h2>
             <ul className="nesthub-landing__list">
-              <li>Le temps d'écran se gagne</li>
-              <li>Il se négocie</li>
-              <li>Il se comprend</li>
+              <li>Le temps d'écran se gagne, pas il se prend</li>
+              <li>Il se négocie avec des règles transparentes</li>
+              <li>Il se comprend grâce à des feedbacks visibles</li>
+              <li>Il s'équilibre avec les devoirs, le sommeil et le calme</li>
             </ul>
             <p>
               👉 L'enfant sait pourquoi il y a un oui ou un non.
               <br />
               👉 Le parent n'est plus le contrôleur, mais l'accompagnateur.
+              <br />
+              👉 Les conflits chutent, le dialogue remplace l'interdiction.
+            </p>
+            <p className="nesthub-landing__screen-time-note">
+              Les minutes d'écran deviennent des jetons gagnés (ou perdus) selon les efforts,
+              avec un historique clair pour éviter les discussions sans fin.
             </p>
           </div>
         </section>
