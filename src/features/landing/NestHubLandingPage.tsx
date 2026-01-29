@@ -47,6 +47,7 @@ const FAQ_ITEMS = [
 
 export function NestHubLandingPage() {
   const piggyAmountRef = useRef<HTMLSpanElement | null>(null);
+  const savingsAmountRef = useRef<HTMLSpanElement | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
@@ -70,6 +71,35 @@ export function NestHubLandingPage() {
         start = 0;
         [from, to] = [to, from];
         timeoutId = setTimeout(() => requestAnimationFrame(animate), 1800);
+      }
+    };
+    frameId = requestAnimationFrame(animate);
+    return () => {
+      cancelAnimationFrame(frameId);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
+
+  // Savings amount animation for the financial education section
+  useEffect(() => {
+    let frameId = 0;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let start = 0;
+    let from = 16;
+    let to = 17;
+    const animate = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / 1200, 1);
+      const value = Math.round(from + (to - from) * progress);
+      if (savingsAmountRef.current) {
+        savingsAmountRef.current.textContent = `${value} $`;
+      }
+      if (progress < 1) {
+        frameId = requestAnimationFrame(animate);
+      } else {
+        start = 0;
+        [from, to] = [to, from];
+        timeoutId = setTimeout(() => requestAnimationFrame(animate), 2500);
       }
     };
     frameId = requestAnimationFrame(animate);
@@ -368,6 +398,183 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
+        {/* Autonomy Journey Section */}
+        <section className="nesthub-landing__section nesthub-landing__autonomy scroll-reveal">
+          <div className="nesthub-landing__section-copy">
+            <h2>Accompagner vers l'autonomie et la responsabilité</h2>
+            <p className="autonomy-intro">
+              Chaque enfant avance à son rythme. NestHub l'accompagne dans son parcours
+              vers l'autonomie, étape par étape.
+            </p>
+          </div>
+
+          <div className="autonomy-journey">
+            <div className="autonomy-step scroll-reveal scroll-reveal--delay-1">
+              <div className="autonomy-step__icon">🌱</div>
+              <div className="autonomy-step__content">
+                <h3>Phase 1 : Découverte</h3>
+                <p>L'enfant découvre ses premières tâches simples et comprend le système de récompenses</p>
+                <div className="autonomy-step__tasks">
+                  <span className="task-chip">🛏️ Faire son lit</span>
+                  <span className="task-chip">🦷 Se brosser les dents</span>
+                </div>
+              </div>
+              <div className="autonomy-step__badge">🥉 Bronze</div>
+            </div>
+
+            <div className="autonomy-connector" aria-hidden="true">
+              <span className="connector-line" />
+              <span className="connector-dot" />
+            </div>
+
+            <div className="autonomy-step scroll-reveal scroll-reveal--delay-2">
+              <div className="autonomy-step__icon">🌿</div>
+              <div className="autonomy-step__content">
+                <h3>Phase 2 : Responsabilisation</h3>
+                <p>Il prend en charge des tâches plus complexes et gère son premier projet d'épargne</p>
+                <div className="autonomy-step__tasks">
+                  <span className="task-chip">🧹 Ranger sa chambre</span>
+                  <span className="task-chip">📚 Devoirs autonomes</span>
+                  <span className="task-chip">🐷 Premier projet 25$</span>
+                </div>
+              </div>
+              <div className="autonomy-step__badge">🥈 Argent</div>
+            </div>
+
+            <div className="autonomy-connector" aria-hidden="true">
+              <span className="connector-line" />
+              <span className="connector-dot" />
+            </div>
+
+            <div className="autonomy-step scroll-reveal scroll-reveal--delay-3">
+              <div className="autonomy-step__icon">🌳</div>
+              <div className="autonomy-step__content">
+                <h3>Phase 3 : Autonomie</h3>
+                <p>Il participe activement à la vie familiale et fait des choix financiers éclairés</p>
+                <div className="autonomy-step__tasks">
+                  <span className="task-chip">🍽️ Mettre la table</span>
+                  <span className="task-chip">🐕 S'occuper de l'animal</span>
+                  <span className="task-chip">💰 Épargne long terme</span>
+                </div>
+              </div>
+              <div className="autonomy-step__badge">🥇 Or</div>
+            </div>
+          </div>
+
+          <div className="autonomy-quote scroll-reveal">
+            <blockquote>
+              « Lucas a rangé sa chambre sans qu'on le lui demande.
+              Il voulait gagner ses points pour son projet drone ! »
+            </blockquote>
+            <cite>— Une famille NestHub, Québec</cite>
+          </div>
+        </section>
+
+        {/* Financial Education Section - Enhanced */}
+        <section className="nesthub-landing__section nesthub-landing__finance scroll-reveal">
+          <div className="finance-header">
+            <div className="finance-header__copy">
+              <span className="finance-eyebrow">Éducation financière dès le plus jeune âge</span>
+              <h2>Ta tirelire grandit avec toi</h2>
+              <p>
+                Chaque pièce rapproche l'enfant de son prochain projet.
+                <br />
+                <strong>Cet argent est réel, dans sa tirelire à la maison.</strong>
+              </p>
+            </div>
+            <div className="finance-header__piggy">
+              <div className="finance-piggy">
+                <span className="finance-piggy__icon" aria-hidden="true">🐷</span>
+                <span className="finance-piggy__coin finance-piggy__coin--1" aria-hidden="true">🪙</span>
+                <span className="finance-piggy__coin finance-piggy__coin--2" aria-hidden="true">🪙</span>
+              </div>
+              <div className="finance-total">
+                <span className="finance-total__amount">28 $</span>
+                <span className="finance-total__label">Épargne totale</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="finance-projects">
+            <h3 className="finance-projects__title">Projets en cours de Sifaw</h3>
+            <div className="finance-projects__grid">
+              <div className="savings-project scroll-reveal scroll-reveal--delay-1">
+                <div className="savings-project__icon">✈️</div>
+                <div className="savings-project__info">
+                  <div className="savings-project__name">Drone</div>
+                  <div className="savings-project__remaining">
+                    Encore <strong>84 $</strong> pour l'obtenir 🔥
+                  </div>
+                </div>
+                <div className="savings-project__progress">
+                  <div className="savings-project__bar">
+                    <span style={{ ['--w' as string]: '16%' }} />
+                  </div>
+                  <span className="savings-project__percent">16%</span>
+                </div>
+                <div className="savings-project__amounts">
+                  <span ref={savingsAmountRef}>16 $</span> / 100 $
+                </div>
+                <button type="button" className="savings-project__add">Ajouter $</button>
+              </div>
+
+              <div className="savings-project scroll-reveal scroll-reveal--delay-2">
+                <div className="savings-project__icon">🌿</div>
+                <div className="savings-project__info">
+                  <div className="savings-project__name">Lego Bonsai</div>
+                  <div className="savings-project__remaining">
+                    Encore <strong>52 $</strong> pour l'obtenir 🔥
+                  </div>
+                </div>
+                <div className="savings-project__progress">
+                  <div className="savings-project__bar">
+                    <span style={{ ['--w' as string]: '19%' }} />
+                  </div>
+                  <span className="savings-project__percent">19%</span>
+                </div>
+                <div className="savings-project__amounts">12 $ / 64 $</div>
+                <button type="button" className="savings-project__add">Ajouter $</button>
+              </div>
+
+              <div className="savings-project savings-project--new scroll-reveal scroll-reveal--delay-3">
+                <div className="savings-project__icon">➕</div>
+                <div className="savings-project__info">
+                  <div className="savings-project__name">Nouveau projet</div>
+                  <div className="savings-project__remaining">
+                    Crée un objectif motivant !
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="finance-lessons scroll-reveal">
+            <h3>Ce que l'enfant apprend</h3>
+            <div className="finance-lessons__grid">
+              <div className="lesson-card">
+                <span className="lesson-card__icon">⚖️</span>
+                <span className="lesson-card__text">Faire des choix</span>
+                <span className="lesson-card__desc">Acheter maintenant ou économiser ?</span>
+              </div>
+              <div className="lesson-card">
+                <span className="lesson-card__icon">🎯</span>
+                <span className="lesson-card__text">Se fixer des objectifs</span>
+                <span className="lesson-card__desc">Visualiser et atteindre ses buts</span>
+              </div>
+              <div className="lesson-card">
+                <span className="lesson-card__icon">⏳</span>
+                <span className="lesson-card__text">La patience</span>
+                <span className="lesson-card__desc">Comprendre la valeur du temps</span>
+              </div>
+              <div className="lesson-card">
+                <span className="lesson-card__icon">💪</span>
+                <span className="lesson-card__text">L'effort récompensé</span>
+                <span className="lesson-card__desc">Travail = récompense concrète</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="nesthub-landing__section scroll-reveal">
           <div className="nesthub-landing__section-copy">
             <h2>L'organisation familiale, enfin partagée</h2>
@@ -377,6 +584,76 @@ export function NestHubLandingPage() {
               seule personne. NestHub a été conçu pour redistribuer la charge, et faire
               de l'organisation une responsabilité collective.
             </p>
+          </div>
+        </section>
+
+        {/* Family Dashboard Preview */}
+        <section className="nesthub-landing__section nesthub-landing__dashboard-preview scroll-reveal">
+          <div className="nesthub-landing__section-copy">
+            <h2>Un tableau de bord pour toute la famille</h2>
+            <p>Chaque membre a sa vue, ses tâches, ses responsabilités.</p>
+          </div>
+
+          <div className="family-preview">
+            <div className="family-member scroll-reveal scroll-reveal--delay-1">
+              <div className="family-member__avatar family-member__avatar--sifaw">👧</div>
+              <div className="family-member__name">Sifaw</div>
+              <div className="family-member__tasks">
+                <div className="mini-task">
+                  <span className="mini-task__icon">🍽️</span>
+                  <span>Mettre la table</span>
+                </div>
+                <div className="mini-task">
+                  <span className="mini-task__icon">👕</span>
+                  <span>Faire une brassée</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="family-member scroll-reveal scroll-reveal--delay-2">
+              <div className="family-member__avatar family-member__avatar--georges">👦</div>
+              <div className="family-member__name">Georges</div>
+              <div className="family-member__tasks">
+                <div className="mini-task">
+                  <span className="mini-task__icon">🐱</span>
+                  <span>Changer la litière</span>
+                </div>
+                <div className="mini-task">
+                  <span className="mini-task__icon">🧹</span>
+                  <span>Ramasser les jouets</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="family-member scroll-reveal scroll-reveal--delay-3">
+              <div className="family-member__avatar family-member__avatar--lucas">👦</div>
+              <div className="family-member__name">Lucas</div>
+              <div className="family-member__tasks">
+                <div className="mini-task">
+                  <span className="mini-task__icon">🚿</span>
+                  <span>Nettoyer la douche</span>
+                </div>
+                <div className="mini-task">
+                  <span className="mini-task__icon">🗑️</span>
+                  <span>Vider les poubelles</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="family-member scroll-reveal scroll-reveal--delay-3">
+              <div className="family-member__avatar family-member__avatar--ahmed">👦</div>
+              <div className="family-member__name">Ahmed</div>
+              <div className="family-member__tasks">
+                <div className="mini-task">
+                  <span className="mini-task__icon">🐟</span>
+                  <span>Nourrir le poisson</span>
+                </div>
+                <div className="mini-task">
+                  <span className="mini-task__icon">🍽️</span>
+                  <span>Ramasser après souper</span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -419,25 +696,19 @@ export function NestHubLandingPage() {
                 <div className="screen-time">
                   <div className="screen-time__top">
                     <span>Temps d'écran</span>
-
-                    {/* tokens mini-anim */}
                     <span className="screen-time__tokens">
                       <span className="token" />
                       <span className="token" />
                       <span className="token-label">2 jetons</span>
                     </span>
                   </div>
-
                   <div className="screen-time__slider">
                     <span style={{ ['--w' as string]: '55%' }} />
                   </div>
-
                   <div className="screen-time__rules">
                     <span>✔️ Devoirs faits</span>
                     <span>⏰ 60 min max</span>
                   </div>
-
-                  {/* hearts / lives */}
                   <div className="screen-time__hearts" aria-label="Vies disponibles">
                     <span className="life is-full is-gain">❤️</span>
                     <span className="life is-full">❤️</span>
@@ -455,17 +726,9 @@ export function NestHubLandingPage() {
             <div className="feature-card scroll-reveal scroll-reveal--delay-3">
               <div className="feature-card__mockup">
                 <div className="piggy piggy--active">
-                  {/* coin drop */}
-                  <span className="piggy__coin" aria-hidden="true">
-                    🪙
-                  </span>
-                  <span className="piggy__sparkle" aria-hidden="true">
-                    ✦
-                  </span>
-
-                  <div className="piggy__icon" aria-hidden="true">
-                    🐷
-                  </div>
+                  <span className="piggy__coin" aria-hidden="true">🪙</span>
+                  <span className="piggy__sparkle" aria-hidden="true">✦</span>
+                  <div className="piggy__icon" aria-hidden="true">🐷</div>
                   <div>
                     <div className="piggy__amount">
                       <span>28 CAD</span>
@@ -473,7 +736,6 @@ export function NestHubLandingPage() {
                     <div className="piggy__meta">Projet long terme</div>
                   </div>
                 </div>
-
                 <div className="piggy__progress">
                   <span style={{ ['--w' as string]: '42%' }} />
                 </div>
@@ -484,24 +746,6 @@ export function NestHubLandingPage() {
                 <p>Épargne collective et décisions concrètes à la maison.</p>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section className="nesthub-landing__section scroll-reveal">
-          <div className="nesthub-landing__section-copy">
-            <h2>Les enfants deviennent acteurs de leur propre organisation</h2>
-            <ul className="nesthub-landing__list">
-              <li>Agenda visible et compréhensible</li>
-              <li>Tâches adaptées à l'âge</li>
-              <li>Responsabilités claires</li>
-            </ul>
-            <p>Résultat :</p>
-            <ul className="nesthub-landing__list nesthub-landing__list--compact">
-              <li>Aucun rendez-vous manqué</li>
-              <li>Aucune fête d'amis oubliée</li>
-              <li>Moins de rappels</li>
-              <li>Plus de fierté et de confiance</li>
-            </ul>
           </div>
         </section>
 
@@ -521,34 +765,63 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
-        <section className="nesthub-landing__section scroll-reveal">
+        {/* Kitchen Section with Menu Preview */}
+        <section className="nesthub-landing__section nesthub-landing__kitchen scroll-reveal">
           <div className="nesthub-landing__section-copy">
             <h2>L'écran cuisine : le tableau du frigo… en mieux</h2>
             <p>
               « Papa, on mange quoi ce soir ? » Cette phrase disparaît.
-              <br />
-              - Le menu de la semaine est visible par tous
-              <br />
-              - Les repas sont anticipés
-              <br />
-              - Chacun sait ce qui s'en vient
             </p>
-            <p>
-              Vous manquez d'inspiration ?
-              <br />
-              - Dites à NestHub vos envies du moment
-              <br />
-              - Vos goûts, préférences, contraintes
-              <br />
-              - NestHub propose des menus adaptés
-              <br />
-              - Et génère automatiquement la liste d'épicerie
-            </p>
-            <p>
-              👉 C'est votre tableau du frigo
-              <br />
-              👉 Mais intelligent, rassembleur et intuitif
-            </p>
+          </div>
+
+          <div className="kitchen-preview">
+            <div className="menu-week scroll-reveal scroll-reveal--delay-1">
+              <div className="menu-week__header">
+                <span className="menu-week__title">Menu de la semaine</span>
+                <span className="menu-week__dates">5 - 11 janv</span>
+              </div>
+              <div className="menu-week__grid">
+                <div className="menu-day">
+                  <span className="menu-day__name">Lun</span>
+                  <span className="menu-day__num">5</span>
+                  <span className="menu-day__icon">🍗</span>
+                  <span className="menu-day__meal">Poitrines de poulet</span>
+                </div>
+                <div className="menu-day">
+                  <span className="menu-day__name">Mar</span>
+                  <span className="menu-day__num">6</span>
+                  <span className="menu-day__icon">🍝</span>
+                  <span className="menu-day__meal">Spaghetti bolognaise</span>
+                </div>
+                <div className="menu-day">
+                  <span className="menu-day__name">Mer</span>
+                  <span className="menu-day__num">7</span>
+                  <span className="menu-day__icon">🥧</span>
+                  <span className="menu-day__meal">Pâté chinois</span>
+                </div>
+                <div className="menu-day">
+                  <span className="menu-day__name">Jeu</span>
+                  <span className="menu-day__num">8</span>
+                  <span className="menu-day__icon">🍕</span>
+                  <span className="menu-day__meal">Lasagnes</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="ai-menu scroll-reveal scroll-reveal--delay-2">
+              <div className="ai-menu__header">
+                <span className="ai-menu__icon">🤖</span>
+                <span className="ai-menu__title">La Boussole des Repas</span>
+              </div>
+              <ul className="ai-menu__features">
+                <li>✨ Menu 7 jours équilibrés</li>
+                <li>🛒 Liste épicerie complète</li>
+                <li>✏️ Modifiable avant validation</li>
+              </ul>
+              <button type="button" className="ai-menu__cta">
+                ✨ Générer menu et épicerie
+              </button>
+            </div>
           </div>
         </section>
 
@@ -570,35 +843,6 @@ export function NestHubLandingPage() {
               <br />
               👉 Tout le monde participe
             </p>
-          </div>
-        </section>
-
-        <section className="nesthub-landing__section nesthub-landing__section--split scroll-reveal">
-          <div className="nesthub-landing__section-copy">
-            <h2>Apprendre l'argent, concrètement (le cochon 🐷)</h2>
-            <p>NestHub introduit l'éducation financière très tôt.</p>
-            <ul className="nesthub-landing__list">
-              <li>Le cochon pour l'épargne</li>
-              <li>Petits projets à 50 CAD</li>
-              <li>Projets plus ambitieux à moyen ou long terme</li>
-              <li>Choix, priorités, décisions</li>
-            </ul>
-            <p>
-              👉 Acheter maintenant ou attendre ?
-              <br />
-              👉 Mettre de côté pour un projet plus grand ?
-              <br />
-              À vous de décider du cadre. Les enfants apprennent par l'expérience.
-            </p>
-          </div>
-
-          <div className="nesthub-landing__visual-frame">
-            <div className="nesthub-landing__frame-grid">
-              <div className="frame-card">Projet 50 CAD</div>
-              <div className="frame-card">Objectif d'été</div>
-              <div className="frame-card">Épargne familiale</div>
-              <div className="frame-card">Choix collectif</div>
-            </div>
           </div>
         </section>
 
