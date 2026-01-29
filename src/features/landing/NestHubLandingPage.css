@@ -49,19 +49,46 @@
   z-index: 0;
 }
 
-.nesthub-landing__header,
 .nesthub-landing__main {
   position: relative;
   z-index: 1;
 }
 
 .nesthub-landing__header {
-  max-width: 1200px;
-  margin: 0 auto 48px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-width: 100%;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  background: rgba(7, 11, 23, 0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nesthub-landing__header.is-scrolled {
+  background: rgba(7, 11, 23, 0.95);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+.nesthub-landing__header-inner {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nesthub-landing__main {
+  padding-top: 80px;
 }
 
 .nesthub-landing__brand {
@@ -1029,9 +1056,10 @@
 }
 
 @media (max-width: 900px) {
-  .nesthub-landing__header {
+  .nesthub-landing__header-inner {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
   }
 
   .nesthub-landing__hero {
@@ -1040,6 +1068,10 @@
 
   .carousel-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nesthub-landing__footer-top {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1057,6 +1089,360 @@
     width: 100%;
     justify-content: flex-start;
   }
+}
+
+/* Pricing Section */
+.nesthub-landing__pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: center;
+}
+
+.nesthub-landing__pricing h2 {
+  font-size: clamp(1.6rem, 2vw, 2.2rem);
+  color: #f8fafc;
+  text-align: center;
+}
+
+.nesthub-landing__pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  width: 100%;
+  max-width: 700px;
+}
+
+.pricing-card {
+  padding: 28px;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pricing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.5);
+}
+
+.pricing-card--featured {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.8), rgba(56, 189, 248, 0.08));
+  position: relative;
+}
+
+.pricing-card--featured::before {
+  content: 'Recommandé';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  color: #0b1224;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pricing-card__name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.pricing-card__price {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.pricing-card__price span {
+  font-size: 1rem;
+  font-weight: 400;
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.pricing-card__desc {
+  font-size: 0.9rem;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.pricing-card__features {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  font-size: 0.88rem;
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.pricing-card__features li::before {
+  content: '✓';
+  margin-right: 8px;
+  color: #22d3ee;
+}
+
+.pricing-card__cta {
+  margin-top: auto;
+  padding: 14px 24px;
+  border-radius: 18px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pricing-card__cta--primary {
+  background: linear-gradient(135deg, #38bdf8, #a5b4fc);
+  color: #0b1224;
+  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.2);
+}
+
+.pricing-card__cta--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(56, 189, 248, 0.3);
+}
+
+.pricing-card__cta--secondary {
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  color: #e2e8f0;
+}
+
+.pricing-card__cta--secondary:hover {
+  transform: translateY(-2px);
+  border-color: rgba(148, 163, 184, 0.9);
+}
+
+/* FAQ Section */
+.nesthub-landing__faq {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.nesthub-landing__faq h2 {
+  font-size: clamp(1.6rem, 2vw, 2.2rem);
+  color: #f8fafc;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.faq-item {
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.faq-item:hover {
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.faq-item__question {
+  width: 100%;
+  padding: 18px 20px;
+  background: none;
+  border: none;
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  transition: color 0.2s ease;
+}
+
+.faq-item__question:hover {
+  color: #38bdf8;
+}
+
+.faq-item__icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.faq-item.is-open .faq-item__icon {
+  transform: rotate(45deg);
+}
+
+.faq-item__answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.faq-item.is-open .faq-item__answer {
+  max-height: 500px;
+}
+
+.faq-item__answer-inner {
+  padding: 0 20px 18px;
+  color: rgba(226, 232, 240, 0.85);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Footer */
+.nesthub-landing__footer {
+  margin-top: 80px;
+  padding: 48px 20px 32px;
+  background: rgba(2, 6, 23, 0.8);
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.nesthub-landing__footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  gap: 40px;
+}
+
+.nesthub-landing__footer-top {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 32px;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-col__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #f8fafc;
+}
+
+.footer-col__list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-col__list li {
+  color: rgba(148, 163, 184, 0.85);
+  font-size: 0.9rem;
+}
+
+.footer-col__list a {
+  color: rgba(148, 163, 184, 0.85);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-col__list a:hover {
+  color: #38bdf8;
+}
+
+.footer-highlight {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.footer-highlight__icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.footer-highlight__text {
+  font-size: 0.88rem;
+  color: rgba(226, 232, 240, 0.9);
+  line-height: 1.5;
+}
+
+.nesthub-landing__footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-brand__logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 0.05em;
+}
+
+.footer-brand__location {
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.footer-copy {
+  font-size: 0.82rem;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+/* Scroll Animations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal--delay-1 { transition-delay: 0.1s; }
+.scroll-reveal--delay-2 { transition-delay: 0.2s; }
+.scroll-reveal--delay-3 { transition-delay: 0.3s; }
+
+.scroll-reveal--scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.scroll-reveal--scale.is-visible {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* Respect reduced motion */
@@ -1084,5 +1470,12 @@
   .piggy__sparkle,
   .piggy__amount span {
     animation: none !important;
+  }
+
+  .scroll-reveal,
+  .scroll-reveal--scale {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
