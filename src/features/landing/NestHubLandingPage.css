@@ -1221,10 +1221,9 @@
   flex-direction: column;
   gap: 16px;
   padding: 20px 24px;
-  border-radius: 22px;
-  background: linear-gradient(135deg, rgba(2, 6, 23, 0.9), rgba(15, 23, 42, 0.7));
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
+  border-radius: 20px;
+  background: rgba(2, 6, 23, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 .finance-header__piggy {
@@ -1466,6 +1465,24 @@
   background: rgba(59, 130, 246, 0.12);
   border: 1px solid rgba(99, 102, 241, 0.2);
   color: rgba(226, 232, 240, 0.85);
+  font-size: 0.9rem;
+}
+
+.nesthub-landing__list--icons li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.nesthub-landing__list--icons .list-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   font-size: 0.9rem;
 }
 

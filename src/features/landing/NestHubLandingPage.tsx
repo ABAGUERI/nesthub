@@ -849,12 +849,27 @@ export function NestHubLandingPage() {
           <div className="nesthub-landing__section-copy">
             <h2>Les adultes aussi ont leurs tâches</h2>
             <p>NestHub n'est pas réservé aux enfants.</p>
-            <ul className="nesthub-landing__list">
-              <li>Payer le service de garde</li>
-              <li>Déclarer les impôts</li>
-              <li>Rappeler le médecin</li>
-              <li>Renouveler un document</li>
-              <li>Ne rien oublier d'important</li>
+            <ul className="nesthub-landing__list nesthub-landing__list--icons">
+              <li>
+                <span className="list-icon" aria-hidden="true">💳</span>
+                <span>Payer le service de garde</span>
+              </li>
+              <li>
+                <span className="list-icon" aria-hidden="true">🧾</span>
+                <span>Déclarer les impôts</span>
+              </li>
+              <li>
+                <span className="list-icon" aria-hidden="true">📞</span>
+                <span>Rappeler le médecin</span>
+              </li>
+              <li>
+                <span className="list-icon" aria-hidden="true">🪪</span>
+                <span>Renouveler un document</span>
+              </li>
+              <li>
+                <span className="list-icon" aria-hidden="true">🔔</span>
+                <span>Ne rien oublier d'important</span>
+              </li>
             </ul>
             <p>
               👉 Tout est visible
