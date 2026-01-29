@@ -1216,10 +1216,36 @@
   color: rgba(226, 232, 240, 0.8);
 }
 
+.finance-header__card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 20px;
+  background: rgba(2, 6, 23, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
 .finance-header__piggy {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+.finance-header__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.finance-header__pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  font-size: 0.75rem;
+  color: #bae6fd;
+  font-weight: 600;
 }
 
 .finance-piggy {
@@ -1275,7 +1301,25 @@
 .finance-projects__title {
   font-size: 1rem;
   color: #f8fafc;
+  margin-bottom: 4px;
+}
+
+.finance-projects__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   margin-bottom: 20px;
+}
+
+.finance-projects__subtitle {
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.75);
+}
+
+.finance-avatar {
+  width: 52px;
+  height: 52px;
+  font-size: 1.4rem;
 }
 
 .finance-projects__grid {
@@ -1305,7 +1349,19 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  min-height: 180px;
+  min-height: 200px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(59, 130, 246, 0.05));
+  position: relative;
+  overflow: hidden;
+}
+
+.savings-project--new::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  pointer-events: none;
 }
 
 .savings-project__icon {
@@ -1382,6 +1438,52 @@
 .savings-project__add:hover {
   background: rgba(56, 189, 248, 0.25);
   transform: translateY(-1px);
+}
+
+.savings-project__cta {
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.9), rgba(59, 130, 246, 0.9));
+  border: none;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(14, 116, 144, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.savings-project__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 24px rgba(14, 116, 144, 0.4);
+}
+
+.nesthub-landing__screen-time-note {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: rgba(226, 232, 240, 0.85);
+  font-size: 0.9rem;
+}
+
+.nesthub-landing__list--icons li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.nesthub-landing__list--icons .list-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 0.9rem;
 }
 
 .finance-lessons {
