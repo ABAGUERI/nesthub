@@ -83,56 +83,76 @@ export function NestHubLandingPage() {
 
           <div className="nesthub-landing__hero-visual">
             <div className="nesthub-landing__mockup nesthub-landing__mockup--alive">
-              <div className="nesthub-landing__mockup-header">
-                <span className="dot dot--green" />
-                <span className="dot dot--yellow" />
-                <span className="dot dot--red" />
-                <span className="nesthub-landing__mockup-title">NestHub · Aujourd’hui</span>
+              <div className="mockup-toolbar">
+                <div className="mockup-time">
+                  08 h 35 <span>Jeudi 29 janv.</span>
+                </div>
+                <div className="mockup-title">Nesthub</div>
+                <div className="mockup-icons">
+                  <span>🏠</span>
+                  <span>👨‍👩‍👧‍👦</span>
+                  <span>🍽️</span>
+                  <span>💰</span>
+                </div>
               </div>
 
-              <div className="nesthub-landing__mockup-grid">
-                <div className="mockup-panel">
-                  <div className="mockup-panel__title">Agenda</div>
+              <div className="mockup-shell">
+                <aside className="mockup-sidebar">
+                  <div className="mockup-avatar is-active">Sifaw</div>
+                  <div className="mockup-avatar">Georges</div>
+                  <div className="mockup-avatar">Lucas</div>
+                </aside>
 
-                  <div className="mockup-event">
-                    <span className="mockup-event__time">08:15</span>
-                    <div>
-                      <div className="mockup-event__name">École · Départ</div>
-                      <div className="mockup-event__meta">Auto · 12 min</div>
+                <section className="mockup-dashboard">
+                  <div className="mockup-card mockup-card--hero">
+                    <div className="mockup-card__header">
+                      <span>🏆 Objectif famille</span>
+                      <span className="mockup-pill mockup-pill--dark">455 pts / 1000</span>
                     </div>
+                    <div className="mockup-card__body">
+                      <div className="mockup-profile" />
+                      <div className="mockup-progress">
+                        <span style={{ ['--w' as any]: '46%' }} />
+                      </div>
+                      <div className="mockup-progress__meta">Progression · 46%</div>
+                    </div>
+                    <button className="mockup-cta" type="button">
+                      🐷 Ma tirelire
+                    </button>
                   </div>
 
-                  <div className="mockup-event">
-                    <span className="mockup-event__time">17:30</span>
-                    <div>
-                      <div className="mockup-event__name">Soccer</div>
-                      <div className="mockup-event__meta">Terrain 3</div>
+                  <div className="mockup-card">
+                    <div className="mockup-card__header">
+                      <span>⭐ Tâches du jour</span>
                     </div>
-                  </div>
-
-                  <div className="mockup-event">
-                    <span className="mockup-event__time">19:00</span>
-                    <div>
-                      <div className="mockup-event__name">Devoirs</div>
-                      <div className="mockup-event__meta">30 min</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mockup-panel mockup-panel--center">
-                  <div className="mockup-panel__title">Tâches</div>
-
-                  {/* Gamification “completion” */}
-                  <div className="mockup-task mockup-task--complete">
-                    <div className="mockup-task__label">Table du dîner</div>
-                    <div className="mockup-task__progress">
-                      <span style={{ ['--w' as any]: '72%' }} />
-                    </div>
-                    <div className="mockup-task__meta">Niveau 4 · 720 XP</div>
-
-                    {/* Reward pop */}
-                    <div className="mockup-task__reward" aria-hidden="true">
-                      +20 XP · ❤️ +1
+                    <div className="mockup-task-grid">
+                      <div className="mockup-task mockup-task--complete">
+                        <div className="mockup-task__label">Temps d’écran</div>
+                        <div className="mockup-task__progress">
+                          <span style={{ ['--w' as any]: '72%' }} />
+                        </div>
+                        <div className="mockup-task__meta">Validée</div>
+                        <div className="mockup-task__reward" aria-hidden="true">
+                          +20 XP · ❤️ +1
+                        </div>
+                        <span className="mockup-task__check" aria-hidden="true">
+                          ✔
+                        </span>
+                        <span className="mockup-task__xp" aria-hidden="true">
+                          +20 XP
+                        </span>
+                        <span className="mockup-task__heart" aria-hidden="true">
+                          ❤️
+                        </span>
+                      </div>
+                      <div className="mockup-task">
+                        <div className="mockup-task__label">Ranger chambre</div>
+                        <div className="mockup-task__meta">En cours</div>
+                      </div>
+                      <div className="mockup-task">
+                        <div className="mockup-task__label">Lire 20 min</div>
+                        <div className="mockup-task__meta">Bonus</div>
+                      </div>
                     </div>
 
                     <span className="mockup-task__check" aria-hidden="true">
@@ -146,49 +166,19 @@ export function NestHubLandingPage() {
                     </span>
                   </div>
 
-                  <div className="mockup-task">
-                    <div className="mockup-task__label">Lecture</div>
-                    <div className="mockup-task__progress">
-                      <span style={{ ['--w' as any]: '46%' }} />
+                  <div className="mockup-card mockup-card--hearts">
+                    <div className="mockup-card__header">
+                      <span>Temps d’écran</span>
+                      <span>255 / 420 min</span>
                     </div>
-                    <div className="mockup-task__meta">+20 min</div>
-                  </div>
-
-                  <div className="mockup-task">
-                    <div className="mockup-task__label">Chambre</div>
-                    <div className="mockup-task__progress">
-                      <span style={{ ['--w' as any]: '90%' }} />
-                    </div>
-                    <div className="mockup-task__meta">Prêt pour bonus</div>
-                  </div>
-                </div>
-
-                <div className="mockup-panel">
-                  <div className="mockup-panel__title">Menu semaine</div>
-
-                  <ul className="mockup-menu">
-                    <li>
-                      <span>Saumon citron</span>
-                      <span className="mockup-pill">Lun</span>
-                    </li>
-                    <li>
-                      <span>Bol veggie</span>
-                      <span className="mockup-pill">Mer</span>
-                    </li>
-                    <li>
-                      <span>Pâtes pesto</span>
-                      <span className="mockup-pill">Ven</span>
-                    </li>
-                  </ul>
-
-                  <div className="mockup-cart">
-                    <span className="mockup-cart__icon">🧺</span>
-                    <div>
-                      <div className="mockup-cart__title">Liste d’épicerie</div>
-                      <div className="mockup-cart__meta">12 articles</div>
+                    <div className="mockup-heart-stack">
+                      <span className="life is-full is-gain">❤️</span>
+                      <span className="life is-full">❤️</span>
+                      <span className="life is-full">❤️</span>
+                      <span className="life is-warning is-loss">🤍</span>
                     </div>
                   </div>
-                </div>
+                </section>
               </div>
             </div>
           </div>
