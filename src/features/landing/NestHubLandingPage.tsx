@@ -51,6 +51,32 @@ export function NestHubLandingPage() {
   const headerRef = useRef<HTMLElement | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
+  // Screen time demo state
+  const [screenTimeHearts, setScreenTimeHearts] = useState(7);
+  const [screenTimeUsed, setScreenTimeUsed] = useState(0);
+  const [losingHeartIndex, setLosingHeartIndex] = useState<number | null>(null);
+
+  // Handle screen time usage simulation
+  const handleUseScreenTime = useCallback(() => {
+    if (screenTimeHearts > 0) {
+      const heartToLose = screenTimeHearts - 1;
+      setLosingHeartIndex(heartToLose);
+
+      setTimeout(() => {
+        setScreenTimeHearts((prev) => Math.max(0, prev - 1));
+        setScreenTimeUsed((prev) => prev + 60);
+        setLosingHeartIndex(null);
+      }, 600);
+    }
+  }, [screenTimeHearts]);
+
+  // Reset screen time demo
+  const handleResetScreenTime = useCallback(() => {
+    setScreenTimeHearts(7);
+    setScreenTimeUsed(0);
+    setLosingHeartIndex(null);
+  }, []);
+
   // Piggy bank amount animation
   useEffect(() => {
     let frameId = 0;
@@ -395,6 +421,57 @@ export function NestHubLandingPage() {
                 </article>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Comment ça marche - 3 steps */}
+        <section className="nesthub-landing__section nesthub-landing__how-it-works scroll-reveal">
+          <div className="nesthub-landing__section-copy">
+            <h2>Comment ça marche ?</h2>
+            <p>Démarrez en 3 étapes simples</p>
+          </div>
+
+          <div className="how-it-works__steps">
+            <div className="how-step scroll-reveal scroll-reveal--delay-1">
+              <div className="how-step__number">1</div>
+              <div className="how-step__icon">👨‍👩‍👧‍👦</div>
+              <h3 className="how-step__title">Créez votre espace familial</h3>
+              <p className="how-step__desc">
+                Inscription en 2 minutes. Ajoutez les membres de votre famille avec leurs avatars personnalisés.
+              </p>
+              <span className="how-step__time">⏱️ 2 min</span>
+            </div>
+
+            <div className="how-step__arrow" aria-hidden="true">→</div>
+
+            <div className="how-step scroll-reveal scroll-reveal--delay-2">
+              <div className="how-step__number">2</div>
+              <div className="how-step__icon">✅</div>
+              <h3 className="how-step__title">Configurez les tâches et règles</h3>
+              <p className="how-step__desc">
+                Définissez les tâches de chacun, le budget temps d'écran et les objectifs d'épargne.
+              </p>
+              <span className="how-step__time">⏱️ 5 min</span>
+            </div>
+
+            <div className="how-step__arrow" aria-hidden="true">→</div>
+
+            <div className="how-step scroll-reveal scroll-reveal--delay-3">
+              <div className="how-step__number">3</div>
+              <div className="how-step__icon">📱</div>
+              <h3 className="how-step__title">Installez sur votre tablette</h3>
+              <p className="how-step__desc">
+                Placez NestHub sur une tablette dans la cuisine. Toute la famille y accède facilement.
+              </p>
+              <span className="how-step__time">⏱️ 1 min</span>
+            </div>
+          </div>
+
+          <div className="how-it-works__cta scroll-reveal">
+            <Link to="/signup" className="nesthub-landing__cta-primary">
+              Commencer maintenant
+            </Link>
+            <span className="how-it-works__note">Prêt en moins de 10 minutes</span>
           </div>
         </section>
 
@@ -855,7 +932,7 @@ export function NestHubLandingPage() {
             </div>
 
             <div className="screentime-demo">
-              <div className="screentime-card">
+              <div className="screentime-card screentime-card--interactive">
                 <div className="screentime-card__header">
                   <span className="screentime-card__title">
                     <span>📱</span>
@@ -875,30 +952,60 @@ export function NestHubLandingPage() {
                 </div>
 
                 <div className="screentime-hearts">
-                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
-                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
-                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
-                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
-                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
-                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
-                  <span className="screentime-heart is-empty" aria-label="vie utilisée">🤍</span>
+                  {Array.from({ length: 7 }).map((_, index) => {
+                    const isLosing = losingHeartIndex === index;
+                    const isFull = index < screenTimeHearts;
+                    return (
+                      <span
+                        key={index}
+                        className={`screentime-heart ${isFull ? 'is-full' : 'is-empty'} ${isLosing ? 'is-losing' : ''}`}
+                        aria-label={isFull ? 'vie pleine' : 'vie utilisée'}
+                      >
+                        {isFull ? '❤️' : '🤍'}
+                      </span>
+                    );
+                  })}
                   <div className="screentime-hearts__label">
-                    <span className="screentime-hearts__count">6 / 7 vies</span>
-                    <span>= 360 min restantes</span>
+                    <span className="screentime-hearts__count">{screenTimeHearts} / 7 vies</span>
+                    <span>= {screenTimeHearts * 60} min restantes</span>
                   </div>
                 </div>
 
                 <div className="screentime-usage">
                   <div className="screentime-usage__header">
-                    <span>Utilisation aujourd'hui</span>
-                    <span className="screentime-usage__value">60 min consommées</span>
+                    <span>Temps utilisé</span>
+                    <span className="screentime-usage__value">{screenTimeUsed} min consommées</span>
                   </div>
                   <div className="screentime-usage__bar">
-                    <div className="screentime-usage__fill" style={{ width: '14%' }} />
+                    <div className="screentime-usage__fill" style={{ width: `${(screenTimeUsed / 420) * 100}%` }} />
                   </div>
                   <span className="screentime-usage__info">
                     1 coeur = 60 min · Budget se réinitialise chaque lundi
                   </span>
+                </div>
+
+                <div className="screentime-actions">
+                  <button
+                    type="button"
+                    className="screentime-action-btn screentime-action-btn--use"
+                    onClick={handleUseScreenTime}
+                    disabled={screenTimeHearts === 0}
+                  >
+                    <span>📺</span>
+                    {screenTimeHearts > 0 ? 'Utiliser 60 min' : 'Plus de temps !'}
+                  </button>
+                  <button
+                    type="button"
+                    className="screentime-action-btn screentime-action-btn--reset"
+                    onClick={handleResetScreenTime}
+                  >
+                    <span>🔄</span>
+                    Réinitialiser
+                  </button>
+                </div>
+
+                <div className="screentime-demo-hint">
+                  👆 Cliquez pour simuler l'utilisation du temps d'écran
                 </div>
               </div>
             </div>
