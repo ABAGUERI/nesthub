@@ -185,10 +185,10 @@ export const AIMenuPanel: React.FC<AIMenuPanelProps> = ({ onBackToMenu }) => {
         <div>
           <h2 className="ai-menu-title">
             <span className="ai-icon">🤖</span>
-            Menu IA
+            La Boussole des Repas
           </h2>
           <p className="ai-menu-subtitle">
-            Génération automatique menu + épicerie
+            Des menus qui s'adaptent aux envies de la famille
           </p>
         </div>
         {onBackToMenu && (

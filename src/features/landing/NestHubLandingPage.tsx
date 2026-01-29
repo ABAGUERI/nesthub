@@ -5,6 +5,14 @@ export function NestHubLandingPage() {
   return (
     <div className="nesthub-landing">
       <div className="nesthub-landing__glow" aria-hidden="true" />
+
+      {/* Subtle premium “life” layer */}
+      <div className="nesthub-landing__stars" aria-hidden="true">
+        {Array.from({ length: 18 }).map((_, i) => (
+          <span key={i} className={`star star--${(i % 6) + 1}`} />
+        ))}
+      </div>
+
       <header className="nesthub-landing__header">
         <div className="nesthub-landing__brand">NestHub</div>
         <nav className="nesthub-landing__nav">
@@ -21,14 +29,12 @@ export function NestHubLandingPage() {
         <section className="nesthub-landing__hero">
           <div className="nesthub-landing__hero-copy">
             <p className="nesthub-landing__eyebrow">NestHub</p>
-            <h1>
-              Le hub familial qui transforme l’organisation en terrain de jeu
-            </h1>
+            <h1>Le hub familial qui transforme l’organisation en terrain de jeu</h1>
             <p className="nesthub-landing__subtitle">
               Développé à Québec, dans le quartier de Limoilou.
               <br />
-              Une solution locale, pensée pour les familles d’ici, avec les
-              réalités d’aujourd’hui.
+              Une solution locale, pensée pour les familles d’ici, avec les réalités
+              d’aujourd’hui.
             </p>
             <div className="nesthub-landing__cta">
               <Link to="/signup" className="nesthub-landing__cta-primary">
@@ -39,23 +45,24 @@ export function NestHubLandingPage() {
               </Link>
             </div>
             <div className="nesthub-landing__hero-note">
-              Mise en place rapide · Sans carte de crédit · Pensé pour évoluer
-              avec vos enfants
+              Mise en place rapide · Sans carte de crédit · Pensé pour évoluer avec vos
+              enfants
             </div>
           </div>
+
           <div className="nesthub-landing__hero-visual">
-            <div className="nesthub-landing__mockup">
+            <div className="nesthub-landing__mockup nesthub-landing__mockup--alive">
               <div className="nesthub-landing__mockup-header">
                 <span className="dot dot--green" />
                 <span className="dot dot--yellow" />
                 <span className="dot dot--red" />
-                <span className="nesthub-landing__mockup-title">
-                  NestHub · Aujourd’hui
-                </span>
+                <span className="nesthub-landing__mockup-title">NestHub · Aujourd’hui</span>
               </div>
+
               <div className="nesthub-landing__mockup-grid">
                 <div className="mockup-panel">
                   <div className="mockup-panel__title">Agenda</div>
+
                   <div className="mockup-event">
                     <span className="mockup-event__time">08:15</span>
                     <div>
@@ -63,6 +70,7 @@ export function NestHubLandingPage() {
                       <div className="mockup-event__meta">Auto · 12 min</div>
                     </div>
                   </div>
+
                   <div className="mockup-event">
                     <span className="mockup-event__time">17:30</span>
                     <div>
@@ -70,6 +78,7 @@ export function NestHubLandingPage() {
                       <div className="mockup-event__meta">Terrain 3</div>
                     </div>
                   </div>
+
                   <div className="mockup-event">
                     <span className="mockup-event__time">19:00</span>
                     <div>
@@ -78,32 +87,44 @@ export function NestHubLandingPage() {
                     </div>
                   </div>
                 </div>
+
                 <div className="mockup-panel mockup-panel--center">
                   <div className="mockup-panel__title">Tâches</div>
-                  <div className="mockup-task">
+
+                  {/* Gamification “completion” */}
+                  <div className="mockup-task mockup-task--complete">
                     <div className="mockup-task__label">Table du dîner</div>
                     <div className="mockup-task__progress">
-                      <span style={{ width: '72%' }} />
+                      <span style={{ ['--w' as any]: '72%' }} />
                     </div>
                     <div className="mockup-task__meta">Niveau 4 · 720 XP</div>
+
+                    {/* Reward pop */}
+                    <div className="mockup-task__reward" aria-hidden="true">
+                      +20 XP · ❤️ +1
+                    </div>
                   </div>
+
                   <div className="mockup-task">
                     <div className="mockup-task__label">Lecture</div>
                     <div className="mockup-task__progress">
-                      <span style={{ width: '46%' }} />
+                      <span style={{ ['--w' as any]: '46%' }} />
                     </div>
                     <div className="mockup-task__meta">+20 min</div>
                   </div>
+
                   <div className="mockup-task">
                     <div className="mockup-task__label">Chambre</div>
                     <div className="mockup-task__progress">
-                      <span style={{ width: '90%' }} />
+                      <span style={{ ['--w' as any]: '90%' }} />
                     </div>
                     <div className="mockup-task__meta">Prêt pour bonus</div>
                   </div>
                 </div>
+
                 <div className="mockup-panel">
                   <div className="mockup-panel__title">Menu semaine</div>
+
                   <ul className="mockup-menu">
                     <li>
                       <span>Saumon citron</span>
@@ -118,12 +139,11 @@ export function NestHubLandingPage() {
                       <span className="mockup-pill">Ven</span>
                     </li>
                   </ul>
+
                   <div className="mockup-cart">
                     <span className="mockup-cart__icon">🧺</span>
                     <div>
-                      <div className="mockup-cart__title">
-                        Liste d’épicerie
-                      </div>
+                      <div className="mockup-cart__title">Liste d’épicerie</div>
                       <div className="mockup-cart__meta">12 articles</div>
                     </div>
                   </div>
@@ -137,11 +157,10 @@ export function NestHubLandingPage() {
           <div className="nesthub-landing__section-copy">
             <h2>L’organisation familiale, enfin partagée</h2>
             <p>
-              Entre l’école, les devoirs, les écrans, les repas, les paiements,
-              les rendez-vous et les activités, l’organisation repose trop
-              souvent sur une seule personne. NestHub a été conçu pour
-              redistribuer la charge, et faire de l’organisation une
-              responsabilité collective.
+              Entre l’école, les devoirs, les écrans, les repas, les paiements, les
+              rendez-vous et les activités, l’organisation repose trop souvent sur une
+              seule personne. NestHub a été conçu pour redistribuer la charge, et faire
+              de l’organisation une responsabilité collective.
             </p>
           </div>
         </section>
@@ -161,11 +180,12 @@ export function NestHubLandingPage() {
               👉 Et naturellement, il a envie d’aller plus vite.
             </p>
           </div>
+
           <div className="nesthub-landing__feature-cards">
             <div className="feature-card">
               <div className="feature-card__mockup">
                 <div className="xp-bar">
-                  <span style={{ width: '68%' }} />
+                  <span style={{ ['--w' as any]: '68%' }} />
                 </div>
                 <div className="xp-meta">
                   <span>Lvl 4</span>
@@ -178,19 +198,36 @@ export function NestHubLandingPage() {
                 <p>Barre XP, niveaux et bonus visibles par toute la famille.</p>
               </div>
             </div>
+
             <div className="feature-card">
               <div className="feature-card__mockup">
                 <div className="screen-time">
                   <div className="screen-time__top">
                     <span>Temps d’écran</span>
-                    <span>2 jetons</span>
+
+                    {/* tokens mini-anim */}
+                    <span className="screen-time__tokens">
+                      <span className="token" />
+                      <span className="token" />
+                      <span className="token-label">2 jetons</span>
+                    </span>
                   </div>
+
                   <div className="screen-time__slider">
-                    <span style={{ width: '55%' }} />
+                    <span style={{ ['--w' as any]: '55%' }} />
                   </div>
+
                   <div className="screen-time__rules">
                     <span>✔️ Devoirs faits</span>
                     <span>⏰ 60 min max</span>
+                  </div>
+
+                  {/* hearts / lives */}
+                  <div className="screen-time__hearts" aria-label="Vies disponibles">
+                    <span className="life is-full">❤️</span>
+                    <span className="life is-full">❤️</span>
+                    <span className="life">🤍</span>
+                    <span className="life-label">vies</span>
                   </div>
                 </div>
               </div>
@@ -199,17 +236,26 @@ export function NestHubLandingPage() {
                 <p>Jetons gagnés et règles claires pour négocier sereinement.</p>
               </div>
             </div>
+
             <div className="feature-card">
               <div className="feature-card__mockup">
                 <div className="piggy">
-                  <div className="piggy__icon">🐷</div>
+                  {/* coin drop */}
+                  <span className="piggy__coin" aria-hidden="true">
+                    🪙
+                  </span>
+
+                  <div className="piggy__icon" aria-hidden="true">
+                    🐷
+                  </div>
                   <div>
                     <div className="piggy__amount">50 CAD</div>
                     <div className="piggy__meta">Projet long terme</div>
                   </div>
                 </div>
+
                 <div className="piggy__progress">
-                  <span style={{ width: '42%' }} />
+                  <span style={{ ['--w' as any]: '42%' }} />
                 </div>
                 <div className="piggy__goal">Objectif: vélo familial</div>
               </div>
@@ -322,10 +368,10 @@ export function NestHubLandingPage() {
               <br />
               👉 Mettre de côté pour un projet plus grand ?
               <br />
-              À vous de décider du cadre. Les enfants apprennent par
-              l’expérience.
+              À vous de décider du cadre. Les enfants apprennent par l’expérience.
             </p>
           </div>
+
           <div className="nesthub-landing__visual-frame">
             <div className="nesthub-landing__frame-grid">
               <div className="frame-card">Projet 50 CAD</div>
@@ -365,6 +411,7 @@ export function NestHubLandingPage() {
               👉 Qui évolue avec votre famille
             </p>
           </div>
+
           <div className="nesthub-landing__memories">
             <div className="polaroid">
               <div className="polaroid__photo" />
@@ -385,8 +432,8 @@ export function NestHubLandingPage() {
           <div className="nesthub-landing__section-copy">
             <h2>Une solution familiale, pas une app de contrôle</h2>
             <p>
-              NestHub repose sur une conviction simple : Les enfants sont
-              capables de plus quand on leur donne les bons outils.
+              NestHub repose sur une conviction simple : Les enfants sont capables de plus
+              quand on leur donne les bons outils.
             </p>
           </div>
         </section>
