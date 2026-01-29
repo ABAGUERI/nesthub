@@ -586,9 +586,13 @@ export function NestHubLandingPage() {
                   <span className="finance-total__label">Épargne totale</span>
                 </div>
               </div>
-              <div className="finance-header__meta">
-                <span className="finance-header__pill">+ 6 $ cette semaine</span>
-                <span className="finance-header__pill">2 projets actifs</span>
+              <div className="finance-total">
+                <span className="finance-total__amount">28 $</span>
+                <span className="finance-total__label">Épargne totale</span>
+                <div className="finance-total__badges">
+                  <span className="finance-badge">+ 6 $ cette semaine</span>
+                  <span className="finance-badge finance-badge--orange">2 projets actifs</span>
+                </div>
               </div>
             </div>
           </div>
@@ -762,26 +766,205 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
-        <section className="nesthub-landing__section scroll-reveal">
+        <section className="nesthub-landing__section nesthub-landing__features scroll-reveal">
           <div className="nesthub-landing__section-copy">
-            <h2>Le temps d'écran, géré de façon démocratique</h2>
+            <h2>Une progression ludique, inspirée du jeu vidéo</h2>
             <ul className="nesthub-landing__list">
-              <li>Le temps d'écran se gagne, pas il se prend</li>
-              <li>Il se négocie avec des règles transparentes</li>
-              <li>Il se comprend grâce à des feedbacks visibles</li>
-              <li>Il s'équilibre avec les devoirs, le sommeil et le calme</li>
+              <li>Phases et niveaux visibles</li>
+              <li>Objectifs hebdomadaires clairs</li>
+              <li>Récompenses motivantes</li>
+              <li>Sentiment d'avancer, semaine après semaine</li>
             </ul>
             <p>
-              👉 L'enfant sait pourquoi il y a un oui ou un non.
+              👉 Plus un enfant devient autonome, plus il progresse.
               <br />
-              👉 Le parent n'est plus le contrôleur, mais l'accompagnateur.
-              <br />
-              👉 Les conflits chutent, le dialogue remplace l'interdiction.
+              👉 Et naturellement, il a envie d'aller plus vite.
             </p>
-            <p className="nesthub-landing__screen-time-note">
-              Les minutes d'écran deviennent des jetons gagnés (ou perdus) selon les efforts,
-              avec un historique clair pour éviter les discussions sans fin.
-            </p>
+          </div>
+
+          <div className="nesthub-landing__feature-cards">
+            <div className="feature-card scroll-reveal scroll-reveal--delay-1">
+              <div className="feature-card__mockup">
+                <div className="xp-bar">
+                  <span style={{ ['--w' as string]: '68%' }} />
+                </div>
+                <div className="xp-meta">
+                  <span>Lvl 4</span>
+                  <span>680 / 1000 XP</span>
+                </div>
+                <div className="xp-reward">Récompense: 🎮 20 min</div>
+              </div>
+              <div>
+                <h3>Progression style jeu vidéo</h3>
+                <p>Barre XP, niveaux et bonus visibles par toute la famille.</p>
+              </div>
+            </div>
+
+            <div className="feature-card scroll-reveal scroll-reveal--delay-2">
+              <div className="feature-card__mockup">
+                <div className="screen-time">
+                  <div className="screen-time__top">
+                    <span>Temps d'écran</span>
+                    <span className="screen-time__tokens">
+                      <span className="token" />
+                      <span className="token" />
+                      <span className="token-label">2 jetons</span>
+                    </span>
+                  </div>
+                  <div className="screen-time__slider">
+                    <span style={{ ['--w' as string]: '55%' }} />
+                  </div>
+                  <div className="screen-time__rules">
+                    <span>✔️ Devoirs faits</span>
+                    <span>⏰ 60 min max</span>
+                  </div>
+                  <div className="screen-time__hearts" aria-label="Vies disponibles">
+                    <span className="life is-full is-gain">❤️</span>
+                    <span className="life is-full">❤️</span>
+                    <span className="life is-warning is-loss">🤍</span>
+                    <span className="life-label">vies</span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3>Temps d'écran démocratique</h3>
+                <p>Jetons gagnés et règles claires pour négocier sereinement.</p>
+              </div>
+            </div>
+
+            <div className="feature-card scroll-reveal scroll-reveal--delay-3">
+              <div className="feature-card__mockup">
+                <div className="piggy piggy--active">
+                  <span className="piggy__coin" aria-hidden="true">🪙</span>
+                  <span className="piggy__sparkle" aria-hidden="true">✦</span>
+                  <div className="piggy__icon" aria-hidden="true">🐷</div>
+                  <div>
+                    <div className="piggy__amount">
+                      <span>28 CAD</span>
+                    </div>
+                    <div className="piggy__meta">Projet long terme</div>
+                  </div>
+                </div>
+                <div className="piggy__progress">
+                  <span style={{ ['--w' as string]: '42%' }} />
+                </div>
+                <div className="piggy__goal">Objectif: vélo familial</div>
+              </div>
+              <div>
+                <h3>Cochon & projets</h3>
+                <p>Épargne collective et décisions concrètes à la maison.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Screen Time Gamechanger Section */}
+        <section className="nesthub-landing__section nesthub-landing__screentime scroll-reveal">
+          <div className="screentime-hero">
+            <div className="screentime-content">
+              <div className="screentime-badge">
+                <span>🎮</span>
+                <span>LE GAMECHANGER</span>
+              </div>
+              <h2>
+                Le temps d'écran :<br />
+                <span>un fléau, notre solution</span>
+              </h2>
+              <p className="screentime-problem">
+                Le temps d'écran est devenu l'un des plus grands défis des familles modernes.
+                Négociations sans fin, conflits quotidiens, culpabilité parentale...
+              </p>
+              <div className="screentime-stats">
+                <div className="screentime-stat">
+                  <span className="screentime-stat__value">7h/jour</span>
+                  <span className="screentime-stat__label">temps d'écran moyen des enfants</span>
+                </div>
+                <div className="screentime-stat">
+                  <span className="screentime-stat__value">85%</span>
+                  <span className="screentime-stat__label">des parents inquiets</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="screentime-demo">
+              <div className="screentime-card">
+                <div className="screentime-card__header">
+                  <span className="screentime-card__title">
+                    <span>📱</span>
+                    Temps d'écran hebdomadaire
+                  </span>
+                  <span className="screentime-card__child">
+                    <span>👧</span>
+                    Sifaw
+                  </span>
+                </div>
+
+                <div className="screentime-budget">
+                  <div className="screentime-budget__label">
+                    <span>Budget alloué</span>
+                    <span className="screentime-budget__time">420 min / semaine</span>
+                  </div>
+                </div>
+
+                <div className="screentime-hearts">
+                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
+                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
+                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
+                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
+                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
+                  <span className="screentime-heart is-full" aria-label="vie pleine">❤️</span>
+                  <span className="screentime-heart is-empty" aria-label="vie utilisée">🤍</span>
+                  <div className="screentime-hearts__label">
+                    <span className="screentime-hearts__count">6 / 7 vies</span>
+                    <span>= 360 min restantes</span>
+                  </div>
+                </div>
+
+                <div className="screentime-usage">
+                  <div className="screentime-usage__header">
+                    <span>Utilisation aujourd'hui</span>
+                    <span className="screentime-usage__value">60 min consommées</span>
+                  </div>
+                  <div className="screentime-usage__bar">
+                    <div className="screentime-usage__fill" style={{ width: '14%' }} />
+                  </div>
+                  <span className="screentime-usage__info">
+                    1 coeur = 60 min · Budget se réinitialise chaque lundi
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="screentime-solution">
+            <div className="screentime-benefit scroll-reveal scroll-reveal--delay-1">
+              <span className="screentime-benefit__icon">🎯</span>
+              <span className="screentime-benefit__title">Visualisation claire</span>
+              <span className="screentime-benefit__desc">
+                L'enfant voit ses coeurs, comprend son budget et apprend à le gérer lui-même
+              </span>
+            </div>
+            <div className="screentime-benefit scroll-reveal scroll-reveal--delay-2">
+              <span className="screentime-benefit__icon">🤝</span>
+              <span className="screentime-benefit__title">Fin des négociations</span>
+              <span className="screentime-benefit__desc">
+                Plus de "encore 5 minutes". Les règles sont claires et acceptées par tous
+              </span>
+            </div>
+            <div className="screentime-benefit scroll-reveal scroll-reveal--delay-3">
+              <span className="screentime-benefit__icon">📈</span>
+              <span className="screentime-benefit__title">Responsabilisation</span>
+              <span className="screentime-benefit__desc">
+                L'enfant choisit quand utiliser son temps. Il développe l'auto-régulation
+              </span>
+            </div>
+            <div className="screentime-benefit scroll-reveal scroll-reveal--delay-3">
+              <span className="screentime-benefit__icon">😌</span>
+              <span className="screentime-benefit__title">Sérénité parentale</span>
+              <span className="screentime-benefit__desc">
+                Le parent accompagne, il ne contrôle plus. Moins de stress, plus de complicité
+              </span>
+            </div>
           </div>
         </section>
 
@@ -849,28 +1032,30 @@ export function NestHubLandingPage() {
           <div className="nesthub-landing__section-copy">
             <h2>Les adultes aussi ont leurs tâches</h2>
             <p>NestHub n'est pas réservé aux enfants.</p>
-            <ul className="nesthub-landing__list nesthub-landing__list--icons">
-              <li>
-                <span className="list-icon" aria-hidden="true">💳</span>
-                <span>Payer le service de garde</span>
-              </li>
-              <li>
-                <span className="list-icon" aria-hidden="true">🧾</span>
-                <span>Déclarer les impôts</span>
-              </li>
-              <li>
-                <span className="list-icon" aria-hidden="true">📞</span>
-                <span>Rappeler le médecin</span>
-              </li>
-              <li>
-                <span className="list-icon" aria-hidden="true">🪪</span>
-                <span>Renouveler un document</span>
-              </li>
-              <li>
-                <span className="list-icon" aria-hidden="true">🔔</span>
-                <span>Ne rien oublier d'important</span>
-              </li>
-            </ul>
+          </div>
+          <div className="adult-tasks">
+            <div className="adult-task scroll-reveal scroll-reveal--delay-1">
+              <span className="adult-task__icon">💳</span>
+              <span className="adult-task__text">Payer le service de garde</span>
+            </div>
+            <div className="adult-task scroll-reveal scroll-reveal--delay-1">
+              <span className="adult-task__icon">📋</span>
+              <span className="adult-task__text">Déclarer les impôts</span>
+            </div>
+            <div className="adult-task scroll-reveal scroll-reveal--delay-2">
+              <span className="adult-task__icon">🏥</span>
+              <span className="adult-task__text">Rappeler le médecin</span>
+            </div>
+            <div className="adult-task scroll-reveal scroll-reveal--delay-2">
+              <span className="adult-task__icon">📄</span>
+              <span className="adult-task__text">Renouveler un document</span>
+            </div>
+            <div className="adult-task scroll-reveal scroll-reveal--delay-3">
+              <span className="adult-task__icon">🔔</span>
+              <span className="adult-task__text">Ne rien oublier d'important</span>
+            </div>
+          </div>
+          <div className="nesthub-landing__section-copy" style={{ marginTop: '24px' }}>
             <p>
               👉 Tout est visible
               <br />
@@ -911,19 +1096,22 @@ export function NestHubLandingPage() {
             </p>
           </div>
 
-          <div className="nesthub-landing__memories">
-            <div className="polaroid">
-              <div className="polaroid__photo" />
-              <span>Tour de vélo</span>
+          <div className="digital-frame scroll-reveal scroll-reveal--delay-2">
+            <div className="digital-frame__inner">
+              <div className="digital-frame__photos" aria-hidden="true">
+                <div className="digital-frame__photo digital-frame__photo--1" />
+                <div className="digital-frame__photo digital-frame__photo--2" />
+                <div className="digital-frame__photo digital-frame__photo--3" />
+                <div className="digital-frame__photo digital-frame__photo--4" />
+              </div>
+              <div className="digital-frame__overlay">
+                <div>
+                  <div className="digital-frame__caption">Randonnée en famille</div>
+                  <div className="digital-frame__date">Dimanche 12 janvier 2025</div>
+                </div>
+              </div>
             </div>
-            <div className="polaroid">
-              <div className="polaroid__photo polaroid__photo--alt" />
-              <span>Soirée pizza</span>
-            </div>
-            <div className="polaroid">
-              <div className="polaroid__photo polaroid__photo--third" />
-              <span>Cabane à sucre</span>
-            </div>
+            <span className="digital-frame__bezel" aria-hidden="true" />
           </div>
         </section>
 
