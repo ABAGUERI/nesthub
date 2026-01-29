@@ -802,38 +802,6 @@ export function NestHubLandingPage() {
 
             <div className="feature-card scroll-reveal scroll-reveal--delay-2">
               <div className="feature-card__mockup">
-                <div className="screen-time">
-                  <div className="screen-time__top">
-                    <span>Temps d'écran</span>
-                    <span className="screen-time__tokens">
-                      <span className="token" />
-                      <span className="token" />
-                      <span className="token-label">2 jetons</span>
-                    </span>
-                  </div>
-                  <div className="screen-time__slider">
-                    <span style={{ ['--w' as string]: '55%' }} />
-                  </div>
-                  <div className="screen-time__rules">
-                    <span>✔️ Devoirs faits</span>
-                    <span>⏰ 60 min max</span>
-                  </div>
-                  <div className="screen-time__hearts" aria-label="Vies disponibles">
-                    <span className="life is-full is-gain">❤️</span>
-                    <span className="life is-full">❤️</span>
-                    <span className="life is-warning is-loss">🤍</span>
-                    <span className="life-label">vies</span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h3>Temps d'écran démocratique</h3>
-                <p>Jetons gagnés et règles claires pour négocier sereinement.</p>
-              </div>
-            </div>
-
-            <div className="feature-card scroll-reveal scroll-reveal--delay-3">
-              <div className="feature-card__mockup">
                 <div className="piggy piggy--active">
                   <span className="piggy__coin" aria-hidden="true">🪙</span>
                   <span className="piggy__sparkle" aria-hidden="true">✦</span>
