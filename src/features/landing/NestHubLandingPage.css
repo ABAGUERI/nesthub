@@ -1221,7 +1221,7 @@
   flex-direction: column;
   gap: 16px;
   padding: 20px 24px;
-  border-radius: 20px;
+  border-radius: 16px;
   background: rgba(2, 6, 23, 0.5);
   border: 1px solid rgba(148, 163, 184, 0.1);
 }
@@ -1473,6 +1473,10 @@
   grid-template-columns: 28px 1fr;
   align-items: center;
   gap: 12px;
+}
+
+.nesthub-landing__list--icons li::before {
+  content: none;
 }
 
 .nesthub-landing__list--icons .list-icon {
