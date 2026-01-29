@@ -1,7 +1,38 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './NestHubLandingPage.css';
 
 export function NestHubLandingPage() {
+  const piggyAmountRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    let frameId = 0;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let start = 0;
+    let from = 28;
+    let to = 29;
+    const animate = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / 900, 1);
+      const value = Math.round(from + (to - from) * progress);
+      if (piggyAmountRef.current) {
+        piggyAmountRef.current.textContent = `${value} CAD`;
+      }
+      if (progress < 1) {
+        frameId = requestAnimationFrame(animate);
+      } else {
+        start = 0;
+        [from, to] = [to, from];
+        timeoutId = setTimeout(() => requestAnimationFrame(animate), 1800);
+      }
+    };
+    frameId = requestAnimationFrame(animate);
+    return () => {
+      cancelAnimationFrame(frameId);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
+
   return (
     <div className="nesthub-landing">
       <div className="nesthub-landing__glow" aria-hidden="true" />
@@ -103,6 +134,16 @@ export function NestHubLandingPage() {
                     <div className="mockup-task__reward" aria-hidden="true">
                       +20 XP · ❤️ +1
                     </div>
+
+                    <span className="mockup-task__check" aria-hidden="true">
+                      ✔
+                    </span>
+                    <span className="mockup-task__xp" aria-hidden="true">
+                      +20 XP
+                    </span>
+                    <span className="mockup-task__heart" aria-hidden="true">
+                      ❤️
+                    </span>
                   </div>
 
                   <div className="mockup-task">
@@ -224,9 +265,9 @@ export function NestHubLandingPage() {
 
                   {/* hearts / lives */}
                   <div className="screen-time__hearts" aria-label="Vies disponibles">
+                    <span className="life is-full is-gain">❤️</span>
                     <span className="life is-full">❤️</span>
-                    <span className="life is-full">❤️</span>
-                    <span className="life">🤍</span>
+                    <span className="life is-warning is-loss">🤍</span>
                     <span className="life-label">vies</span>
                   </div>
                 </div>
@@ -239,17 +280,22 @@ export function NestHubLandingPage() {
 
             <div className="feature-card">
               <div className="feature-card__mockup">
-                <div className="piggy">
+                <div className="piggy piggy--active">
                   {/* coin drop */}
                   <span className="piggy__coin" aria-hidden="true">
                     🪙
+                  </span>
+                  <span className="piggy__sparkle" aria-hidden="true">
+                    ✦
                   </span>
 
                   <div className="piggy__icon" aria-hidden="true">
                     🐷
                   </div>
                   <div>
-                    <div className="piggy__amount">50 CAD</div>
+                    <div className="piggy__amount">
+                      <span ref={piggyAmountRef}>28 CAD</span>
+                    </div>
                     <div className="piggy__meta">Projet long terme</div>
                   </div>
                 </div>
