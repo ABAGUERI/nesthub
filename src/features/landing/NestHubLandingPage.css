@@ -327,6 +327,7 @@
   border-color: rgba(34, 211, 238, 0.35);
   box-shadow: 0 14px 30px rgba(34, 211, 238, 0.08);
   animation: taskPulse 4.8s ease-in-out infinite;
+  overflow: hidden;
 }
 
 @keyframes taskPulse {
@@ -347,9 +348,26 @@
   pointer-events: none;
 }
 
+.mockup-task--complete::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: rgba(56, 189, 248, 0.18);
+  opacity: 0;
+  animation: taskFlash 4.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
 @keyframes glowBlink {
   0%, 75%, 100% { opacity: 0; }
   35% { opacity: 0.65; }
+}
+
+@keyframes taskFlash {
+  0%, 78%, 100% { opacity: 0; }
+  30% { opacity: 0.5; }
+  36% { opacity: 0; }
 }
 
 /* reward “pop” */
@@ -370,6 +388,60 @@
 @keyframes rewardPop {
   0%, 70%, 100% { opacity: 0; transform: translateY(8px) scale(0.98); }
   30%, 55% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.mockup-task__check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  color: #0b1224;
+  background: linear-gradient(135deg, #22d3ee, #4ade80);
+  opacity: 0;
+  filter: blur(2px);
+  animation: checkPop 4.8s ease-in-out infinite;
+}
+
+@keyframes checkPop {
+  0%, 76%, 100% { opacity: 0; transform: scale(0.6); filter: blur(4px); }
+  32% { opacity: 1; transform: scale(1.15); filter: blur(0); }
+  42% { opacity: 1; transform: scale(1); }
+}
+
+.mockup-task__xp {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  font-size: 0.68rem;
+  color: #bae6fd;
+  opacity: 0;
+  animation: xpFloat 4.8s ease-in-out infinite;
+}
+
+@keyframes xpFloat {
+  0%, 78%, 100% { opacity: 0; transform: translateY(6px); }
+  30% { opacity: 1; transform: translateY(-6px); }
+  45% { opacity: 0; transform: translateY(-12px); }
+}
+
+.mockup-task__heart {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  font-size: 0.72rem;
+  opacity: 0;
+  animation: heartFill 4.8s ease-in-out infinite;
+}
+
+@keyframes heartFill {
+  0%, 80%, 100% { opacity: 0; transform: scale(0.6); filter: blur(2px); }
+  34% { opacity: 1; transform: scale(1.2); filter: blur(0); }
+  45% { opacity: 1; transform: scale(1); }
 }
 
 .mockup-menu {
@@ -596,7 +668,12 @@
   margin-top: 2px;
 }
 
-.life { font-size: 0.92rem; opacity: 0.35; }
+.life {
+  font-size: 0.92rem;
+  opacity: 0.35;
+  position: relative;
+  display: inline-flex;
+}
 
 .life.is-full {
   opacity: 0.95;
@@ -616,6 +693,45 @@
 .screen-time__hearts .life.is-full:nth-child(2) {
   animation: heartBeat 2.8s ease-in-out infinite;
   animation-delay: -1.2s;
+}
+
+.life.is-warning {
+  opacity: 0.75;
+  text-shadow: 0 0 12px rgba(248, 113, 113, 0.35);
+  animation: warningGlow 2.6s ease-in-out infinite;
+}
+
+@keyframes warningGlow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(248, 113, 113, 0)); }
+  50% { filter: drop-shadow(0 0 10px rgba(248, 113, 113, 0.45)); }
+}
+
+.life.is-gain::after {
+  content: '✦';
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  font-size: 0.55rem;
+  color: #fef9c3;
+  opacity: 0;
+  animation: heartGain 4.8s ease-in-out infinite;
+}
+
+@keyframes heartGain {
+  0%, 80%, 100% { opacity: 0; transform: scale(0.4); }
+  30% { opacity: 1; transform: scale(1); }
+  45% { opacity: 0; transform: scale(1.4); }
+}
+
+.life.is-loss {
+  animation: heartShake 4.8s ease-in-out infinite;
+}
+
+@keyframes heartShake {
+  0%, 78%, 100% { transform: translateX(0); }
+  32% { transform: translateX(-2px); }
+  36% { transform: translateX(2px); }
+  40% { transform: translateX(-1px); }
 }
 
 .life-label {
@@ -659,11 +775,37 @@
   42% { transform: translate3d(-18px, 6px, 0) rotate(-2deg); opacity: 0; }
 }
 
+.piggy__sparkle {
+  position: absolute;
+  right: -2px;
+  top: 12px;
+  font-size: 0.6rem;
+  color: #fde68a;
+  opacity: 0;
+  animation: piggySpark 3.8s ease-in-out infinite;
+}
+
+@keyframes piggySpark {
+  0%, 70%, 100% { opacity: 0; transform: scale(0.6); }
+  36% { opacity: 1; transform: scale(1.2); }
+  45% { opacity: 0; transform: scale(1.6); }
+}
+
 .piggy__amount { font-weight: 600; }
 
 .piggy__meta {
   font-size: 0.75rem;
   color: rgba(148, 163, 184, 0.75);
+}
+
+.piggy__amount span {
+  display: inline-block;
+  animation: countPulse 3.8s ease-in-out infinite;
+}
+
+@keyframes countPulse {
+  0%, 70%, 100% { transform: scale(1); }
+  32% { transform: scale(1.08); }
 }
 
 .piggy__progress {
@@ -803,7 +945,15 @@
   .xp-bar span,
   .screen-time__slider span,
   .mockup-task__progress span,
-  .piggy__progress span {
+  .piggy__progress span,
+  .mockup-task__check,
+  .mockup-task__xp,
+  .mockup-task__heart,
+  .life.is-warning,
+  .life.is-loss,
+  .life.is-gain::after,
+  .piggy__sparkle,
+  .piggy__amount span {
     animation: none !important;
   }
 }
