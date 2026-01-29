@@ -1,7 +1,38 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './NestHubLandingPage.css';
 
 export function NestHubLandingPage() {
+  const piggyAmountRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    let frameId = 0;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let start = 0;
+    let from = 28;
+    let to = 29;
+    const animate = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / 900, 1);
+      const value = Math.round(from + (to - from) * progress);
+      if (piggyAmountRef.current) {
+        piggyAmountRef.current.textContent = `${value} CAD`;
+      }
+      if (progress < 1) {
+        frameId = requestAnimationFrame(animate);
+      } else {
+        start = 0;
+        [from, to] = [to, from];
+        timeoutId = setTimeout(() => requestAnimationFrame(animate), 1800);
+      }
+    };
+    frameId = requestAnimationFrame(animate);
+    return () => {
+      cancelAnimationFrame(frameId);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
+
   return (
     <div className="nesthub-landing">
       <div className="nesthub-landing__glow" aria-hidden="true" />
@@ -51,103 +82,183 @@ export function NestHubLandingPage() {
           </div>
 
           <div className="nesthub-landing__hero-visual">
-            <div className="nesthub-landing__mockup nesthub-landing__mockup--alive">
-              <div className="nesthub-landing__mockup-header">
-                <span className="dot dot--green" />
-                <span className="dot dot--yellow" />
-                <span className="dot dot--red" />
-                <span className="nesthub-landing__mockup-title">NestHub · Aujourd’hui</span>
-              </div>
-
-              <div className="nesthub-landing__mockup-grid">
-                <div className="mockup-panel">
-                  <div className="mockup-panel__title">Agenda</div>
-
-                  <div className="mockup-event">
-                    <span className="mockup-event__time">08:15</span>
-                    <div>
-                      <div className="mockup-event__name">École · Départ</div>
-                      <div className="mockup-event__meta">Auto · 12 min</div>
+            <div className="nesthub-landing__carousel">
+              <div className="nesthub-landing__carousel-track" aria-hidden="true">
+                <article className="carousel-slide">
+                  <div className="carousel-toolbar">
+                    <div className="carousel-time">
+                      08 h 35 <span>Jeudi 29 janv.</span>
+                    </div>
+                    <div className="carousel-title">Nesthub</div>
+                    <div className="carousel-icons">
+                      <span>🏠</span>
+                      <span>👨‍👩‍👧‍👦</span>
+                      <span>🍽️</span>
+                      <span>💰</span>
                     </div>
                   </div>
 
-                  <div className="mockup-event">
-                    <span className="mockup-event__time">17:30</span>
-                    <div>
-                      <div className="mockup-event__name">Soccer</div>
-                      <div className="mockup-event__meta">Terrain 3</div>
+                  <div className="carousel-panel">
+                    <div className="carousel-highlight">
+                      <div>
+                        <div className="carousel-label">🏆 Objectif famille</div>
+                        <div className="carousel-subtitle">455 pts / 1000</div>
+                      </div>
+                      <div className="carousel-avatar" />
                     </div>
-                  </div>
-
-                  <div className="mockup-event">
-                    <span className="mockup-event__time">19:00</span>
-                    <div>
-                      <div className="mockup-event__name">Devoirs</div>
-                      <div className="mockup-event__meta">30 min</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mockup-panel mockup-panel--center">
-                  <div className="mockup-panel__title">Tâches</div>
-
-                  {/* Gamification “completion” */}
-                  <div className="mockup-task mockup-task--complete">
-                    <div className="mockup-task__label">Table du dîner</div>
-                    <div className="mockup-task__progress">
-                      <span style={{ ['--w' as any]: '72%' }} />
-                    </div>
-                    <div className="mockup-task__meta">Niveau 4 · 720 XP</div>
-
-                    {/* Reward pop */}
-                    <div className="mockup-task__reward" aria-hidden="true">
-                      +20 XP · ❤️ +1
-                    </div>
-                  </div>
-
-                  <div className="mockup-task">
-                    <div className="mockup-task__label">Lecture</div>
-                    <div className="mockup-task__progress">
+                    <div className="carousel-progress">
                       <span style={{ ['--w' as any]: '46%' }} />
                     </div>
-                    <div className="mockup-task__meta">+20 min</div>
-                  </div>
-
-                  <div className="mockup-task">
-                    <div className="mockup-task__label">Chambre</div>
-                    <div className="mockup-task__progress">
-                      <span style={{ ['--w' as any]: '90%' }} />
-                    </div>
-                    <div className="mockup-task__meta">Prêt pour bonus</div>
-                  </div>
-                </div>
-
-                <div className="mockup-panel">
-                  <div className="mockup-panel__title">Menu semaine</div>
-
-                  <ul className="mockup-menu">
-                    <li>
-                      <span>Saumon citron</span>
-                      <span className="mockup-pill">Lun</span>
-                    </li>
-                    <li>
-                      <span>Bol veggie</span>
-                      <span className="mockup-pill">Mer</span>
-                    </li>
-                    <li>
-                      <span>Pâtes pesto</span>
-                      <span className="mockup-pill">Ven</span>
-                    </li>
-                  </ul>
-
-                  <div className="mockup-cart">
-                    <span className="mockup-cart__icon">🧺</span>
-                    <div>
-                      <div className="mockup-cart__title">Liste d’épicerie</div>
-                      <div className="mockup-cart__meta">12 articles</div>
+                    <div className="carousel-progress__meta">Progression · 46%</div>
+                    <div className="carousel-hearts">
+                      <span className="life is-full is-gain">❤️</span>
+                      <span className="life is-full">❤️</span>
+                      <span className="life is-warning is-loss">🤍</span>
                     </div>
                   </div>
-                </div>
+                </article>
+
+                <article className="carousel-slide carousel-slide--tasks">
+                  <div className="carousel-toolbar">
+                    <div className="carousel-time">
+                      08 h 20 <span>Vue globale</span>
+                    </div>
+                    <div className="carousel-title">Tâches du jour</div>
+                    <div className="carousel-icons">
+                      <span>⭐</span>
+                      <span>🧹</span>
+                      <span>📖</span>
+                    </div>
+                  </div>
+                  <div className="carousel-grid">
+                    <div className="carousel-task mockup-task mockup-task--complete">
+                      <div className="mockup-task__label">Temps d’écran</div>
+                      <div className="mockup-task__progress">
+                        <span style={{ ['--w' as any]: '72%' }} />
+                      </div>
+                      <div className="mockup-task__meta">Validée</div>
+                      <div className="mockup-task__reward" aria-hidden="true">
+                        +20 XP · ❤️ +1
+                      </div>
+                      <span className="mockup-task__check" aria-hidden="true">
+                        ✔
+                      </span>
+                      <span className="mockup-task__xp" aria-hidden="true">
+                        +20 XP
+                      </span>
+                      <span className="mockup-task__heart" aria-hidden="true">
+                        ❤️
+                      </span>
+                    </div>
+                    <div className="carousel-task">
+                      <div className="mockup-task__label">Ranger chambre</div>
+                      <div className="mockup-task__meta">En cours</div>
+                    </div>
+                    <div className="carousel-task">
+                      <div className="mockup-task__label">Lire 20 min</div>
+                      <div className="mockup-task__meta">Bonus</div>
+                    </div>
+                  </div>
+                </article>
+
+                <article className="carousel-slide carousel-slide--piggy">
+                  <div className="carousel-toolbar">
+                    <div className="carousel-time">
+                      08 h 23 <span>Finances</span>
+                    </div>
+                    <div className="carousel-title">Ta tirelire</div>
+                    <div className="carousel-icons">
+                      <span>🐷</span>
+                      <span>🪙</span>
+                      <span>🎯</span>
+                    </div>
+                  </div>
+                  <div className="carousel-panel carousel-panel--piggy">
+                    <div className="piggy piggy--active">
+                      <span className="piggy__coin" aria-hidden="true">
+                        🪙
+                      </span>
+                      <span className="piggy__sparkle" aria-hidden="true">
+                        ✦
+                      </span>
+                      <div className="piggy__icon" aria-hidden="true">
+                        🐷
+                      </div>
+                      <div>
+                        <div className="piggy__amount">
+                          <span ref={piggyAmountRef}>28 CAD</span>
+                        </div>
+                        <div className="piggy__meta">Projet long terme</div>
+                      </div>
+                    </div>
+                    <div className="piggy__progress">
+                      <span style={{ ['--w' as any]: '42%' }} />
+                    </div>
+                    <div className="piggy__goal">Objectif: vélo familial</div>
+                  </div>
+                </article>
+
+                <article className="carousel-slide carousel-slide--kitchen">
+                  <div className="carousel-toolbar">
+                    <div className="carousel-time">
+                      08 h 39 <span>Cuisine</span>
+                    </div>
+                    <div className="carousel-title">Menu semaine</div>
+                    <div className="carousel-icons">
+                      <span>🍲</span>
+                      <span>🛒</span>
+                      <span>📅</span>
+                    </div>
+                  </div>
+                  <div className="carousel-menu">
+                    <div className="carousel-menu__day">
+                      <span>Lun</span>
+                      <strong>Poulet BBQ</strong>
+                    </div>
+                    <div className="carousel-menu__day">
+                      <span>Mer</span>
+                      <strong>Pâtes chinoises</strong>
+                    </div>
+                    <div className="carousel-menu__day">
+                      <span>Ven</span>
+                      <strong>Fajitas</strong>
+                    </div>
+                  </div>
+                  <div className="carousel-action">✨ Générer menu & épicerie</div>
+                </article>
+
+                <article className="carousel-slide">
+                  <div className="carousel-toolbar">
+                    <div className="carousel-time">
+                      08 h 35 <span>Jeudi 29 janv.</span>
+                    </div>
+                    <div className="carousel-title">Nesthub</div>
+                    <div className="carousel-icons">
+                      <span>🏠</span>
+                      <span>👨‍👩‍👧‍👦</span>
+                      <span>🍽️</span>
+                      <span>💰</span>
+                    </div>
+                  </div>
+                  <div className="carousel-panel">
+                    <div className="carousel-highlight">
+                      <div>
+                        <div className="carousel-label">🏆 Objectif famille</div>
+                        <div className="carousel-subtitle">455 pts / 1000</div>
+                      </div>
+                      <div className="carousel-avatar" />
+                    </div>
+                    <div className="carousel-progress">
+                      <span style={{ ['--w' as any]: '46%' }} />
+                    </div>
+                    <div className="carousel-progress__meta">Progression · 46%</div>
+                    <div className="carousel-hearts">
+                      <span className="life is-full is-gain">❤️</span>
+                      <span className="life is-full">❤️</span>
+                      <span className="life is-warning is-loss">🤍</span>
+                    </div>
+                  </div>
+                </article>
               </div>
             </div>
           </div>
@@ -224,9 +335,9 @@ export function NestHubLandingPage() {
 
                   {/* hearts / lives */}
                   <div className="screen-time__hearts" aria-label="Vies disponibles">
+                    <span className="life is-full is-gain">❤️</span>
                     <span className="life is-full">❤️</span>
-                    <span className="life is-full">❤️</span>
-                    <span className="life">🤍</span>
+                    <span className="life is-warning is-loss">🤍</span>
                     <span className="life-label">vies</span>
                   </div>
                 </div>
@@ -239,17 +350,22 @@ export function NestHubLandingPage() {
 
             <div className="feature-card">
               <div className="feature-card__mockup">
-                <div className="piggy">
+                <div className="piggy piggy--active">
                   {/* coin drop */}
                   <span className="piggy__coin" aria-hidden="true">
                     🪙
+                  </span>
+                  <span className="piggy__sparkle" aria-hidden="true">
+                    ✦
                   </span>
 
                   <div className="piggy__icon" aria-hidden="true">
                     🐷
                   </div>
                   <div>
-                    <div className="piggy__amount">50 CAD</div>
+                    <div className="piggy__amount">
+                      <span ref={piggyAmountRef}>28 CAD</span>
+                    </div>
                     <div className="piggy__meta">Projet long terme</div>
                   </div>
                 </div>
