@@ -780,7 +780,7 @@ export function NestHubLandingPage() {
               </button>
             </div>
             <div className="finance-projects__grid">
-              <div className={`savings-project savings-project--interactive scroll-reveal scroll-reveal--delay-1 ${coinAnimation === 'drone' ? 'is-adding' : ''}`}>
+              <div className={`savings-project savings-project--interactive ${coinAnimation === 'drone' ? 'is-adding' : ''}`}>
                 <div className="savings-project__icon">✈️</div>
                 <div className="savings-project__info">
                   <div className="savings-project__name">Drone</div>
@@ -807,7 +807,7 @@ export function NestHubLandingPage() {
                 </button>
               </div>
 
-              <div className={`savings-project savings-project--interactive scroll-reveal scroll-reveal--delay-2 ${coinAnimation === 'lego' ? 'is-adding' : ''}`}>
+              <div className={`savings-project savings-project--interactive ${coinAnimation === 'lego' ? 'is-adding' : ''}`}>
                 <div className="savings-project__icon">🌿</div>
                 <div className="savings-project__info">
                   <div className="savings-project__name">Lego Bonsai</div>
