@@ -4,10 +4,7 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-
-  /* ↓ avant: 20px — on récupère de la hauteur utile */
-  gap: 14px;
-
+  gap: 12px;
   overflow: hidden;
 }
 
@@ -16,23 +13,40 @@
   width: 100%;
 }
 
+/* Calendrier : prend l'espace restant mais laisse de la place pour les tâches */
 .family-calendar-section {
   flex: 1;
   min-height: 0;
+  max-height: calc(100vh - 180px); /* Reserve space for header, tasks, and padding */
 }
 
-/* zone tâches : un peu plus compacte */
+/* Zone tâches : toujours visible en bas */
 .family-tasks-section {
+  flex-shrink: 0;
   display: flex;
   justify-content: stretch;
   align-items: stretch;
-
-  /* ↓ avant: 12px */
   padding-bottom: 8px;
 }
 
 @media (max-width: 900px) {
+  .family-calendar-section {
+    max-height: calc(100vh - 200px);
+  }
+
   .family-tasks-section {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .family-page {
+    gap: 10px;
+    overflow: auto;
+  }
+
+  .family-calendar-section {
+    max-height: none;
+    flex: none;
   }
 }

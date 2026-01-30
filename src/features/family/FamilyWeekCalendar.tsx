@@ -152,6 +152,8 @@ const getEventTone = (event: CalendarEvent, people: EventPerson[]) => {
 const START_HOUR = 8;
 const END_HOUR = 18;
 
+const HOUR_HEIGHT = 38; // Must match --hour-height in CSS
+
 const getNowPosition = (startHour: number, endHour: number) => {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -160,7 +162,7 @@ const getNowPosition = (startHour: number, endHour: number) => {
 
   if (currentMinutes < gridStart || currentMinutes > gridEnd) return null;
 
-  return ((currentMinutes - gridStart) / 60) * 56; // 56px per hour
+  return ((currentMinutes - gridStart) / 60) * HOUR_HEIGHT;
 };
 
 export const FamilyWeekCalendar: React.FC = () => {
@@ -382,8 +384,8 @@ export const FamilyWeekCalendar: React.FC = () => {
     const clampedStart = Math.max(startMinutes, gridStart);
     const clampedEnd = Math.min(endMinutes, gridEnd);
     const durationMinutes = Math.max(clampedEnd - clampedStart, 30);
-    const top = ((clampedStart - gridStart) / 60) * 56;
-    const height = (durationMinutes / 60) * 56;
+    const top = ((clampedStart - gridStart) / 60) * HOUR_HEIGHT;
+    const height = (durationMinutes / 60) * HOUR_HEIGHT;
 
     const people = getEventPeople(event);
     const tone = getEventTone(event, people);
