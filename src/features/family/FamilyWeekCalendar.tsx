@@ -152,7 +152,7 @@ const getEventTone = (event: CalendarEvent, people: EventPerson[]) => {
 const START_HOUR = 8;
 const END_HOUR = 18;
 
-const HOUR_HEIGHT = 38; // Must match --hour-height in CSS
+const HOUR_HEIGHT = 32; // Must match --hour-height in CSS
 
 const getNowPosition = (startHour: number, endHour: number) => {
   const now = new Date();
