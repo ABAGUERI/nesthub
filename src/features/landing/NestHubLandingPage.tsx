@@ -56,6 +56,42 @@ export function NestHubLandingPage() {
   const [screenTimeUsed, setScreenTimeUsed] = useState(0);
   const [losingHeartIndex, setLosingHeartIndex] = useState<number | null>(null);
 
+  // Savings demo state
+  const [savingsTotal, setSavingsTotal] = useState(28);
+  const [droneSaved, setDroneSaved] = useState(16);
+  const [legoSaved, setLegoSaved] = useState(12);
+  const [coinAnimation, setCoinAnimation] = useState<'drone' | 'lego' | null>(null);
+
+  // Progress navigation state
+  const [activeSection, setActiveSection] = useState('hero');
+
+  // Progress sections configuration
+  const progressSections = [
+    { id: 'hero', label: 'Hub familial', icon: '🏠' },
+    { id: 'how-it-works', label: 'Comment ça marche ?', icon: '❓' },
+    { id: 'autonomy', label: 'Autonomie développée', icon: '🌱' },
+    { id: 'screentime', label: 'Temps d\'écran', icon: '📱' },
+    { id: 'finance', label: 'Futur investisseur', icon: '💰' },
+    { id: 'features', label: 'Organisation partagée', icon: '👨‍👩‍👧‍👦' },
+    { id: 'kitchen', label: 'Écran Cuisine', icon: '🍽️' },
+    { id: 'memories', label: 'Cadre numérique', icon: '🖼️' },
+  ];
+
+  // Handle adding money to savings
+  const handleAddToSavings = useCallback((project: 'drone' | 'lego') => {
+    setCoinAnimation(project);
+
+    setTimeout(() => {
+      if (project === 'drone') {
+        setDroneSaved((prev) => Math.min(prev + 2, 100));
+      } else {
+        setLegoSaved((prev) => Math.min(prev + 2, 64));
+      }
+      setSavingsTotal((prev) => prev + 2);
+      setCoinAnimation(null);
+    }, 800);
+  }, []);
+
   // Handle screen time usage simulation
   const handleUseScreenTime = useCallback(() => {
     if (screenTimeHearts > 0) {
@@ -75,6 +111,40 @@ export function NestHubLandingPage() {
     setScreenTimeHearts(7);
     setScreenTimeUsed(0);
     setLosingHeartIndex(null);
+  }, []);
+
+  // Reset savings demo
+  const handleResetSavings = useCallback(() => {
+    setSavingsTotal(28);
+    setDroneSaved(16);
+    setLegoSaved(12);
+  }, []);
+
+  // Scroll to section
+  const scrollToSection = useCallback((sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
+  // Track active section on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = progressSections.map(s => document.getElementById(s.id));
+      const scrollPosition = window.scrollY + window.innerHeight / 3;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = sections[i];
+        if (section && section.offsetTop <= scrollPosition) {
+          setActiveSection(progressSections[i].id);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Piggy bank amount animation
@@ -193,6 +263,24 @@ export function NestHubLandingPage() {
         ))}
       </div>
 
+      {/* Vertical Progress Navigation */}
+      <nav className="progress-nav" aria-label="Navigation de page">
+        <div className="progress-nav__line" />
+        {progressSections.map((section, index) => (
+          <button
+            key={section.id}
+            type="button"
+            className={`progress-nav__item ${activeSection === section.id ? 'is-active' : ''}`}
+            onClick={() => scrollToSection(section.id)}
+            aria-label={section.label}
+            style={{ '--index': index } as React.CSSProperties}
+          >
+            <span className="progress-nav__dot">{section.icon}</span>
+            <span className="progress-nav__label">{section.label}</span>
+          </button>
+        ))}
+      </nav>
+
       <header ref={headerRef} className="nesthub-landing__header">
         <div className="nesthub-landing__header-inner">
           <div className="nesthub-landing__brand">NestHub</div>
@@ -214,7 +302,7 @@ export function NestHubLandingPage() {
       </header>
 
       <main className="nesthub-landing__main">
-        <section className="nesthub-landing__hero">
+        <section id="hero" className="nesthub-landing__hero">
           <div className="nesthub-landing__hero-copy scroll-reveal">
             <p className="nesthub-landing__eyebrow">NestHub</p>
             <h1>Le hub familial qui transforme l'organisation en terrain de jeu</h1>
@@ -425,7 +513,7 @@ export function NestHubLandingPage() {
         </section>
 
         {/* Comment ça marche - 3 steps */}
-        <section className="nesthub-landing__section nesthub-landing__how-it-works scroll-reveal">
+        <section id="how-it-works" className="nesthub-landing__section nesthub-landing__how-it-works scroll-reveal">
           <div className="nesthub-landing__section-copy">
             <h2>Comment ça marche ?</h2>
             <p>Démarrez en 3 étapes simples</p>
@@ -476,7 +564,7 @@ export function NestHubLandingPage() {
         </section>
 
         {/* Autonomy Journey Section */}
-        <section className="nesthub-landing__section nesthub-landing__autonomy scroll-reveal">
+        <section id="autonomy" className="nesthub-landing__section nesthub-landing__autonomy scroll-reveal">
           <div className="nesthub-landing__section-copy">
             <h2>Accompagner vers l'autonomie et la responsabilité</h2>
             <p className="autonomy-intro">
@@ -547,7 +635,7 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
-        <section className="nesthub-landing__section nesthub-landing__features scroll-reveal">
+        <section id="features" className="nesthub-landing__section nesthub-landing__features scroll-reveal">
           <div className="nesthub-landing__section-copy">
             <h2>Une progression ludique, inspirée du jeu vidéo</h2>
             <ul className="nesthub-landing__list">
@@ -640,7 +728,7 @@ export function NestHubLandingPage() {
         </section>
 
         {/* Financial Education Section - Enhanced */}
-        <section className="nesthub-landing__section nesthub-landing__finance scroll-reveal">
+        <section id="finance" className="nesthub-landing__section nesthub-landing__finance scroll-reveal">
           <div className="finance-header">
             <div className="finance-header__copy">
               <span className="finance-eyebrow">Éducation financière dès le plus jeune âge</span>
@@ -653,72 +741,95 @@ export function NestHubLandingPage() {
             </div>
             <div className="finance-header__card">
               <div className="finance-header__piggy">
-                <div className="finance-piggy">
+                <div className={`finance-piggy ${coinAnimation ? 'is-receiving' : ''}`}>
                   <span className="finance-piggy__icon" aria-hidden="true">🐷</span>
                   <span className="finance-piggy__coin finance-piggy__coin--1" aria-hidden="true">🪙</span>
                   <span className="finance-piggy__coin finance-piggy__coin--2" aria-hidden="true">🪙</span>
+                  {coinAnimation && (
+                    <span className="finance-piggy__coin-fly" aria-hidden="true">🪙</span>
+                  )}
                 </div>
                 <div className="finance-total">
-                  <span className="finance-total__amount">28 $</span>
+                  <span className={`finance-total__amount ${coinAnimation ? 'is-updating' : ''}`}>
+                    {savingsTotal} $
+                  </span>
                   <span className="finance-total__label">Épargne totale</span>
-                </div>
-              </div>
-              <div className="finance-total">
-                <span className="finance-total__amount">28 $</span>
-                <span className="finance-total__label">Épargne totale</span>
-                <div className="finance-total__badges">
-                  <span className="finance-badge">+ 6 $ cette semaine</span>
-                  <span className="finance-badge finance-badge--orange">2 projets actifs</span>
+                  <div className="finance-total__badges">
+                    <span className="finance-badge">+ {savingsTotal - 28 + 6} $ cette semaine</span>
+                    <span className="finance-badge finance-badge--orange">2 projets actifs</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="finance-projects">
+          <div className="finance-projects finance-projects--interactive">
             <div className="finance-projects__header">
               <div className="family-member__avatar family-member__avatar--sifaw finance-avatar">👧</div>
               <div>
                 <h3 className="finance-projects__title">Projets en cours de Sifaw</h3>
-                <p className="finance-projects__subtitle">Ses objectifs motivants du moment</p>
+                <p className="finance-projects__subtitle">Cliquez sur "Ajouter 2$" pour voir la magie ✨</p>
               </div>
+              <button
+                type="button"
+                className="finance-reset-btn"
+                onClick={handleResetSavings}
+                aria-label="Réinitialiser la démo"
+              >
+                🔄
+              </button>
             </div>
             <div className="finance-projects__grid">
-              <div className="savings-project scroll-reveal scroll-reveal--delay-1">
+              <div className={`savings-project savings-project--interactive scroll-reveal scroll-reveal--delay-1 ${coinAnimation === 'drone' ? 'is-adding' : ''}`}>
                 <div className="savings-project__icon">✈️</div>
                 <div className="savings-project__info">
                   <div className="savings-project__name">Drone</div>
                   <div className="savings-project__remaining">
-                    Encore <strong>84 $</strong> pour l'obtenir 🔥
+                    Encore <strong>{100 - droneSaved} $</strong> pour l'obtenir 🔥
                   </div>
                 </div>
                 <div className="savings-project__progress">
                   <div className="savings-project__bar">
-                    <span style={{ ['--w' as string]: '16%' }} />
+                    <span style={{ width: `${(droneSaved / 100) * 100}%` }} />
                   </div>
-                  <span className="savings-project__percent">16%</span>
+                  <span className="savings-project__percent">{Math.round((droneSaved / 100) * 100)}%</span>
                 </div>
                 <div className="savings-project__amounts">
-                  <span ref={savingsAmountRef}>16 $</span> / 100 $
+                  {droneSaved} $ / 100 $
                 </div>
-                <button type="button" className="savings-project__add">Ajouter $</button>
+                <button
+                  type="button"
+                  className="savings-project__add"
+                  onClick={() => handleAddToSavings('drone')}
+                  disabled={coinAnimation !== null || droneSaved >= 100}
+                >
+                  {droneSaved >= 100 ? '🎉 Objectif atteint !' : 'Ajouter 2$'}
+                </button>
               </div>
 
-              <div className="savings-project scroll-reveal scroll-reveal--delay-2">
+              <div className={`savings-project savings-project--interactive scroll-reveal scroll-reveal--delay-2 ${coinAnimation === 'lego' ? 'is-adding' : ''}`}>
                 <div className="savings-project__icon">🌿</div>
                 <div className="savings-project__info">
                   <div className="savings-project__name">Lego Bonsai</div>
                   <div className="savings-project__remaining">
-                    Encore <strong>52 $</strong> pour l'obtenir 🔥
+                    Encore <strong>{64 - legoSaved} $</strong> pour l'obtenir 🔥
                   </div>
                 </div>
                 <div className="savings-project__progress">
                   <div className="savings-project__bar">
-                    <span style={{ ['--w' as string]: '19%' }} />
+                    <span style={{ width: `${(legoSaved / 64) * 100}%` }} />
                   </div>
-                  <span className="savings-project__percent">19%</span>
+                  <span className="savings-project__percent">{Math.round((legoSaved / 64) * 100)}%</span>
                 </div>
-                <div className="savings-project__amounts">12 $ / 64 $</div>
-                <button type="button" className="savings-project__add">Ajouter $</button>
+                <div className="savings-project__amounts">{legoSaved} $ / 64 $</div>
+                <button
+                  type="button"
+                  className="savings-project__add"
+                  onClick={() => handleAddToSavings('lego')}
+                  disabled={coinAnimation !== null || legoSaved >= 64}
+                >
+                  {legoSaved >= 64 ? '🎉 Objectif atteint !' : 'Ajouter 2$'}
+                </button>
               </div>
 
               <div className="savings-project savings-project--new scroll-reveal scroll-reveal--delay-3">
@@ -843,68 +954,8 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
-        <section className="nesthub-landing__section nesthub-landing__features scroll-reveal">
-          <div className="nesthub-landing__section-copy">
-            <h2>Une progression ludique, inspirée du jeu vidéo</h2>
-            <ul className="nesthub-landing__list">
-              <li>Phases et niveaux visibles</li>
-              <li>Objectifs hebdomadaires clairs</li>
-              <li>Récompenses motivantes</li>
-              <li>Sentiment d'avancer, semaine après semaine</li>
-            </ul>
-            <p>
-              👉 Plus un enfant devient autonome, plus il progresse.
-              <br />
-              👉 Et naturellement, il a envie d'aller plus vite.
-            </p>
-          </div>
-
-          <div className="nesthub-landing__feature-cards">
-            <div className="feature-card scroll-reveal scroll-reveal--delay-1">
-              <div className="feature-card__mockup">
-                <div className="xp-bar">
-                  <span style={{ ['--w' as string]: '68%' }} />
-                </div>
-                <div className="xp-meta">
-                  <span>Lvl 4</span>
-                  <span>680 / 1000 XP</span>
-                </div>
-                <div className="xp-reward">Récompense: 🎮 20 min</div>
-              </div>
-              <div>
-                <h3>Progression style jeu vidéo</h3>
-                <p>Barre XP, niveaux et bonus visibles par toute la famille.</p>
-              </div>
-            </div>
-
-            <div className="feature-card scroll-reveal scroll-reveal--delay-2">
-              <div className="feature-card__mockup">
-                <div className="piggy piggy--active">
-                  <span className="piggy__coin" aria-hidden="true">🪙</span>
-                  <span className="piggy__sparkle" aria-hidden="true">✦</span>
-                  <div className="piggy__icon" aria-hidden="true">🐷</div>
-                  <div>
-                    <div className="piggy__amount">
-                      <span>28 CAD</span>
-                    </div>
-                    <div className="piggy__meta">Projet long terme</div>
-                  </div>
-                </div>
-                <div className="piggy__progress">
-                  <span style={{ ['--w' as string]: '42%' }} />
-                </div>
-                <div className="piggy__goal">Objectif: vélo familial</div>
-              </div>
-              <div>
-                <h3>Cochon & projets</h3>
-                <p>Épargne collective et décisions concrètes à la maison.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Screen Time Gamechanger Section */}
-        <section className="nesthub-landing__section nesthub-landing__screentime scroll-reveal">
+        <section id="screentime" className="nesthub-landing__section nesthub-landing__screentime scroll-reveal">
           <div className="screentime-hero">
             <div className="screentime-content">
               <div className="screentime-badge">
@@ -1044,7 +1095,7 @@ export function NestHubLandingPage() {
         </section>
 
         {/* Kitchen Section with Menu Preview */}
-        <section className="nesthub-landing__section nesthub-landing__kitchen scroll-reveal">
+        <section id="kitchen" className="nesthub-landing__section nesthub-landing__kitchen scroll-reveal">
           <div className="nesthub-landing__section-copy">
             <h2>L'écran cuisine : le tableau du frigo… en mieux</h2>
             <p>
@@ -1152,7 +1203,7 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
-        <section className="nesthub-landing__section nesthub-landing__section--split scroll-reveal">
+        <section id="memories" className="nesthub-landing__section nesthub-landing__section--split scroll-reveal">
           <div className="nesthub-landing__section-copy">
             <h2>Un beau cadre numérique pour vos souvenirs</h2>
             <p>
@@ -1174,10 +1225,22 @@ export function NestHubLandingPage() {
           <div className="digital-frame scroll-reveal scroll-reveal--delay-2">
             <div className="digital-frame__inner">
               <div className="digital-frame__photos" aria-hidden="true">
-                <div className="digital-frame__photo digital-frame__photo--1" />
-                <div className="digital-frame__photo digital-frame__photo--2" />
-                <div className="digital-frame__photo digital-frame__photo--3" />
-                <div className="digital-frame__photo digital-frame__photo--4" />
+                <div
+                  className="digital-frame__photo"
+                  style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80)' }}
+                />
+                <div
+                  className="digital-frame__photo"
+                  style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80)' }}
+                />
+                <div
+                  className="digital-frame__photo"
+                  style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80)' }}
+                />
+                <div
+                  className="digital-frame__photo"
+                  style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=800&q=80)' }}
+                />
               </div>
               <div className="digital-frame__overlay">
                 <div>
