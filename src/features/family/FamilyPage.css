@@ -17,7 +17,7 @@
 .family-calendar-section {
   flex: 1;
   min-height: 0;
-  max-height: calc(100vh - 180px); /* Reserve space for header, tasks, and padding */
+  max-height: calc(100vh - 220px); /* Reserve more space for header, tasks, and padding */
 }
 
 /* Zone tâches : toujours visible en bas */

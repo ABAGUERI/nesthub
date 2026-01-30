@@ -5,7 +5,7 @@
   flex-direction: column;
   height: 100%;
   gap: 10px;
-  --hour-height: 38px;
+  --hour-height: 32px;
   --total-hours: 24;
 }
 
