@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { supabase } from '@/shared/utils/supabase';
 import {
@@ -25,70 +25,16 @@ interface TaskItem {
   listId: string;
 }
 
-type TaskTileProps = {
-  task: TaskItem;
-  isCompleting: boolean;
-  isClicked: boolean;
-  onComplete: (task: TaskItem) => void;
-  formatDueDate: (due?: string) => string | null;
-};
+const getTaskPriority = (task: TaskItem): 'urgent' | 'soon' | 'normal' => {
+  if (!task.due) return 'normal';
+  const dueDate = new Date(task.due);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-const TaskTile: React.FC<TaskTileProps> = ({
-  task,
-  isCompleting,
-  isClicked,
-  onComplete,
-  formatDueDate,
-}) => {
-  const titleRef = useRef<HTMLDivElement | null>(null);
-  const [isTruncated, setIsTruncated] = useState(false);
-
-  useLayoutEffect(() => {
-    const element = titleRef.current;
-    if (!element) return;
-    const check = () => {
-      setIsTruncated(element.scrollHeight > element.clientHeight);
-    };
-
-    const frame = window.requestAnimationFrame(check);
-    window.addEventListener('resize', check);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener('resize', check);
-    };
-  }, [task.title]);
-
-  return (
-    <div
-      className={`task-tile${isCompleting ? ' is-completing' : ''}${isClicked ? ' is-clicked' : ''}`}
-      role="button"
-      tabIndex={0}
-      onClick={() => onComplete(task)}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          onComplete(task);
-        }
-      }}
-      title={isTruncated ? task.title : undefined}
-    >
-      <div className="task-tile-content">
-        <div ref={titleRef} className="task-title">
-          {task.title}
-        </div>
-        {(task.due || task.listName) && (
-          <div className="task-due">
-            {task.due ? `Échéance ${formatDueDate(task.due)}` : task.listName}
-          </div>
-        )}
-      </div>
-      {isTruncated && (
-        <span className="task-more-badge" title={task.title}>
-          …
-        </span>
-      )}
-    </div>
-  );
+  if (diffDays <= 0) return 'urgent';
+  if (diffDays <= 2) return 'soon';
+  return 'normal';
 };
 
 export const FamilyWeeklyTasks: React.FC = () => {
@@ -97,33 +43,15 @@ export const FamilyWeeklyTasks: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cta, setCta] = useState<'connect' | 'reconnect' | null>(null);
-  const [columns, setColumns] = useState(6);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [confirmTask, setConfirmTask] = useState<TaskItem | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [completingTaskIds, setCompletingTaskIds] = useState<Set<string>>(new Set());
-  const [clickedTaskId, setClickedTaskId] = useState<string | null>(null);
   const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     loadTasks();
   }, [user]);
-
-  useEffect(() => {
-    const updateColumns = () => {
-      if (window.innerWidth <= 700) {
-        setColumns(2);
-      } else if (window.innerWidth <= 1100) {
-        setColumns(4);
-      } else {
-        setColumns(6);
-      }
-    };
-
-    updateColumns();
-    window.addEventListener('resize', updateColumns);
-    return () => window.removeEventListener('resize', updateColumns);
-  }, []);
 
   useEffect(() => {
     if (confirmTask) {
@@ -236,6 +164,13 @@ export const FamilyWeeklyTasks: React.FC = () => {
 
   const sortedTasks = useMemo(() => {
     return [...tasks].sort((a, b) => {
+      // Sort by priority first
+      const priorityOrder = { urgent: 0, soon: 1, normal: 2 };
+      const aPriority = priorityOrder[getTaskPriority(a)];
+      const bPriority = priorityOrder[getTaskPriority(b)];
+      if (aPriority !== bPriority) return aPriority - bPriority;
+
+      // Then by due date
       if (a.due && b.due) {
         return new Date(a.due).getTime() - new Date(b.due).getTime();
       }
@@ -245,13 +180,23 @@ export const FamilyWeeklyTasks: React.FC = () => {
     });
   }, [tasks]);
 
-  const slotsCount = columns * 2;
-  const visibleTasks = sortedTasks.slice(0, slotsCount);
-  const hasOverflow = sortedTasks.length > slotsCount;
+  // Show max 8 tasks in horizontal layout
+  const maxVisible = 8;
+  const visibleTasks = sortedTasks.slice(0, maxVisible);
+  const overflowCount = Math.max(0, sortedTasks.length - maxVisible);
 
   const formatDueDate = (due?: string) => {
     if (!due) return null;
     const date = new Date(due);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (date.getTime() < today.getTime()) return "En retard";
+    if (date.toDateString() === today.toDateString()) return "Aujourd'hui";
+    if (date.toDateString() === tomorrow.toDateString()) return "Demain";
+
     return date.toLocaleDateString('fr-CA', {
       day: 'numeric',
       month: 'short',
@@ -265,12 +210,8 @@ export const FamilyWeeklyTasks: React.FC = () => {
 
     try {
       setCompletingTaskIds((prev) => new Set(prev).add(task.id));
-      setClickedTaskId(task.id);
 
-      await new Promise((resolve) => window.setTimeout(resolve, 200));
-      setClickedTaskId((prev) => (prev === task.id ? null : prev));
-
-      await new Promise((resolve) => window.setTimeout(resolve, 100));
+      await new Promise((resolve) => window.setTimeout(resolve, 300));
 
       await updateTaskStatusWithAuth(user.id, task.listId, task.id, 'completed');
       setTasks((prev) => prev.filter((item) => item.id !== task.id));
@@ -291,7 +232,10 @@ export const FamilyWeeklyTasks: React.FC = () => {
     return (
       <div className="family-weekly-tasks widget">
         <div className="widget-header">
-          <div className="widget-title">🗒️ Pensez à</div>
+          <div className="widget-title">
+            <span className="widget-title__icon">📋</span>
+            Pensez à
+          </div>
         </div>
         <div className="family-weekly-body">
           <div className="loading-message">Chargement...</div>
@@ -303,10 +247,27 @@ export const FamilyWeeklyTasks: React.FC = () => {
   return (
     <div className="family-weekly-tasks widget">
       <div className="widget-header">
-        <div className="widget-title">🗒️ Pensez à</div>
-        <span className="refresh-btn" onClick={loadTasks}>
-          🔄
-        </span>
+        <div className="widget-title">
+          <span className="widget-title__icon">📋</span>
+          Pensez à
+          {sortedTasks.length > 0 && (
+            <span className="widget-title__count">{sortedTasks.length}</span>
+          )}
+        </div>
+        <div className="widget-actions">
+          {sortedTasks.length > maxVisible && (
+            <button
+              type="button"
+              className="tasks-view-all-btn"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Voir tout
+            </button>
+          )}
+          <button type="button" className="refresh-btn" onClick={loadTasks} aria-label="Rafraîchir">
+            🔄
+          </button>
+        </div>
       </div>
 
       <div className="family-weekly-body">
@@ -324,52 +285,42 @@ export const FamilyWeeklyTasks: React.FC = () => {
             )}
           </div>
         ) : sortedTasks.length === 0 ? (
-          <div className="family-tasks-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
-            {Array.from({ length: slotsCount }, (_, index) => (
-              <div key={`placeholder-${index}`} className="task-tile task-tile--placeholder"></div>
-            ))}
+          <div className="tasks-empty-state">
+            <span className="tasks-empty-state__icon">✨</span>
+            <span className="tasks-empty-state__text">Aucune tâche en attente</span>
           </div>
         ) : (
-          <div className="family-tasks-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
-            {Array.from({ length: slotsCount }, (_, index) => {
-              if (hasOverflow && index === slotsCount - 1) {
-                return (
-                  <button
-                    key="view-all"
-                    type="button"
-                    className="task-tile task-tile--view-all"
-                    aria-label={`Voir toutes les tâches (${sortedTasks.length})`}
-                    onClick={() => {
-                      setConfirmTask(null);
-                      setIsModalOpen(true);
-                    }}
-                  >
-                    <span>Voir tout ({sortedTasks.length})</span>
-                  </button>
-                );
-              }
-
-              const task = visibleTasks[index];
-              if (!task) {
-                return (
-                  <div key={`placeholder-${index}`} className="task-tile task-tile--placeholder"></div>
-                );
-              }
+          <div className="tasks-chips-container">
+            {visibleTasks.map((task) => {
+              const priority = getTaskPriority(task);
+              const isCompleting = completingTaskIds.has(task.id);
 
               return (
-                <TaskTile
+                <button
                   key={task.id}
-                  task={task}
-                  isCompleting={completingTaskIds.has(task.id)}
-                  isClicked={clickedTaskId === task.id}
-                  onComplete={(selectedTask) => {
-                    setIsModalOpen(false);
-                    setConfirmTask(selectedTask);
-                  }}
-                  formatDueDate={formatDueDate}
-                />
+                  type="button"
+                  className={`task-chip task-chip--${priority} ${isCompleting ? 'is-completing' : ''}`}
+                  onClick={() => setConfirmTask(task)}
+                  disabled={isCompleting}
+                  title={task.title}
+                >
+                  <span className="task-chip__indicator" />
+                  <span className="task-chip__title">{task.title}</span>
+                  {task.due && (
+                    <span className="task-chip__due">{formatDueDate(task.due)}</span>
+                  )}
+                </button>
               );
             })}
+            {overflowCount > 0 && (
+              <button
+                type="button"
+                className="task-chip task-chip--overflow"
+                onClick={() => setIsModalOpen(true)}
+              >
+                <span>+{overflowCount}</span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -394,10 +345,7 @@ export const FamilyWeeklyTasks: React.FC = () => {
             <div className="family-confirm-modal-header">
               <div>
                 <div className="family-confirm-modal-title" id="family-confirm-title">
-                  Confirmer la tâche
-                </div>
-                <div className="family-confirm-modal-subtitle" id="family-confirm-description">
-                  Marquer cette tâche comme terminée ?
+                  Marquer comme terminée ?
                 </div>
               </div>
             </div>
@@ -406,7 +354,7 @@ export const FamilyWeeklyTasks: React.FC = () => {
               {(confirmTask.due || confirmTask.listName) && (
                 <div className="family-confirm-task-meta">
                   {confirmTask.due
-                    ? `Échéance ${formatDueDate(confirmTask.due)}`
+                    ? formatDueDate(confirmTask.due)
                     : confirmTask.listName}
                 </div>
               )}
@@ -427,7 +375,7 @@ export const FamilyWeeklyTasks: React.FC = () => {
                 onClick={() => confirmAndCompleteTask(confirmTask)}
                 disabled={isConfirming}
               >
-                {isConfirming ? 'Validation...' : 'Valider'}
+                {isConfirming ? '✓' : 'Valider'}
               </button>
             </div>
           </div>
@@ -444,7 +392,7 @@ export const FamilyWeeklyTasks: React.FC = () => {
               <div>
                 <div className="family-tasks-modal-title">Toutes les tâches</div>
                 <div className="family-tasks-modal-subtitle">
-                  {sortedTasks.length} tâches en attente
+                  {sortedTasks.length} tâche{sortedTasks.length > 1 ? 's' : ''} en attente
                 </div>
               </div>
               <button
@@ -456,14 +404,27 @@ export const FamilyWeeklyTasks: React.FC = () => {
               </button>
             </div>
             <div className="family-tasks-modal-body">
-              {sortedTasks.map((task) => (
-                <div key={`modal-${task.id}`} className="family-tasks-modal-row">
-                  <span className="family-tasks-modal-task">{task.title}</span>
-                  <span className="family-tasks-modal-meta">
-                    {task.due ? `Échéance ${formatDueDate(task.due)}` : task.listName}
-                  </span>
-                </div>
-              ))}
+              {sortedTasks.map((task) => {
+                const priority = getTaskPriority(task);
+                return (
+                  <div
+                    key={`modal-${task.id}`}
+                    className={`family-tasks-modal-row family-tasks-modal-row--${priority}`}
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setConfirmTask(task);
+                    }}
+                  >
+                    <span className="family-tasks-modal-indicator" />
+                    <div className="family-tasks-modal-info">
+                      <span className="family-tasks-modal-task">{task.title}</span>
+                      <span className="family-tasks-modal-meta">
+                        {task.due ? formatDueDate(task.due) : task.listName}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

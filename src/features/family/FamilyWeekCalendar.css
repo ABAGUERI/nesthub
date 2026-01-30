@@ -1,109 +1,139 @@
-/* FamilyWeekCalendar.css */
+/* FamilyWeekCalendar.css - Premium Modern Design */
 
 .family-week-calendar {
   display: flex;
   flex-direction: column;
   height: 100%;
-
-  /* ↓ avant: 16px */
   gap: 12px;
-
-  --hour-height: 52px;
+  --hour-height: 56px;
   --total-hours: 24;
 }
 
-/* ===== Header (titre + actions) ===== */
+/* ===== Header (Modern Navigation) ===== */
 
 .family-week-header {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-
-  /* ↓ avant: margin-bottom/padding-bottom 8px */
-  margin-bottom: 2px;
-  padding-bottom: 0px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 .family-week-header-info {
   display: flex;
   flex-direction: column;
-
-  /* ↓ avant: 2px */
-  gap: 1px;
-
+  gap: 2px;
   min-width: 0;
 }
 
 .family-week-calendar-name {
-  /* plus subtil / premium */
-  font-size: 13px;        /* ↓ avant 14 */
-  font-weight: 750;       /* ↓ avant 800 */
-  letter-spacing: 0.15px;
-  color: var(--text-heading);
-
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #f8fafc;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.calendar-icon {
+  font-size: 18px;
+}
+
 .family-week-range {
-  font-size: 11px;        /* ↓ avant 12 */
-  color: rgba(226, 232, 240, 0.58); /* un cran plus discret */
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.7);
+  text-transform: capitalize;
 }
 
 .family-week-actions {
   display: flex;
-
-  /* ↓ avant: 8px */
+  align-items: center;
   gap: 6px;
-
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.family-week-btn {
-  border: 1px solid rgba(148, 163, 184, 0.28);
-
-  /* plus “compact + premium” */
-  background: rgba(15, 23, 42, 0.35);
-  color: rgba(248, 250, 252, 0.92);
-
-  /* ↓ avant 6px 12px */
-  padding: 5px 10px;
-
+  padding: 4px;
   border-radius: 999px;
-  font-size: 11px; /* ↓ avant 12 */
-  cursor: pointer;
-
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
-.family-week-btn:hover {
-  border-color: rgba(226, 232, 240, 0.55);
-  background: rgba(15, 23, 42, 0.45);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.14);
+/* Navigation arrows */
+.family-week-nav-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: rgba(226, 232, 240, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.family-week-nav-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
+}
+
+.family-week-nav-btn:active {
+  transform: scale(0.95);
+}
+
+/* Today button (pill shape) */
+.family-week-today-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(99, 102, 241, 0.12));
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.family-week-today-btn:hover {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(99, 102, 241, 0.2));
   transform: translateY(-1px);
 }
 
-.family-week-btn:active {
-  transform: translateY(0px);
+.family-week-today-btn.is-current {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  color: #0f172a;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
 }
 
-.family-week-btn.primary {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(168, 85, 247, 0.22));
-  border-color: rgba(56, 189, 248, 0.42);
+.today-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
 }
 
-/* ===== Body (scroll interne agenda) ===== */
+.family-week-today-btn.is-current .today-dot {
+  background: #0f172a;
+  animation: todayPulse 2s ease-in-out infinite;
+}
+
+@keyframes todayPulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
+/* ===== Body (scroll container) ===== */
 
 .family-week-body {
   display: flex;
   flex-direction: column;
-
-  /* ↓ avant: 16px */
   gap: 12px;
-
   flex: 1;
   min-height: 0;
   overflow: auto;
@@ -121,133 +151,133 @@
 .family-all-day-row,
 .family-time-grid {
   display: grid;
-  grid-template-columns: 90px repeat(7, minmax(140px, 1fr));
-  gap: 10px;
+  grid-template-columns: 80px repeat(7, minmax(130px, 1fr));
+  gap: 8px;
   align-items: stretch;
 }
 
-/* ===== Sticky header des jours (plus compact) ===== */
+/* ===== Sticky header (Day names) ===== */
 
 .family-week-grid-header {
   position: sticky;
   top: 0;
   z-index: 30;
-
-  background: linear-gradient(180deg, rgba(2, 6, 23, 0.82), rgba(2, 6, 23, 0.62));
-  backdrop-filter: blur(10px);
-
-  border: 1px solid rgba(148, 163, 184, 0.10);
-
-  /* ↓ avant: 18px + padding 8px */
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0.85));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 16px;
-  padding: 6px;
-
-  /* plus subtil */
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  padding: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .family-time-header {
-  min-height: 40px; /* ↓ avant 44 */
+  min-height: 52px;
 }
 
 .family-day-header {
-  /* ↓ avant: 10px 12px */
-  padding: 8px 10px;
-
+  padding: 10px 12px;
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.46);
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
   text-align: center;
   text-transform: capitalize;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  transition: all 0.2s ease;
 }
 
-.family-day-header:hover,
-.family-day-header:focus-visible {
-  border-color: rgba(226, 232, 240, 0.38);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.07);
+.family-day-header:hover {
+  border-color: rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.7);
 }
 
 .family-day-header.today {
-  border-color: rgba(56, 189, 248, 0.48);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.16);
+  background: linear-gradient(160deg, rgba(56, 189, 248, 0.12), rgba(99, 102, 241, 0.08));
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
   position: relative;
 }
 
-.family-day-header.today::after {
+.family-day-header.today::before {
   content: '';
   position: absolute;
-  top: 6px;
+  top: 8px;
   right: 8px;
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: rgba(56, 189, 248, 0.9);
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
-  animation: familyPulse 2.1s ease-in-out infinite;
+  animation: familyPulse 2s ease-in-out infinite;
 }
 
 .family-day-name {
-  font-size: 11px; /* ↓ avant 12 */
+  font-size: 11px;
   letter-spacing: 0.5px;
-  color: rgba(226, 232, 240, 0.68);
+  color: rgba(148, 163, 184, 0.7);
+  text-transform: uppercase;
 }
 
 .family-day-date {
-  font-size: 13px; /* ↓ avant 14 */
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 700;
   color: #f8fafc;
-  margin-top: 3px; /* ↓ avant 4 */
+  margin-top: 4px;
 }
 
-/* ===== All-day (plus compact) ===== */
+.family-day-header.today .family-day-date {
+  background: linear-gradient(135deg, #38bdf8, #a5b4fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== All-day events row ===== */
 
 .family-all-day-row {
   align-items: center;
 }
 
 .family-time-label {
-  font-size: 11px; /* ↓ avant 12 */
-  color: rgba(226, 232, 240, 0.58);
+  font-size: 10px;
+  color: rgba(148, 163, 184, 0.6);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  padding-left: 6px;
+  letter-spacing: 0.5px;
+  padding-left: 8px;
 }
 
 .family-all-day-cell {
-  /* ↓ avant 54px */
-  min-height: 48px;
-
-  /* ↓ avant 6px */
-  padding: 5px;
-
+  min-height: 44px;
+  padding: 6px;
   border-radius: 12px;
-  border: 1px dashed rgba(148, 163, 184, 0.2);
-  background: rgba(15, 23, 42, 0.22);
-
+  border: 1px dashed rgba(148, 163, 184, 0.15);
+  background: rgba(15, 23, 42, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .family-all-day-empty {
-  color: rgba(148, 163, 184, 0.5);
+  color: rgba(148, 163, 184, 0.4);
   font-size: 11px;
 }
 
 .family-all-day-event {
   display: flex;
   align-items: center;
-  gap: 6px;
-
-  /* ↓ avant 6px 8px */
-  padding: 5px 8px;
-
-  border-radius: 12px;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
   font-size: 12px;
-  background: rgba(148, 163, 184, 0.12);
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.1);
   color: #f8fafc;
   border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.family-all-day-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* ===== Time grid ===== */
@@ -264,106 +294,143 @@
   position: sticky;
   left: 0;
   z-index: 35;
-
-  background: rgba(2, 6, 23, 0.86);
+  background: rgba(2, 6, 23, 0.9);
   backdrop-filter: blur(8px);
-  border-right: 1px solid rgba(148, 163, 184, 0.2);
+  border-right: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 16px 0 0 16px;
 }
 
 .family-time-slot {
   height: var(--hour-height);
   font-size: 11px;
-  color: rgba(226, 232, 240, 0.55);
+  font-weight: 500;
+  color: rgba(148, 163, 184, 0.5);
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
   padding-top: 4px;
-  padding-right: 6px;
+  padding-right: 8px;
 }
 
 .family-day-column {
-  border-left: 1px solid rgba(148, 163, 184, 0.12);
-  padding-left: 6px;
+  border-left: 1px solid rgba(148, 163, 184, 0.08);
+  padding-left: 4px;
+}
+
+.family-day-column.today-column {
+  border-left-color: rgba(56, 189, 248, 0.2);
 }
 
 .family-day-column.today-column .family-day-grid {
-  border-color: rgba(56, 189, 248, 0.28);
-  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.1);
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.03), rgba(99, 102, 241, 0.02)),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(148, 163, 184, 0.1) 0px,
+      rgba(148, 163, 184, 0.1) 1px,
+      transparent 1px,
+      transparent var(--hour-height)
+    ),
+    rgba(15, 23, 42, 0.35);
+  border-color: rgba(56, 189, 248, 0.15);
 }
 
 .family-day-grid {
   position: relative;
   height: calc(var(--total-hours) * var(--hour-height));
-  border-radius: 16px;
-
+  border-radius: 14px;
   background:
     repeating-linear-gradient(
       to bottom,
-      rgba(148, 163, 184, 0.14) 0px,
-      rgba(148, 163, 184, 0.14) 1px,
+      rgba(148, 163, 184, 0.1) 0px,
+      rgba(148, 163, 184, 0.1) 1px,
       transparent 1px,
       transparent var(--hour-height)
     ),
     rgba(15, 23, 42, 0.35);
-
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  padding: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  padding: 4px;
   overflow: hidden;
 }
 
+/* ===== Now Line (Animated) ===== */
+
 .family-now-line {
   position: absolute;
-  left: 6px;
-  right: 6px;
+  left: 0;
+  right: 0;
   height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(56, 189, 248, 0.75), rgba(99, 102, 241, 0.8));
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
-  z-index: 5;
+  z-index: 10;
+  display: flex;
+  align-items: center;
 }
+
 .family-now-line::before {
   content: '';
   position: absolute;
-  left: -2px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(56, 189, 248, 0.9);
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.45);
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ef4444, #f97316);
+  border-radius: 999px;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
 }
 
-/* ===== Events ===== */
+.family-now-line::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+  animation: nowPulse 1.5s ease-in-out infinite;
+}
+
+.family-now-time {
+  position: absolute;
+  right: 100%;
+  margin-right: 8px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+@keyframes nowPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+/* ===== Event blocks ===== */
 
 .family-event-block {
   position: absolute;
-  left: 6px;
-  right: 6px;
-  min-height: 36px;
+  left: 4px;
+  right: 4px;
+  min-height: 32px;
   padding: 8px 10px;
-  border-radius: 14px;
+  border-radius: 12px;
   color: #f8fafc;
-
-  background: rgba(56, 189, 248, 0.24);
-  border: 1px solid rgba(56, 189, 248, 0.33);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.38);
-
+  background: linear-gradient(160deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.15));
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   gap: 4px;
   overflow: hidden;
   cursor: pointer;
-
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  transition: all 0.2s ease;
 }
 
-.family-event-block:hover,
-.family-event-block:focus-visible {
-  transform: translateY(-1px);
-  filter: saturate(1.05);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.5);
+.family-event-block:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  z-index: 5;
 }
 
 .family-event-meta {
@@ -373,22 +440,30 @@
   gap: 8px;
 }
 
+/* ===== Avatars (Larger, Premium) ===== */
+
 .family-event-avatars {
   display: flex;
-  gap: 4px;
+  gap: -4px;
 }
 
 .family-event-avatar {
-  width: 20px;
-  height: 20px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   overflow: hidden;
-  background: rgba(15, 23, 42, 0.6);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  border: 1px solid rgba(226, 232, 240, 0.35);
+  font-size: 14px;
+  border: 2px solid rgba(248, 250, 252, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  margin-left: -6px;
+}
+
+.family-event-avatar:first-child {
+  margin-left: 0;
 }
 
 .family-event-avatar img {
@@ -398,7 +473,7 @@
 }
 
 .family-event-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
@@ -407,8 +482,46 @@
 }
 
 .family-event-time {
-  font-size: 11px;
-  color: rgba(226, 232, 240, 0.72);
+  font-size: 10px;
+  color: rgba(226, 232, 240, 0.7);
+  font-weight: 500;
+}
+
+/* ===== Color tones ===== */
+
+.family-all-day-event.tone-family,
+.family-event-block.tone-family,
+.family-week-list-item.tone-family {
+  background: linear-gradient(160deg, rgba(251, 146, 60, 0.2), rgba(249, 115, 22, 0.12));
+  border-color: rgba(251, 146, 60, 0.4);
+}
+
+.family-all-day-event.tone-lucas,
+.family-event-block.tone-lucas,
+.family-week-list-item.tone-lucas {
+  background: linear-gradient(160deg, rgba(56, 189, 248, 0.2), rgba(34, 211, 238, 0.12));
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.family-all-day-event.tone-sifaw,
+.family-event-block.tone-sifaw,
+.family-week-list-item.tone-sifaw {
+  background: linear-gradient(160deg, rgba(244, 114, 182, 0.2), rgba(236, 72, 153, 0.12));
+  border-color: rgba(244, 114, 182, 0.4);
+}
+
+.family-all-day-event.tone-work,
+.family-event-block.tone-work,
+.family-week-list-item.tone-work {
+  background: linear-gradient(160deg, rgba(59, 130, 246, 0.18), rgba(99, 102, 241, 0.12));
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.family-all-day-event.tone-default,
+.family-event-block.tone-default,
+.family-week-list-item.tone-default {
+  background: linear-gradient(160deg, rgba(148, 163, 184, 0.15), rgba(100, 116, 139, 0.1));
+  border-color: rgba(148, 163, 184, 0.25);
 }
 
 /* ===== Mobile list fallback ===== */
@@ -421,101 +534,84 @@
 
 .family-week-list-day {
   background: rgba(15, 23, 42, 0.4);
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 14px 16px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 .family-week-list-title {
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: capitalize;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   color: #f8fafc;
 }
 
 .family-week-list-items {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .family-week-list-item {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(148, 163, 184, 0.08);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(148, 163, 184, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.15);
   cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.family-week-list-item:hover {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.25);
 }
 
 .family-week-list-empty {
   font-size: 12px;
-  color: rgba(148, 163, 184, 0.7);
+  color: rgba(148, 163, 184, 0.6);
+  padding: 8px;
 }
 
-/* ===== Color tones ===== */
-
-.family-all-day-event.tone-family,
-.family-event-block.tone-family,
-.family-week-list-item.tone-family {
-  background: rgba(251, 146, 60, 0.2);
-  border-color: rgba(251, 146, 60, 0.4);
-}
-
-.family-all-day-event.tone-lucas,
-.family-event-block.tone-lucas,
-.family-week-list-item.tone-lucas {
-  background: rgba(56, 189, 248, 0.2);
-  border-color: rgba(56, 189, 248, 0.4);
-}
-
-.family-all-day-event.tone-sifaw,
-.family-event-block.tone-sifaw,
-.family-week-list-item.tone-sifaw {
-  background: rgba(244, 114, 182, 0.2);
-  border-color: rgba(244, 114, 182, 0.4);
-}
-
-.family-all-day-event.tone-work,
-.family-event-block.tone-work,
-.family-week-list-item.tone-work {
-  background: rgba(59, 130, 246, 0.16);
-  border-color: rgba(59, 130, 246, 0.4);
-}
-
-.family-all-day-event.tone-default,
-.family-event-block.tone-default,
-.family-week-list-item.tone-default {
-  background: rgba(148, 163, 184, 0.16);
-  border-color: rgba(148, 163, 184, 0.3);
-}
-
-/* ===== Modal event ===== */
+/* ===== Event Modal ===== */
 
 .family-event-modal {
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 23, 0.68);
+  background: rgba(2, 6, 23, 0.75);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 50;
   padding: 16px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .family-event-modal-content {
-  width: min(560px, 100%);
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  width: min(520px, 100%);
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+  border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.6);
-  padding: 18px 20px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .family-event-modal-header {
@@ -526,22 +622,34 @@
 
 .family-event-modal-title {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   color: #f8fafc;
 }
 
 .family-event-modal-subtitle {
   font-size: 12px;
-  color: rgba(226, 232, 240, 0.7);
+  color: rgba(148, 163, 184, 0.7);
   margin-top: 4px;
 }
 
 .family-event-modal-close {
-  background: transparent;
-  border: none;
-  color: rgba(226, 232, 240, 0.6);
-  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.5);
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 14px;
   cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.family-event-modal-close:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
 }
 
 .family-event-modal-body {
@@ -555,45 +663,42 @@
 .family-event-modal-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .family-event-modal-label {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: rgba(148, 163, 184, 0.7);
+  color: rgba(148, 163, 184, 0.6);
 }
 
 .family-event-modal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   align-self: flex-start;
-  font-size: 13px;
-  color: #38bdf8;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  font-size: 12px;
+  font-weight: 600;
+  color: #7dd3fc;
   text-decoration: none;
+  transition: all 0.15s ease;
 }
 
 .family-event-modal-link:hover {
-  text-decoration: underline;
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
 }
 
 /* ===== Animations ===== */
 
 @keyframes familyPulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1.25);
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .family-day-header.today::after {
-    animation: none;
-  }
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
 }
 
 /* ===== Responsive ===== */
@@ -602,15 +707,17 @@
   .family-week-grid-header,
   .family-all-day-row,
   .family-time-grid {
-    grid-template-columns: 70px repeat(7, minmax(120px, 1fr));
-  }
-
-  .family-day-column {
-    padding-left: 4px;
+    grid-template-columns: 70px repeat(7, minmax(110px, 1fr));
   }
 
   .family-event-block {
-    padding: 7px 8px;
+    padding: 6px 8px;
+  }
+
+  .family-event-avatar {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
   }
 }
 
@@ -622,7 +729,11 @@
   .family-week-grid-header,
   .family-all-day-row,
   .family-time-grid {
-    min-width: 960px;
+    min-width: 900px;
+  }
+
+  .family-week-header {
+    flex-wrap: wrap;
   }
 }
 
@@ -641,5 +752,19 @@
 
   .family-event-modal-content {
     border-radius: 20px 20px 0 0;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+}
+
+/* ===== Reduced motion ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  .family-day-header.today::before,
+  .family-now-line::after,
+  .today-dot,
+  .family-event-modal,
+  .family-event-modal-content {
+    animation: none !important;
   }
 }
