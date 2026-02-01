@@ -37,6 +37,22 @@ const getTaskPriority = (task: TaskItem): 'urgent' | 'soon' | 'normal' => {
   return 'normal';
 };
 
+/* Get icon based on task title keywords */
+const getTaskIcon = (title: string): string => {
+  const lower = title.toLowerCase();
+  if (lower.includes('appel') || lower.includes('téléphone')) return '📞';
+  if (lower.includes('impôt') || lower.includes('tax')) return '🔥';
+  if (lower.includes('chaussure') || lower.includes('foot') || lower.includes('sport')) return '👟';
+  if (lower.includes('cuisine') || lower.includes('coller') || lower.includes('réparer')) return '🔧';
+  if (lower.includes('inscription') || lower.includes('camp')) return '📝';
+  if (lower.includes('livre') || lower.includes('école')) return '📚';
+  if (lower.includes('patin') || lower.includes('hockey')) return '⛸️';
+  if (lower.includes('nouvelle') || lower.includes('contact')) return '💬';
+  if (lower.includes('achat') || lower.includes('acheter')) return '🛒';
+  if (lower.includes('rdv') || lower.includes('rendez-vous') || lower.includes('médecin')) return '🏥';
+  return '📌';
+};
+
 export const FamilyWeeklyTasks: React.FC = () => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<TaskItem[]>([]);
@@ -228,13 +244,13 @@ export const FamilyWeeklyTasks: React.FC = () => {
     }
   };
 
+  {/* Loading state */}
   if (loading) {
     return (
       <div className="family-weekly-tasks widget">
         <div className="widget-header">
           <div className="widget-title">
-            <span className="widget-title__icon">📋</span>
-            Pensez à
+            À faire prochainement
           </div>
         </div>
         <div className="family-weekly-body">
@@ -244,14 +260,14 @@ export const FamilyWeeklyTasks: React.FC = () => {
     );
   }
 
+  {/* Main render - Grid card layout matching mockup */}
   return (
     <div className="family-weekly-tasks widget">
       <div className="widget-header">
         <div className="widget-title">
-          <span className="widget-title__icon">📋</span>
-          Pensez à
+          À faire prochainement
           {sortedTasks.length > 0 && (
-            <span className="widget-title__count">{sortedTasks.length}</span>
+            <span className="widget-title__count">{sortedTasks.length} tâches</span>
           )}
         </div>
         <div className="widget-actions">
@@ -264,9 +280,6 @@ export const FamilyWeeklyTasks: React.FC = () => {
               Voir tout
             </button>
           )}
-          <button type="button" className="refresh-btn" onClick={loadTasks} aria-label="Rafraîchir">
-            🔄
-          </button>
         </div>
       </div>
 
@@ -290,35 +303,44 @@ export const FamilyWeeklyTasks: React.FC = () => {
             <span className="tasks-empty-state__text">Aucune tâche en attente</span>
           </div>
         ) : (
-          <div className="tasks-chips-container">
+          <div className="tasks-cards-grid">
             {visibleTasks.map((task) => {
               const priority = getTaskPriority(task);
               const isCompleting = completingTaskIds.has(task.id);
+              const icon = getTaskIcon(task.title);
 
               return (
                 <button
                   key={task.id}
                   type="button"
-                  className={`task-chip task-chip--${priority} ${isCompleting ? 'is-completing' : ''}`}
+                  className={`task-card task-card--${priority} ${isCompleting ? 'is-completing' : ''}`}
                   onClick={() => setConfirmTask(task)}
                   disabled={isCompleting}
-                  title={task.title}
                 >
-                  <span className="task-chip__indicator" />
-                  <span className="task-chip__title">{task.title}</span>
-                  {task.due && (
-                    <span className="task-chip__due">{formatDueDate(task.due)}</span>
-                  )}
+                  <span className="task-card__icon">{icon}</span>
+                  <div className="task-card__content">
+                    <span className="task-card__title">{task.title}</span>
+                    <span className="task-card__meta">
+                      {formatDueDate(task.due) || 'Cette semaine'}
+                      {task.listName && task.listName !== 'Famille' && ` · ${task.listName}`}
+                    </span>
+                  </div>
+                  <span className="task-card__chevron">›</span>
                 </button>
               );
             })}
             {overflowCount > 0 && (
               <button
                 type="button"
-                className="task-chip task-chip--overflow"
+                className="task-card task-card--overflow"
                 onClick={() => setIsModalOpen(true)}
               >
-                <span>+{overflowCount}</span>
+                <span className="task-card__icon">📋</span>
+                <div className="task-card__content">
+                  <span className="task-card__title">+{overflowCount} autres tâches</span>
+                  <span className="task-card__meta">Voir tout</span>
+                </div>
+                <span className="task-card__chevron">›</span>
               </button>
             )}
           </div>

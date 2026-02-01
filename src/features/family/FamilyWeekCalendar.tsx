@@ -427,42 +427,43 @@ export const FamilyWeekCalendar: React.FC = () => {
 
   const isCurrentWeek = toDateKey(weekStart) === toDateKey(startOfWeek(new Date()));
 
+  {/* Compact header: title + period + today on same line */}
   return (
     <div className="family-week-calendar widget">
       <div className="widget-header family-week-header">
-        <div className="family-week-header-info">
-          <div className="family-week-calendar-name">
-            <span className="calendar-icon">📅</span>
-            {calendarLabel}
-          </div>
-          <div className="family-week-range">{formatWeekLabel(weekStart)}</div>
+        <div className="family-week-header-main">
+          <span className="family-week-title">Famille</span>
+          <span className="family-week-separator">·</span>
+          <span className="family-week-subtitle">Agenda partagé</span>
         </div>
-        <div className="family-week-actions">
+        <div className="family-week-header-nav">
           <button
             type="button"
             className="family-week-nav-btn"
             onClick={() => setWeekStart((prev) => addDays(prev, -7))}
             aria-label="Semaine précédente"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <button
-            type="button"
-            className={`family-week-today-btn ${isCurrentWeek ? 'is-current' : ''}`}
-            onClick={() => setWeekStart(startOfWeek(new Date()))}
-          >
-            <span className="today-dot" />
-            Aujourd'hui
-          </button>
+          <div className="family-week-period">
+            <span className="family-week-range">{formatWeekLabel(weekStart)}</span>
+            <button
+              type="button"
+              className={`family-week-today-btn ${isCurrentWeek ? 'is-current' : ''}`}
+              onClick={() => setWeekStart(startOfWeek(new Date()))}
+            >
+              Aujourd'hui
+            </button>
+          </div>
           <button
             type="button"
             className="family-week-nav-btn"
             onClick={() => setWeekStart((prev) => addDays(prev, 7))}
             aria-label="Semaine suivante"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
