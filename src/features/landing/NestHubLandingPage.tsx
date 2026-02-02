@@ -2,6 +2,9 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import './NestHubLandingPage.css';
 
+// Feature flag for Alpha mode
+const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
+
 const FAQ_ITEMS = [
   {
     question: 'Comment ajouter mes enfants à NestHub ?',
@@ -294,8 +297,8 @@ export function NestHubLandingPage() {
             <Link to="/login" className="nesthub-landing__nav-link">
               Se connecter
             </Link>
-            <Link to="/signup" className="nesthub-landing__nav-cta">
-              Créer mon espace familial
+            <Link to={ALPHA_MODE ? '/alpha' : '/signup'} className="nesthub-landing__nav-cta">
+              {ALPHA_MODE ? 'Rejoindre la liste d\'attente' : 'Créer mon espace familial'}
             </Link>
           </nav>
         </div>
@@ -313,8 +316,8 @@ export function NestHubLandingPage() {
               d'aujourd'hui.
             </p>
             <div className="nesthub-landing__cta">
-              <Link to="/signup" className="nesthub-landing__cta-primary">
-                Créer mon espace familial
+              <Link to={ALPHA_MODE ? '/alpha' : '/signup'} className="nesthub-landing__cta-primary">
+                {ALPHA_MODE ? 'Rejoindre la liste d\'attente' : 'Créer mon espace familial'}
               </Link>
               <Link to="/login" className="nesthub-landing__cta-secondary">
                 Se connecter
@@ -556,10 +559,12 @@ export function NestHubLandingPage() {
           </div>
 
           <div className="how-it-works__cta scroll-reveal">
-            <Link to="/signup" className="nesthub-landing__cta-primary">
-              Commencer maintenant
+            <Link to={ALPHA_MODE ? '/alpha' : '/signup'} className="nesthub-landing__cta-primary">
+              {ALPHA_MODE ? 'Rejoindre la liste d\'attente' : 'Commencer maintenant'}
             </Link>
-            <span className="how-it-works__note">Prêt en moins de 10 minutes</span>
+            <span className="how-it-works__note">
+              {ALPHA_MODE ? 'Accès prioritaire aux premiers inscrits' : 'Prêt en moins de 10 minutes'}
+            </span>
           </div>
         </section>
 
@@ -1282,8 +1287,8 @@ export function NestHubLandingPage() {
                 <li>Génération de menus IA</li>
                 <li>Support prioritaire</li>
               </ul>
-              <Link to="/signup" className="pricing-card__cta pricing-card__cta--secondary">
-                Commencer l'essai gratuit
+              <Link to={ALPHA_MODE ? '/alpha' : '/signup'} className="pricing-card__cta pricing-card__cta--secondary">
+                {ALPHA_MODE ? 'Rejoindre la liste d\'attente' : 'Commencer l\'essai gratuit'}
               </Link>
             </div>
 
@@ -1303,8 +1308,8 @@ export function NestHubLandingPage() {
                 <li>Génération de menus IA</li>
                 <li>Support prioritaire à vie</li>
               </ul>
-              <Link to="/signup" className="pricing-card__cta pricing-card__cta--primary">
-                Obtenir ma licence à vie
+              <Link to={ALPHA_MODE ? '/alpha' : '/signup'} className="pricing-card__cta pricing-card__cta--primary">
+                {ALPHA_MODE ? 'Rejoindre la liste d\'attente' : 'Obtenir ma licence à vie'}
               </Link>
             </div>
           </div>
@@ -1337,16 +1342,28 @@ export function NestHubLandingPage() {
 
         <section className="nesthub-landing__final scroll-reveal">
           <div className="nesthub-landing__final-card">
-            <h2>Créez votre NestHub familial</h2>
+            <h2>{ALPHA_MODE ? 'Rejoignez la liste d\'attente Alpha' : 'Créez votre NestHub familial'}</h2>
             <p>
-              - Mise en place rapide
-              <br />
-              - Sans carte de crédit
-              <br />
-              - Pensé pour évoluer avec vos enfants
+              {ALPHA_MODE ? (
+                <>
+                  - Accès prioritaire aux premiers inscrits
+                  <br />
+                  - Pas de spam
+                  <br />
+                  - Invitation progressive
+                </>
+              ) : (
+                <>
+                  - Mise en place rapide
+                  <br />
+                  - Sans carte de crédit
+                  <br />
+                  - Pensé pour évoluer avec vos enfants
+                </>
+              )}
             </p>
-            <Link to="/signup" className="nesthub-landing__cta-primary">
-              Créer mon espace familial
+            <Link to={ALPHA_MODE ? '/alpha' : '/signup'} className="nesthub-landing__cta-primary">
+              {ALPHA_MODE ? 'Rejoindre la liste d\'attente' : 'Créer mon espace familial'}
             </Link>
           </div>
         </section>
@@ -1366,7 +1383,9 @@ export function NestHubLandingPage() {
                   <a href="#faq">FAQ</a>
                 </li>
                 <li>
-                  <Link to="/signup">Créer un compte</Link>
+                  <Link to={ALPHA_MODE ? '/alpha' : '/signup'}>
+                    {ALPHA_MODE ? 'Liste d\'attente' : 'Créer un compte'}
+                  </Link>
                 </li>
                 <li>
                   <Link to="/login">Se connecter</Link>

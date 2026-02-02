@@ -7,12 +7,14 @@ import { OnboardingPage } from '@/features/onboarding/OnboardingPage';
 import { OAuthCallback } from '@/features/google/components/OAuthCallback';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { NestHubLandingPage } from '@/features/landing/NestHubLandingPage';
+import { AlphaLandingPage } from '@/features/alpha/AlphaLandingPage';
 import { ConfigPage } from '@/features/config/ConfigPage';
 import { KitchenPage } from '@/features/kitchen/KitchenPage';
 import { FinancePage } from '@/features/finance/FinancePage';
 import { FamilyPage } from '@/features/family/FamilyPage';
 import { ChildSelectionProvider } from '@/features/dashboard/contexts/ChildSelectionContext';
 import { AppLayout } from '@/shared/layouts/AppLayout';
+import { AlphaPublicGate } from '@/routes/guards/AlphaPublicGate';
 import '@/styles/global.css';
 
 // Composant pour protéger les routes authentifiées
@@ -84,9 +86,11 @@ function AppRoutes() {
       <Route
         path="/signup"
         element={
-          <PublicRoute>
-            <SignupForm />
-          </PublicRoute>
+          <AlphaPublicGate>
+            <PublicRoute>
+              <SignupForm />
+            </PublicRoute>
+          </AlphaPublicGate>
         }
       />
       <Route
@@ -104,6 +108,12 @@ function AppRoutes() {
         element={<OAuthCallback />}
       />
 
+      {/* Route Alpha Landing (waitlist) */}
+      <Route
+        path="/alpha"
+        element={<AlphaLandingPage />}
+      />
+
       {/* Routes protégées */}
       <Route
         path="/verify-email"
@@ -118,9 +128,11 @@ function AppRoutes() {
       <Route
         path="/onboarding"
         element={
-          <OnboardingRoute>
-            <OnboardingPage />
-          </OnboardingRoute>
+          <AlphaPublicGate>
+            <OnboardingRoute>
+              <OnboardingPage />
+            </OnboardingRoute>
+          </AlphaPublicGate>
         }
       />
       
