@@ -1,12 +1,12 @@
-/* FamilyWeekCalendar.css - Premium Dark Design (Mockup) */
+/* FamilyWeekCalendar.css - Premium Dark Design with Internal Scroll */
 
 /* ===== CSS Tokens ===== */
 .family-week-calendar {
-  --hour-height: 32px;
+  --hour-height: 28px;
   --total-hours: 10;
   --panel-bg: rgba(15, 23, 42, 0.4);
   --panel-border: rgba(148, 163, 184, 0.12);
-  --panel-radius: 14px;
+  --panel-radius: 12px;
   --glow-blue: rgba(56, 189, 248, 0.4);
   --glow-soft: rgba(0, 0, 0, 0.15);
   --grid-line: rgba(148, 163, 184, 0.06);
@@ -14,7 +14,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: 0;
+  overflow: hidden;
 }
 
 /* ===== Compact Header ===== */
@@ -23,8 +23,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  padding: 8px 0 12px;
+  gap: 12px;
+  padding: 4px 0 8px;
+  flex-shrink: 0;
 }
 
 .family-week-header-main {
@@ -34,49 +35,49 @@
 }
 
 .family-week-title {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: #f8fafc;
 }
 
 .family-week-separator {
-  font-size: 16px;
+  font-size: 14px;
   color: rgba(148, 163, 184, 0.5);
   font-weight: 300;
 }
 
 .family-week-subtitle {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 400;
   color: rgba(148, 163, 184, 0.7);
 }
 
-/* Navigation group: arrows + period + today */
+/* Navigation group */
 .family-week-header-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .family-week-period {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .family-week-range {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: rgba(226, 232, 240, 0.8);
 }
 
-/* Nav arrows */
+/* Nav arrows - smaller */
 .family-week-nav-btn {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid var(--panel-border);
   background: var(--panel-bg);
   color: rgba(148, 163, 184, 0.7);
@@ -92,12 +93,12 @@
 
 /* Today button - small pill */
 .family-week-today-btn {
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid var(--panel-border);
   background: var(--panel-bg);
   color: rgba(226, 232, 240, 0.8);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -114,14 +115,14 @@
   color: #7dd3fc;
 }
 
-/* ===== Body ===== */
+/* ===== Body - NO outer scroll ===== */
 
 .family-week-body {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden; /* No outer scroll */
 }
 
 /* ===== Grid Layout ===== */
@@ -129,28 +130,28 @@
 .family-week-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .family-week-grid-header,
 .family-all-day-row,
 .family-time-grid {
   display: grid;
-  grid-template-columns: 70px repeat(7, minmax(120px, 1fr));
-  gap: 6px;
+  grid-template-columns: 50px repeat(7, minmax(100px, 1fr));
+  gap: 4px;
 }
 
-/* ===== Day Headers (Pill-shaped, Premium) ===== */
+/* ===== Day Headers (Compact) ===== */
 
 .family-week-grid-header {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  padding: 6px;
-  background: rgba(2, 6, 23, 0.85);
-  backdrop-filter: blur(12px);
+  flex-shrink: 0;
+  padding: 4px;
+  background: rgba(2, 6, 23, 0.9);
   border-radius: var(--panel-radius);
   border: 1px solid var(--panel-border);
+  margin-bottom: 4px;
 }
 
 .family-time-header {
@@ -162,8 +163,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px 6px;
-  border-radius: 12px;
+  padding: 4px 4px;
+  border-radius: 8px;
   background: rgba(30, 41, 59, 0.4);
   border: 1px solid rgba(148, 163, 184, 0.08);
   text-align: center;
@@ -180,20 +181,20 @@
 .family-day-header.today {
   background: linear-gradient(160deg, rgba(56, 189, 248, 0.12), rgba(99, 102, 241, 0.08));
   border-color: rgba(56, 189, 248, 0.35);
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.12), inset 0 0 20px rgba(56, 189, 248, 0.05);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.1);
 }
 
 /* Today dot indicator */
 .family-day-header.today::after {
   content: '';
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 6px;
-  height: 6px;
+  top: 6px;
+  right: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #38bdf8;
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
   animation: todayDotPulse 2s ease-in-out infinite;
 }
 
@@ -203,18 +204,18 @@
 }
 
 .family-day-name {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
   color: rgba(148, 163, 184, 0.6);
 }
 
 .family-day-date {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #e2e8f0;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .family-day-header.today .family-day-name {
@@ -225,50 +226,52 @@
   color: #38bdf8;
 }
 
-/* ===== All-day events row ===== */
+/* ===== All-day events row (compact) ===== */
 
 .family-all-day-row {
+  flex-shrink: 0;
   align-items: stretch;
-  min-height: 44px;
+  min-height: 32px;
+  margin-bottom: 4px;
 }
 
 .family-time-label {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   text-transform: uppercase;
   color: rgba(148, 163, 184, 0.5);
   display: flex;
   align-items: center;
-  padding-right: 8px;
+  padding-right: 4px;
   justify-content: flex-end;
 }
 
 .family-all-day-cell {
-  min-height: 40px;
-  padding: 4px;
-  border-radius: 10px;
+  min-height: 28px;
+  padding: 3px;
+  border-radius: 8px;
   background: rgba(15, 23, 42, 0.25);
-  border: 1px dashed rgba(148, 163, 184, 0.1);
+  border: 1px dashed rgba(148, 163, 184, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .family-all-day-empty {
   color: rgba(148, 163, 184, 0.3);
-  font-size: 11px;
+  font-size: 10px;
   text-align: center;
-  line-height: 32px;
+  line-height: 22px;
 }
 
 .family-all-day-event {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
-  border-radius: 8px;
-  font-size: 11px;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 10px;
   font-weight: 600;
   background: rgba(56, 189, 248, 0.12);
   border-left: 3px solid rgba(56, 189, 248, 0.6);
@@ -279,30 +282,56 @@
 
 .family-all-day-event:hover {
   background: rgba(56, 189, 248, 0.18);
-  transform: translateX(2px);
 }
 
-/* ===== Time Grid ===== */
+/* ===== Time Grid (SCROLLABLE) ===== */
 
 .family-time-grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   align-items: flex-start;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.family-time-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.family-time-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.family-time-grid::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+}
+
+.family-time-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
 }
 
 .family-time-column {
   display: flex;
   flex-direction: column;
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  background: rgba(2, 6, 23, 0.95);
 }
 
 .family-time-slot {
   height: var(--hour-height);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   color: rgba(148, 163, 184, 0.4);
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
   padding-top: 0;
-  padding-right: 10px;
+  padding-right: 6px;
 }
 
 .family-day-column {
@@ -320,7 +349,7 @@
       transparent 1px,
       transparent var(--hour-height)
     );
-  border-color: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.1);
 }
 
 .family-day-grid {
@@ -334,11 +363,11 @@
     transparent 1px,
     transparent var(--hour-height)
   );
-  border: 1px solid rgba(148, 163, 184, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.05);
   overflow: hidden;
 }
 
-/* ===== Now Line (Clean with time on right) ===== */
+/* ===== Now Line ===== */
 
 .family-now-line {
   position: absolute;
@@ -349,7 +378,6 @@
   pointer-events: none;
 }
 
-/* Main line */
 .family-now-line::before {
   content: '';
   position: absolute;
@@ -358,10 +386,9 @@
   height: 2px;
   background: linear-gradient(90deg, #ef4444, #f97316);
   border-radius: 2px;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.35);
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.3);
 }
 
-/* Dot on left */
 .family-now-line::after {
   content: '';
   position: absolute;
@@ -371,7 +398,7 @@
   height: 8px;
   border-radius: 50%;
   background: #ef4444;
-  box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
   animation: nowDotPulse 1.5s ease-in-out infinite;
 }
 
@@ -380,39 +407,38 @@
   50% { transform: scale(1.15); }
 }
 
-/* Time label on RIGHT */
 .family-now-time {
   position: absolute;
   right: -4px;
-  top: -8px;
-  padding: 2px 8px;
-  border-radius: 6px;
+  top: -7px;
+  padding: 2px 6px;
+  border-radius: 4px;
   background: linear-gradient(135deg, #ef4444, #f97316);
   color: white;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
 }
 
-/* ===== Event Cards (Premium) ===== */
+/* ===== Event Cards ===== */
 
 .family-event-block {
   position: absolute;
-  left: 4px;
-  right: 4px;
-  min-height: 28px;
-  padding: 6px 8px;
-  border-radius: var(--panel-radius);
+  left: 3px;
+  right: 3px;
+  min-height: 24px;
+  padding: 4px 6px;
+  border-radius: 10px;
   color: #f8fafc;
   background: rgba(56, 189, 248, 0.12);
   border: 1px solid rgba(56, 189, 248, 0.25);
   border-left: 3px solid rgba(56, 189, 248, 0.6);
   backdrop-filter: blur(4px);
-  box-shadow: 0 2px 8px var(--glow-soft);
+  box-shadow: 0 2px 6px var(--glow-soft);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -420,13 +446,13 @@
 
 .family-event-block:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   border-color: rgba(56, 189, 248, 0.4);
   z-index: 5;
 }
 
 .family-event-title {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
@@ -438,11 +464,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
 }
 
 .family-event-time {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 500;
   color: rgba(226, 232, 240, 0.6);
 }
@@ -455,17 +481,17 @@
 }
 
 .family-event-avatar {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.8));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 9px;
   border: 2px solid rgba(2, 6, 23, 0.8);
-  margin-left: -6px;
+  margin-left: -5px;
   position: relative;
 }
 
@@ -479,9 +505,8 @@
   object-fit: cover;
 }
 
-/* ===== Color Tones (Signatures) ===== */
+/* ===== Color Tones ===== */
 
-/* Family - Orange */
 .family-all-day-event.tone-family,
 .family-event-block.tone-family,
 .family-week-list-item.tone-family {
@@ -490,12 +515,6 @@
   border-left-color: rgba(251, 146, 60, 0.7);
 }
 
-.family-event-block.tone-family:hover,
-.family-all-day-event.tone-family:hover {
-  border-color: rgba(251, 146, 60, 0.4);
-}
-
-/* Lucas - Cyan */
 .family-all-day-event.tone-lucas,
 .family-event-block.tone-lucas,
 .family-week-list-item.tone-lucas {
@@ -504,12 +523,6 @@
   border-left-color: rgba(34, 211, 238, 0.7);
 }
 
-.family-event-block.tone-lucas:hover,
-.family-all-day-event.tone-lucas:hover {
-  border-color: rgba(34, 211, 238, 0.4);
-}
-
-/* Sifaw - Pink */
 .family-all-day-event.tone-sifaw,
 .family-event-block.tone-sifaw,
 .family-week-list-item.tone-sifaw {
@@ -518,12 +531,6 @@
   border-left-color: rgba(244, 114, 182, 0.7);
 }
 
-.family-event-block.tone-sifaw:hover,
-.family-all-day-event.tone-sifaw:hover {
-  border-color: rgba(244, 114, 182, 0.4);
-}
-
-/* Work - Blue */
 .family-all-day-event.tone-work,
 .family-event-block.tone-work,
 .family-week-list-item.tone-work {
@@ -532,12 +539,6 @@
   border-left-color: rgba(59, 130, 246, 0.7);
 }
 
-.family-event-block.tone-work:hover,
-.family-all-day-event.tone-work:hover {
-  border-color: rgba(59, 130, 246, 0.4);
-}
-
-/* Default - Gray */
 .family-all-day-event.tone-default,
 .family-event-block.tone-default,
 .family-week-list-item.tone-default {
@@ -546,31 +547,26 @@
   border-left-color: rgba(148, 163, 184, 0.5);
 }
 
-.family-event-block.tone-default:hover,
-.family-all-day-event.tone-default:hover {
-  border-color: rgba(148, 163, 184, 0.35);
-}
-
 /* ===== Mobile List Fallback ===== */
 
 .family-week-list {
   display: none;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .family-week-list-day {
   background: var(--panel-bg);
   border-radius: var(--panel-radius);
-  padding: 12px 14px;
+  padding: 10px 12px;
   border: 1px solid var(--panel-border);
 }
 
 .family-week-list-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: capitalize;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   color: #f8fafc;
 }
 
@@ -582,10 +578,10 @@
 
 .family-week-list-item {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  padding: 10px 12px;
-  border-radius: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
   background: rgba(148, 163, 184, 0.05);
   border: 1px solid rgba(148, 163, 184, 0.1);
   border-left: 3px solid rgba(56, 189, 248, 0.5);
@@ -595,13 +591,12 @@
 
 .family-week-list-item:hover {
   background: rgba(56, 189, 248, 0.08);
-  border-color: rgba(56, 189, 248, 0.2);
 }
 
 .family-week-list-empty {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(148, 163, 184, 0.5);
-  padding: 8px 0;
+  padding: 6px 0;
 }
 
 /* ===== Event Modal ===== */
@@ -625,15 +620,15 @@
 }
 
 .family-event-modal-content {
-  width: min(480px, 100%);
+  width: min(440px, 100%);
   background: linear-gradient(160deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.95));
   border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 20px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   animation: modalSlideUp 0.2s ease-out;
 }
 
@@ -649,27 +644,27 @@
 }
 
 .family-event-modal-title {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   color: #f8fafc;
 }
 
 .family-event-modal-subtitle {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(148, 163, 184, 0.7);
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .family-event-modal-close {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid rgba(148, 163, 184, 0.15);
   background: rgba(15, 23, 42, 0.5);
   color: rgba(226, 232, 240, 0.6);
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -683,19 +678,19 @@
 .family-event-modal-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  font-size: 13px;
+  gap: 10px;
+  font-size: 12px;
   color: rgba(226, 232, 240, 0.9);
 }
 
 .family-event-modal-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .family-event-modal-label {
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: rgba(148, 163, 184, 0.5);
@@ -704,13 +699,13 @@
 .family-event-modal-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   align-self: flex-start;
-  padding: 8px 14px;
-  border-radius: 10px;
+  padding: 6px 12px;
+  border-radius: 8px;
   background: rgba(56, 189, 248, 0.1);
   border: 1px solid rgba(56, 189, 248, 0.2);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #7dd3fc;
   text-decoration: none;
@@ -719,40 +714,23 @@
 
 .family-event-modal-link:hover {
   background: rgba(56, 189, 248, 0.15);
-  border-color: rgba(56, 189, 248, 0.35);
+  border-color: rgba(56, 189, 248, 0.3);
 }
 
 /* ===== Responsive ===== */
 
-@media (max-width: 1400px) {
+@media (max-width: 1200px) {
   .family-week-grid-header,
   .family-all-day-row,
   .family-time-grid {
-    grid-template-columns: 60px repeat(7, minmax(100px, 1fr));
-    gap: 4px;
-  }
-}
-
-@media (max-width: 1100px) {
-  .family-week-grid-header,
-  .family-all-day-row,
-  .family-time-grid {
-    grid-template-columns: 55px repeat(7, minmax(90px, 1fr));
-  }
-
-  .family-day-header {
-    padding: 6px 4px;
-  }
-
-  .family-event-block {
-    padding: 4px 6px;
+    grid-template-columns: 45px repeat(7, minmax(85px, 1fr));
   }
 }
 
 @media (max-width: 900px) {
   .family-week-header {
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
   }
 
   .family-week-grid {
@@ -762,7 +740,7 @@
   .family-week-grid-header,
   .family-all-day-row,
   .family-time-grid {
-    min-width: 800px;
+    min-width: 700px;
   }
 }
 
@@ -780,8 +758,8 @@
   }
 
   .family-event-modal-content {
-    border-radius: 20px 20px 0 0;
-    max-height: 80vh;
+    border-radius: 16px 16px 0 0;
+    max-height: 75vh;
     overflow-y: auto;
   }
 }
