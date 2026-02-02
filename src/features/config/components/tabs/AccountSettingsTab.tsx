@@ -29,8 +29,6 @@ interface GoogleConnection {
 }
 
 interface FormData {
-  first_name: string;
-  last_name: string;
   city: string;
   postal_code: string;
   has_children: boolean;
@@ -72,15 +70,11 @@ export const AccountSettingsTab: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [googleConnection, setGoogleConnection] = useState<GoogleConnection | null>(null);
   const [formData, setFormData] = useState<FormData>({
-    first_name: '',
-    last_name: '',
     city: '',
     postal_code: '',
     has_children: false,
   });
   const [initialFormData, setInitialFormData] = useState<FormData>({
-    first_name: '',
-    last_name: '',
     city: '',
     postal_code: '',
     has_children: false,
@@ -131,8 +125,6 @@ export const AccountSettingsTab: React.FC = () => {
 
       // Set form data from profile
       const newFormData: FormData = {
-        first_name: profileData?.first_name || '',
-        last_name: profileData?.last_name || '',
         city: profileData?.city || '',
         postal_code: profileData?.postal_code || '',
         has_children: profileData?.has_children || false,
@@ -181,8 +173,6 @@ export const AccountSettingsTab: React.FC = () => {
         .upsert(
           {
             id: profile.id,
-            first_name: formData.first_name || null,
-            last_name: formData.last_name || null,
             city: formData.city || null,
             postal_code: formData.postal_code || null,
             has_children: formData.has_children,
@@ -274,20 +264,24 @@ export const AccountSettingsTab: React.FC = () => {
               </div>
             </div>
 
+            {/* Name Fields - Read Only */}
+            <div className="account-form-grid">
+              <div className="account-field-group">
+                <label className="account-field-label">Prénom</label>
+                <div className="account-readonly-value">
+                  {profile?.first_name || '—'}
+                </div>
+              </div>
+              <div className="account-field-group">
+                <label className="account-field-label">Nom</label>
+                <div className="account-readonly-value">
+                  {profile?.last_name || '—'}
+                </div>
+              </div>
+            </div>
+
             {/* Editable Fields */}
             <div className="account-form-grid">
-              <Input
-                label="Prénom"
-                value={formData.first_name}
-                onChange={e => handleInputChange('first_name', e.target.value)}
-                placeholder="Votre prénom"
-              />
-              <Input
-                label="Nom"
-                value={formData.last_name}
-                onChange={e => handleInputChange('last_name', e.target.value)}
-                placeholder="Votre nom"
-              />
               <Input
                 label="Ville"
                 value={formData.city}
