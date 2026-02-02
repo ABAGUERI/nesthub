@@ -401,9 +401,6 @@ export const FamilyWeekCalendar: React.FC = () => {
         <div className="family-event-title">{event.summary || 'Sans titre'}</div>
         <div className="family-event-meta">
           {renderAvatars(people)}
-          <div className="family-event-time">
-            {formatRangeLabel(event.start.dateTime, event.end?.dateTime || event.end?.date)}
-          </div>
         </div>
       </div>
     );
