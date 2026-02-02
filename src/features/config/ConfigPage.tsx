@@ -7,17 +7,19 @@ import { GoogleTab } from './components/tabs/GoogleTab';
 import { RewardsTab } from './components/tabs/RewardsTab';
 import { WeatherTab } from './components/tabs/WeatherTab';
 import { ScreenTimeTab } from './components/tabs/ScreenTimeTab';
+import { AccountSettingsTab } from './components/tabs/AccountSettingsTab';
 import './ConfigPage.css';
 
-type TabId = 'family' | 'rotation' | 'google' | 'rewards' | 'weather' | 'screenTime';
+type TabId = 'family' | 'rotation' | 'google' | 'rewards' | 'weather' | 'screenTime' | 'account';
 
 const TABS: Array<{ id: TabId; label: string; description: string; icon: string }> = [
+  { id: 'account', label: 'Compte', description: 'Profil et connexion', icon: '👤' },
   { id: 'family', label: 'Famille', description: 'Membres et avatars', icon: '👨‍👩‍👧' },
   { id: 'rotation', label: 'Rotation', description: 'Tâches et assignations', icon: '🔄' },
   { id: 'google', label: 'Google', description: 'Gmail, agendas, tâches', icon: '📧' },
   { id: 'rewards', label: 'Récompenses', description: 'Points et argent', icon: '🎯' },
   { id: 'weather', label: 'Météo', description: 'Ville et code postal', icon: '🌦️' },
-  { id: 'screenTime', label: 'Temps d’écran', description: 'Budget et cœurs', icon: '⏱️' },
+  { id: 'screenTime', label: "Temps d'écran", description: 'Budget et cœurs', icon: '⏱️' },
 ];
 
 export const ConfigPage: React.FC = () => {
@@ -45,6 +47,7 @@ export const ConfigPage: React.FC = () => {
         <TabNavigation tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="config-panel">
+          {activeTab === 'account' && <AccountSettingsTab />}
           {activeTab === 'family' && <FamilyTab />}
           {activeTab === 'rotation' && <RotationTab />}
           {activeTab === 'google' && <GoogleTab />}
