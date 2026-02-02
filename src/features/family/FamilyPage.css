@@ -20,10 +20,10 @@
   overflow: hidden;
 }
 
-/* Tasks section: always visible at bottom, no scroll */
+/* Tasks section: always visible at bottom, minimal padding */
 .family-tasks-section {
   flex-shrink: 0;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 /* Mobile: allow scroll on the whole page */
