@@ -2,11 +2,11 @@
 
 /* ===== CSS Tokens ===== */
 .family-week-calendar {
-  --hour-height: 28px;
+  --hour-height: 36px; /* Increased for better event visibility */
   --total-hours: 10;
   --panel-bg: rgba(15, 23, 42, 0.4);
   --panel-border: rgba(148, 163, 184, 0.12);
-  --panel-radius: 12px;
+  --panel-radius: 10px;
   --glow-blue: rgba(56, 189, 248, 0.4);
   --glow-soft: rgba(0, 0, 0, 0.15);
   --grid-line: rgba(148, 163, 184, 0.06);
@@ -421,40 +421,42 @@
   box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
 }
 
-/* ===== Event Cards ===== */
+/* ===== Event Cards (Readable) ===== */
 
 .family-event-block {
   position: absolute;
-  left: 3px;
-  right: 3px;
-  min-height: 24px;
-  padding: 4px 6px;
-  border-radius: 10px;
+  left: 2px;
+  right: 2px;
+  min-height: 32px;
+  padding: 5px 8px;
+  border-radius: 8px;
   color: #f8fafc;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  border-left: 3px solid rgba(56, 189, 248, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-left: 3px solid rgba(56, 189, 248, 0.7);
   box-shadow: 0 2px 6px var(--glow-soft);
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 2px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .family-event-block:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border-color: rgba(56, 189, 248, 0.5);
   z-index: 5;
 }
 
+/* Event title - ALWAYS VISIBLE */
 .family-event-title {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.25;
+  color: #f1f5f9;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -468,9 +470,9 @@
 }
 
 .family-event-time {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 500;
-  color: rgba(226, 232, 240, 0.6);
+  color: rgba(226, 232, 240, 0.7);
 }
 
 /* ===== Avatars (Stacked) ===== */
