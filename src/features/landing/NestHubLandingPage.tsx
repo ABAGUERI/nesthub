@@ -288,9 +288,11 @@ export function NestHubLandingPage() {
         <div className="nesthub-landing__header-inner">
           <div className="nesthub-landing__brand">NestHub</div>
           <nav className="nesthub-landing__nav">
-            <a href="#tarifs" className="nesthub-landing__nav-link">
-              Tarifs
-            </a>
+            {!ALPHA_MODE && (
+              <a href="#tarifs" className="nesthub-landing__nav-link">
+                Tarifs
+              </a>
+            )}
             <a href="#faq" className="nesthub-landing__nav-link">
               FAQ
             </a>
@@ -1268,52 +1270,54 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
-        {/* Pricing Section */}
-        <section id="tarifs" className="nesthub-landing__section nesthub-landing__pricing scroll-reveal">
-          <h2>Tarifs simples, sans surprise</h2>
-          <div className="nesthub-landing__pricing-cards">
-            <div className="pricing-card">
-              <div className="pricing-card__name">Abonnement mensuel</div>
-              <div className="pricing-card__price">
-                4,90 <span>CAD / mois</span>
+        {/* Pricing Section - Hidden in Alpha mode */}
+        {!ALPHA_MODE && (
+          <section id="tarifs" className="nesthub-landing__section nesthub-landing__pricing scroll-reveal">
+            <h2>Tarifs simples, sans surprise</h2>
+            <div className="nesthub-landing__pricing-cards">
+              <div className="pricing-card">
+                <div className="pricing-card__name">Abonnement mensuel</div>
+                <div className="pricing-card__price">
+                  4,90 <span>CAD / mois</span>
+                </div>
+                <div className="pricing-card__desc">
+                  Flexibilité totale, résiliez quand vous voulez
+                </div>
+                <ul className="pricing-card__features">
+                  <li>Toutes les fonctionnalités</li>
+                  <li>Jusqu'à 4 membres de famille</li>
+                  <li>Intégrations Google</li>
+                  <li>Génération de menus IA</li>
+                  <li>Support prioritaire</li>
+                </ul>
+                <Link to="/signup" className="pricing-card__cta pricing-card__cta--secondary">
+                  Commencer l'essai gratuit
+                </Link>
               </div>
-              <div className="pricing-card__desc">
-                Flexibilité totale, résiliez quand vous voulez
-              </div>
-              <ul className="pricing-card__features">
-                <li>Toutes les fonctionnalités</li>
-                <li>Jusqu'à 4 membres de famille</li>
-                <li>Intégrations Google</li>
-                <li>Génération de menus IA</li>
-                <li>Support prioritaire</li>
-              </ul>
-              <Link to={ALPHA_MODE ? '/alpha' : '/signup'} className="pricing-card__cta pricing-card__cta--secondary">
-                {ALPHA_MODE ? 'Rejoindre la liste d\'attente' : 'Commencer l\'essai gratuit'}
-              </Link>
-            </div>
 
-            <div className="pricing-card pricing-card--featured">
-              <div className="pricing-card__name">Licence à vie</div>
-              <div className="pricing-card__price">
-                90 <span>CAD · paiement unique</span>
+              <div className="pricing-card pricing-card--featured">
+                <div className="pricing-card__name">Licence à vie</div>
+                <div className="pricing-card__price">
+                  90 <span>CAD · paiement unique</span>
+                </div>
+                <div className="pricing-card__desc">
+                  Un seul paiement, accès illimité pour toujours
+                </div>
+                <ul className="pricing-card__features">
+                  <li>Toutes les fonctionnalités</li>
+                  <li>Composants 100% NestHub inclus</li>
+                  <li>Mises à jour à vie</li>
+                  <li>Intégrations Google</li>
+                  <li>Génération de menus IA</li>
+                  <li>Support prioritaire à vie</li>
+                </ul>
+                <Link to="/signup" className="pricing-card__cta pricing-card__cta--primary">
+                  Obtenir ma licence à vie
+                </Link>
               </div>
-              <div className="pricing-card__desc">
-                Un seul paiement, accès illimité pour toujours
-              </div>
-              <ul className="pricing-card__features">
-                <li>Toutes les fonctionnalités</li>
-                <li>Composants 100% NestHub inclus</li>
-                <li>Mises à jour à vie</li>
-                <li>Intégrations Google</li>
-                <li>Génération de menus IA</li>
-                <li>Support prioritaire à vie</li>
-              </ul>
-              <Link to={ALPHA_MODE ? '/alpha' : '/signup'} className="pricing-card__cta pricing-card__cta--primary">
-                {ALPHA_MODE ? 'Rejoindre la liste d\'attente' : 'Obtenir ma licence à vie'}
-              </Link>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* FAQ Section */}
         <section id="faq" className="nesthub-landing__section nesthub-landing__faq scroll-reveal">
@@ -1376,9 +1380,11 @@ export function NestHubLandingPage() {
             <div className="footer-col">
               <div className="footer-col__title">Produit</div>
               <ul className="footer-col__list">
-                <li>
-                  <a href="#tarifs">Tarifs</a>
-                </li>
+                {!ALPHA_MODE && (
+                  <li>
+                    <a href="#tarifs">Tarifs</a>
+                  </li>
+                )}
                 <li>
                   <a href="#faq">FAQ</a>
                 </li>
