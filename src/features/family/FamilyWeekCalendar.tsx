@@ -149,10 +149,10 @@ const getEventTone = (event: CalendarEvent, people: EventPerson[]) => {
   return 'tone-default';
 };
 
-const START_HOUR = 8;
-const END_HOUR = 18;
+const START_HOUR = 7;
+const END_HOUR = 20;
 
-const HOUR_HEIGHT = 36; // Must match --hour-height in CSS
+const HOUR_HEIGHT = 48; // Must match --hour-height in CSS
 
 const getNowPosition = (startHour: number, endHour: number) => {
   const now = new Date();
@@ -401,9 +401,6 @@ export const FamilyWeekCalendar: React.FC = () => {
         <div className="family-event-title">{event.summary || 'Sans titre'}</div>
         <div className="family-event-meta">
           {renderAvatars(people)}
-          <div className="family-event-time">
-            {formatRangeLabel(event.start.dateTime, event.end?.dateTime || event.end?.date)}
-          </div>
         </div>
       </div>
     );
