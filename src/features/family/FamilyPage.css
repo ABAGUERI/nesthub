@@ -1,14 +1,11 @@
-/* FamilyPage.css - Premium Layout */
+/* FamilyPage.css - No outer scroll layout */
 
 .family-page {
   width: 100%;
-  min-height: 100%;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  overflow: hidden;
-  padding: 0 4px;
+  overflow: hidden; /* NO outer scroll */
 }
 
 .family-calendar-section,
@@ -16,42 +13,26 @@
   width: 100%;
 }
 
-/* Calendar: takes remaining space, reserves room for tasks */
+/* Calendar: takes remaining space with internal scroll */
 .family-calendar-section {
   flex: 1;
   min-height: 0;
-  max-height: calc(100vh - 240px);
   overflow: hidden;
 }
 
-/* Tasks section: always visible at bottom */
+/* Tasks section: always visible at bottom, no scroll */
 .family-tasks-section {
   flex-shrink: 0;
-  padding-bottom: 12px;
+  padding-bottom: 8px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1366px) {
-  .family-calendar-section {
-    max-height: calc(100vh - 260px);
-  }
-}
-
-@media (max-width: 900px) {
-  .family-calendar-section {
-    max-height: calc(100vh - 220px);
-  }
-}
-
+/* Mobile: allow scroll on the whole page */
 @media (max-width: 720px) {
   .family-page {
-    gap: 12px;
     overflow: auto;
-    padding: 0;
   }
 
   .family-calendar-section {
-    max-height: none;
     flex: none;
   }
 }
