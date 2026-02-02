@@ -1,38 +1,53 @@
+/* FamilyPage.css - No outer scroll layout - FINAL VERSION */
+
 .family-page {
   width: 100%;
-  min-height: 100%;
-  height: 100vh;
+  height: 100vh; /* Full viewport height */
   display: flex;
   flex-direction: column;
-
-  /* ↓ avant: 20px — on récupère de la hauteur utile */
-  gap: 14px;
-
-  overflow: hidden;
+  overflow: hidden; /* NO outer scroll */
+  box-sizing: border-box; /* Important: include padding in height calculation */
 }
 
 .family-calendar-section,
 .family-tasks-section {
   width: 100%;
+  box-sizing: border-box; /* Include padding in height */
 }
 
+/* Calendar: fixed height, will have internal scroll */
 .family-calendar-section {
-  flex: 1;
+  flex: 0 0 62vh; /* REDUCED from 65vh to 62vh */
   min-height: 0;
+  overflow: hidden;
 }
 
-/* zone tâches : un peu plus compacte */
+/* Tasks section: takes remaining space */
 .family-tasks-section {
-  display: flex;
-  justify-content: stretch;
-  align-items: stretch;
-
-  /* ↓ avant: 12px */
-  padding-bottom: 8px;
+  flex: 1; /* Takes remaining space */
+  min-height: 0;
+  padding-top: 8px;
+  padding-bottom: 4px;
+  overflow-y: auto; /* Scroll in tasks if needed */
+  /* Remove any top/bottom margins that could cause overflow */
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
-@media (max-width: 900px) {
+/* Mobile: allow scroll on the whole page */
+@media (max-width: 720px) {
+  .family-page {
+    height: auto;
+    min-height: 100vh; /* Ensure minimum full height */
+    overflow: auto;
+  }
+
+  .family-calendar-section {
+    flex: none;
+    height: auto;
+  }
+
   .family-tasks-section {
-    justify-content: flex-start;
+    flex: none;
   }
 }

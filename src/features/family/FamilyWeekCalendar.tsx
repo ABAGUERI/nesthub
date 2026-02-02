@@ -149,8 +149,21 @@ const getEventTone = (event: CalendarEvent, people: EventPerson[]) => {
   return 'tone-default';
 };
 
-const START_HOUR = 8;
-const END_HOUR = 18;
+const START_HOUR = 7; // Start at 7 AM
+const END_HOUR = 21; // INCREASED from 20 to 21 (end at 9 PM)
+
+const HOUR_HEIGHT = 38; // Must match --hour-height in CSS
+
+const getNowPosition = (startHour: number, endHour: number) => {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const gridStart = startHour * 60;
+  const gridEnd = endHour * 60;
+
+  if (currentMinutes < gridStart || currentMinutes > gridEnd) return null;
+
+  return ((currentMinutes - gridStart) / 60) * HOUR_HEIGHT;
+};
 
 export const FamilyWeekCalendar: React.FC = () => {
   const { user } = useAuth();
@@ -162,10 +175,21 @@ export const FamilyWeekCalendar: React.FC = () => {
   const [children, setChildren] = useState<Child[]>([]);
   const [calendarLabel, setCalendarLabel] = useState<string>('Calendrier');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [nowPosition, setNowPosition] = useState<number | null>(null);
 
   const startHour = START_HOUR;
   const endHour = END_HOUR;
   const totalHours = endHour - startHour;
+
+  // Update "now" line position every minute
+  useEffect(() => {
+    const updateNow = () => {
+      setNowPosition(getNowPosition(startHour, endHour));
+    };
+    updateNow();
+    const interval = setInterval(updateNow, 60000);
+    return () => clearInterval(interval);
+  }, [startHour, endHour]);
 
   const days = useMemo(
     () => Array.from({ length: 7 }, (_, index) => addDays(weekStart, index)),
@@ -275,6 +299,26 @@ export const FamilyWeekCalendar: React.FC = () => {
     }));
   };
 
+  const renderAvatars = (people: EventPerson[]) => {
+    const shown = people.length ? people : [{ name: 'Invité', icon: CHILD_ICON_MAP.default }];
+    return (
+      <div className="family-event-avatars">
+        {shown.slice(0, 2).map((person) => {
+          const avatarUrl = person.avatarUrl ? getAvatarUrl(person.avatarUrl) : null;
+          return (
+            <div key={person.name} className="family-event-avatar">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={`Avatar ${person.name}`} />
+              ) : (
+                <span>{person.icon || CHILD_ICON_MAP.default}</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const allDayEventsByDay = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
     days.forEach((day) => map.set(toDateKey(day), []));
@@ -321,26 +365,6 @@ export const FamilyWeekCalendar: React.FC = () => {
     return map;
   }, [days, events]);
 
-  const renderAvatars = (people: EventPerson[]) => {
-    const shown = people.length ? people : [{ name: 'Invité', icon: CHILD_ICON_MAP.default }];
-    return (
-      <div className="family-event-avatars">
-        {shown.slice(0, 2).map((person) => {
-          const avatarUrl = person.avatarUrl ? getAvatarUrl(person.avatarUrl) : null;
-          return (
-            <div key={person.name} className="family-event-avatar">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt={`Avatar ${person.name}`} />
-              ) : (
-                <span>{person.icon || CHILD_ICON_MAP.default}</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   const renderEventBlock = (event: CalendarEvent) => {
     const start = parseEventDate(event.start.dateTime || event.start.date);
     if (!start) return null;
@@ -360,8 +384,8 @@ export const FamilyWeekCalendar: React.FC = () => {
     const clampedStart = Math.max(startMinutes, gridStart);
     const clampedEnd = Math.min(endMinutes, gridEnd);
     const durationMinutes = Math.max(clampedEnd - clampedStart, 30);
-    const top = ((clampedStart - gridStart) / 60) * 56;
-    const height = (durationMinutes / 60) * 56;
+    const top = ((clampedStart - gridStart) / 60) * HOUR_HEIGHT;
+    const height = (durationMinutes / 60) * HOUR_HEIGHT;
 
     const people = getEventPeople(event);
     const tone = getEventTone(event, people);
@@ -374,13 +398,9 @@ export const FamilyWeekCalendar: React.FC = () => {
         onClick={() => setSelectedEvent(event)}
         title={event.summary || 'Sans titre'}
       >
+        {/* Avatar displayed BEFORE title - like in the screenshot */}
+        {renderAvatars(people)}
         <div className="family-event-title">{event.summary || 'Sans titre'}</div>
-        <div className="family-event-meta">
-          {renderAvatars(people)}
-          <div className="family-event-time">
-            {formatRangeLabel(event.start.dateTime, event.end?.dateTime || event.end?.date)}
-          </div>
-        </div>
       </div>
     );
   };
@@ -401,34 +421,46 @@ export const FamilyWeekCalendar: React.FC = () => {
     );
   }
 
+  const isCurrentWeek = toDateKey(weekStart) === toDateKey(startOfWeek(new Date()));
+
   return (
     <div className="family-week-calendar widget">
       <div className="widget-header family-week-header">
-        <div className="family-week-header-info">
-          <div className="family-week-calendar-name">{calendarLabel}</div>
-          <div className="family-week-range">Semaine du {formatWeekLabel(weekStart)}</div>
+        <div className="family-week-header-main">
+          <span className="family-week-title">Famille</span>
+          <span className="family-week-separator">·</span>
+          <span className="family-week-subtitle">Agenda partagé</span>
         </div>
-        <div className="family-week-actions">
+        <div className="family-week-header-nav">
           <button
             type="button"
-            className="family-week-btn"
+            className="family-week-nav-btn"
             onClick={() => setWeekStart((prev) => addDays(prev, -7))}
+            aria-label="Semaine précédente"
           >
-            ◀
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
           </button>
+          <div className="family-week-period">
+            <span className="family-week-range">{formatWeekLabel(weekStart)}</span>
+            <button
+              type="button"
+              className={`family-week-today-btn ${isCurrentWeek ? 'is-current' : ''}`}
+              onClick={() => setWeekStart(startOfWeek(new Date()))}
+            >
+              Aujourd'hui
+            </button>
+          </div>
           <button
             type="button"
-            className="family-week-btn primary"
-            onClick={() => setWeekStart(startOfWeek(new Date()))}
-          >
-            Aujourd'hui
-          </button>
-          <button
-            type="button"
-            className="family-week-btn"
+            className="family-week-nav-btn"
             onClick={() => setWeekStart((prev) => addDays(prev, 7))}
+            aria-label="Semaine suivante"
           >
-            ▶
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
           </button>
         </div>
       </div>
@@ -518,6 +550,16 @@ export const FamilyWeekCalendar: React.FC = () => {
                   return (
                     <div key={dayKey} className={`family-day-column ${isToday ? 'today-column' : ''}`}>
                       <div className="family-day-grid">
+                        {isToday && nowPosition !== null && (
+                          <div
+                            className="family-now-line"
+                            style={{ top: `${nowPosition}px` }}
+                          >
+                            <span className="family-now-time">
+                              {new Date().toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        )}
                         {dayEvents.map((event) => renderEventBlock(event))}
                       </div>
                     </div>
