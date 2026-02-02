@@ -1,0 +1,239 @@
+/* Account Settings Tab Styles */
+
+.account-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 24px;
+  color: #94a3b8;
+}
+
+.account-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: account-spin 0.8s linear infinite;
+}
+
+@keyframes account-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Two-column grid layout */
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.account-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Field Group */
+.account-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-field-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.account-readonly-value {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+.account-client-number {
+  font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-weight: 700;
+  color: #22d3ee;
+  letter-spacing: 0.5px;
+}
+
+/* Form Grid */
+.account-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Checkbox Field */
+.account-checkbox-field {
+  margin-top: 4px;
+}
+
+.account-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.account-checkbox-label:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.account-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: #10b981;
+  cursor: pointer;
+}
+
+.account-checkbox-text {
+  font-size: 15px;
+  color: #e2e8f0;
+}
+
+/* Status Grid */
+.account-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.account-status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.account-status-label {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.account-status-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.account-status-trial {
+  color: #fbbf24;
+}
+
+.account-status-active {
+  color: #10b981;
+}
+
+.account-status-expired {
+  color: #ef4444;
+}
+
+/* Google Connection */
+.account-google-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.account-google-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.account-google-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.account-google-dot.connected {
+  background: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+}
+
+.account-google-dot.disconnected {
+  background: #64748b;
+  box-shadow: 0 0 8px rgba(100, 116, 139, 0.3);
+}
+
+.account-google-status-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.account-google-date {
+  font-size: 13px;
+}
+
+.account-google-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-google-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.account-google-empty-text {
+  color: #94a3b8;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Responsive - Mobile */
+@media (max-width: 900px) {
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-readonly-value {
+    font-size: 14px;
+  }
+
+  .account-status-item {
+    padding: 10px;
+  }
+}
