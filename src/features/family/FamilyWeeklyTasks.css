@@ -7,9 +7,6 @@
   --panel-bg: rgba(15, 23, 42, 0.4);
   --panel-border: rgba(148, 163, 184, 0.12);
   --panel-radius: 10px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
 }
 
 /* ===== Header (Compact) ===== */
@@ -71,9 +68,23 @@
 
 .family-weekly-body {
   min-height: 50px;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
+  max-height: 28vh; /* REDUCED from 30vh to 28vh */
+  overflow-y: auto; /* Allow scrolling if needed */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.family-weekly-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.family-weekly-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.family-weekly-body::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 2px;
 }
 
 /* ===== Empty State ===== */
@@ -124,6 +135,10 @@
 @media (max-width: 600px) {
   .tasks-cards-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .family-weekly-body {
+    max-height: none; /* Remove height limit on mobile */
   }
 }
 

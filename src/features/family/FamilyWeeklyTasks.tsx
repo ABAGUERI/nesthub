@@ -37,7 +37,6 @@ const getTaskPriority = (task: TaskItem): 'urgent' | 'soon' | 'normal' => {
   return 'normal';
 };
 
-/* Get icon based on task title keywords */
 const getTaskIcon = (title: string): string => {
   const lower = title.toLowerCase();
   if (lower.includes('appel') || lower.includes('téléphone')) return '📞';
@@ -196,8 +195,8 @@ export const FamilyWeeklyTasks: React.FC = () => {
     });
   }, [tasks]);
 
-  // Show max 8 tasks in horizontal layout
-  const maxVisible = 8;
+  // CHANGED: Show max 7 tasks, 8th is "view more" card
+  const maxVisible = 7;
   const visibleTasks = sortedTasks.slice(0, maxVisible);
   const overflowCount = Math.max(0, sortedTasks.length - maxVisible);
 
@@ -244,7 +243,6 @@ export const FamilyWeeklyTasks: React.FC = () => {
     }
   };
 
-  {/* Loading state */}
   if (loading) {
     return (
       <div className="family-weekly-tasks widget">
@@ -260,7 +258,6 @@ export const FamilyWeeklyTasks: React.FC = () => {
     );
   }
 
-  {/* Main render - Grid card layout matching mockup */}
   return (
     <div className="family-weekly-tasks widget">
       <div className="widget-header">
@@ -304,6 +301,7 @@ export const FamilyWeeklyTasks: React.FC = () => {
           </div>
         ) : (
           <div className="tasks-cards-grid">
+            {/* CHANGED: Show exactly 7 tasks max */}
             {visibleTasks.map((task) => {
               const priority = getTaskPriority(task);
               const isCompleting = completingTaskIds.has(task.id);
@@ -329,6 +327,8 @@ export const FamilyWeeklyTasks: React.FC = () => {
                 </button>
               );
             })}
+            
+            {/* CHANGED: Always show overflow card as 8th item if there are more tasks */}
             {overflowCount > 0 && (
               <button
                 type="button"

@@ -149,10 +149,10 @@ const getEventTone = (event: CalendarEvent, people: EventPerson[]) => {
   return 'tone-default';
 };
 
-const START_HOUR = 7;
-const END_HOUR = 20;
+const START_HOUR = 7; // Start at 7 AM
+const END_HOUR = 21; // INCREASED from 20 to 21 (end at 9 PM)
 
-const HOUR_HEIGHT = 48; // Must match --hour-height in CSS
+const HOUR_HEIGHT = 38; // Must match --hour-height in CSS
 
 const getNowPosition = (startHour: number, endHour: number) => {
   const now = new Date();
@@ -299,6 +299,26 @@ export const FamilyWeekCalendar: React.FC = () => {
     }));
   };
 
+  const renderAvatars = (people: EventPerson[]) => {
+    const shown = people.length ? people : [{ name: 'Invité', icon: CHILD_ICON_MAP.default }];
+    return (
+      <div className="family-event-avatars">
+        {shown.slice(0, 2).map((person) => {
+          const avatarUrl = person.avatarUrl ? getAvatarUrl(person.avatarUrl) : null;
+          return (
+            <div key={person.name} className="family-event-avatar">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={`Avatar ${person.name}`} />
+              ) : (
+                <span>{person.icon || CHILD_ICON_MAP.default}</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const allDayEventsByDay = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
     days.forEach((day) => map.set(toDateKey(day), []));
@@ -345,26 +365,6 @@ export const FamilyWeekCalendar: React.FC = () => {
     return map;
   }, [days, events]);
 
-  const renderAvatars = (people: EventPerson[]) => {
-    const shown = people.length ? people : [{ name: 'Invité', icon: CHILD_ICON_MAP.default }];
-    return (
-      <div className="family-event-avatars">
-        {shown.slice(0, 2).map((person) => {
-          const avatarUrl = person.avatarUrl ? getAvatarUrl(person.avatarUrl) : null;
-          return (
-            <div key={person.name} className="family-event-avatar">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt={`Avatar ${person.name}`} />
-              ) : (
-                <span>{person.icon || CHILD_ICON_MAP.default}</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   const renderEventBlock = (event: CalendarEvent) => {
     const start = parseEventDate(event.start.dateTime || event.start.date);
     if (!start) return null;
@@ -398,10 +398,9 @@ export const FamilyWeekCalendar: React.FC = () => {
         onClick={() => setSelectedEvent(event)}
         title={event.summary || 'Sans titre'}
       >
+        {/* Avatar displayed BEFORE title - like in the screenshot */}
+        {renderAvatars(people)}
         <div className="family-event-title">{event.summary || 'Sans titre'}</div>
-        <div className="family-event-meta">
-          {renderAvatars(people)}
-        </div>
       </div>
     );
   };
@@ -424,7 +423,6 @@ export const FamilyWeekCalendar: React.FC = () => {
 
   const isCurrentWeek = toDateKey(weekStart) === toDateKey(startOfWeek(new Date()));
 
-  {/* Compact header: title + period + today on same line */}
   return (
     <div className="family-week-calendar widget">
       <div className="widget-header family-week-header">
