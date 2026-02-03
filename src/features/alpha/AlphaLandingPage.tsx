@@ -51,7 +51,7 @@ const STEPS = [
   {
     number: 3,
     title: 'Activez votre espace familial',
-    description: 'Configurez votre NestHub en quelques minutes et commencez à organiser votre famille.',
+    description: 'Configurez votre espace en quelques minutes et commencez à organiser votre famille.',
     icon: '🚀',
   },
 ];
@@ -190,7 +190,7 @@ export function AlphaLandingPage() {
       <header ref={headerRef} className="alpha-landing__header">
         <div className="alpha-landing__header-inner">
           <div className="alpha-landing__brand">
-            <span className="alpha-landing__logo">NestHub</span>
+            <span className="alpha-landing__logo">Cap Famille O</span>
             <span className="alpha-landing__badge">Alpha</span>
           </div>
           <nav className="alpha-landing__nav">
@@ -212,7 +212,7 @@ export function AlphaLandingPage() {
             </div>
 
             <h1 className="alpha-landing__title">
-              NestHub — Le hub familial qui rend l'organisation simple et ludique
+              Cap Famille O — Le hub familial qui rend l'organisation simple et ludique
             </h1>
 
             <p className="alpha-landing__subtitle">
@@ -243,7 +243,7 @@ export function AlphaLandingPage() {
                 <div className="mockup-dots">
                   <span /><span /><span />
                 </div>
-                <span className="mockup-title">NestHub</span>
+                <span className="mockup-title">Cap Famille O</span>
               </div>
               <div className="mockup-content">
                 <div className="mockup-card">
@@ -320,7 +320,7 @@ export function AlphaLandingPage() {
             <div className="waitlist-card__header">
               <h2 className="waitlist-card__title">Rejoindre la liste d'attente</h2>
               <p className="waitlist-card__subtitle">
-                Soyez parmi les premiers à découvrir NestHub et à transformer l'organisation de votre famille.
+                Soyez parmi les premiers à découvrir Cap Famille O et à transformer l'organisation de votre famille.
               </p>
             </div>
 
@@ -409,7 +409,7 @@ export function AlphaLandingPage() {
                 </button>
 
                 <p className="waitlist-form__privacy">
-                  En vous inscrivant, vous acceptez de recevoir des communications de NestHub.
+                  En vous inscrivant, vous acceptez de recevoir des communications de Cap Famille O.
                   Vos données restent confidentielles.
                 </p>
               </form>
@@ -422,7 +422,7 @@ export function AlphaLandingPage() {
           <div className="final-card">
             <h2>Prêt à simplifier votre quotidien familial ?</h2>
             <p>
-              Rejoignez les familles qui testent NestHub en avant-première.
+              Rejoignez les familles qui testent Cap Famille O en avant-première.
             </p>
             <button
               type="button"
@@ -439,7 +439,7 @@ export function AlphaLandingPage() {
       <footer className="alpha-landing__footer">
         <div className="alpha-landing__footer-inner">
           <div className="footer-brand">
-            <span className="footer-brand__logo">NestHub</span>
+            <span className="footer-brand__logo">Cap Famille O</span>
             <span className="footer-brand__badge">Alpha</span>
           </div>
           <div className="footer-links">
@@ -447,7 +447,7 @@ export function AlphaLandingPage() {
           </div>
           <div className="footer-copy">
             <span className="footer-copy__location">Développé avec ❤️ à Québec, Canada</span>
-            <span>© {new Date().getFullYear()} NestHub. Tous droits réservés.</span>
+            <span>© {new Date().getFullYear()} Cap Famille O. Tous droits réservés.</span>
           </div>
         </div>
       </footer>
