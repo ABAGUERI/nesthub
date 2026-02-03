@@ -50,7 +50,6 @@ const FAQ_ITEMS = [
 ];
 
 export function NestHubLandingPage() {
-  const piggyAmountRef = useRef<HTMLSpanElement | null>(null);
   const savingsAmountRef = useRef<HTMLSpanElement | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
@@ -157,35 +156,6 @@ export function NestHubLandingPage() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Piggy bank amount animation
-  useEffect(() => {
-    let frameId = 0;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let start = 0;
-    let from = 28;
-    let to = 29;
-    const animate = (timestamp: number) => {
-      if (!start) start = timestamp;
-      const progress = Math.min((timestamp - start) / 900, 1);
-      const value = Math.round(from + (to - from) * progress);
-      if (piggyAmountRef.current) {
-        piggyAmountRef.current.textContent = `${value} CAD`;
-      }
-      if (progress < 1) {
-        frameId = requestAnimationFrame(animate);
-      } else {
-        start = 0;
-        [from, to] = [to, from];
-        timeoutId = setTimeout(() => requestAnimationFrame(animate), 1800);
-      }
-    };
-    frameId = requestAnimationFrame(animate);
-    return () => {
-      cancelAnimationFrame(frameId);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
   }, []);
 
   // Savings amount animation for the financial education section
