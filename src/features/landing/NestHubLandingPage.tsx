@@ -365,6 +365,10 @@ export function NestHubLandingPage() {
 
                   {/* ── Screen 1: Children / Progress ── */}
                   <article className="dm-screen dm-screen--children">
+                    <div className="dm-widget-header">
+                      <span className="dm-widget-title">Progression</span>
+                      <span className="dm-widget-badge">Niveau Argent ✦</span>
+                    </div>
                     <div className="dm-child-switcher">
                       <button className="dm-pill dm-pill--active" type="button">
                         <span className="dm-pill__icon">👦</span>
@@ -383,9 +387,9 @@ export function NestHubLandingPage() {
                       <div className="dm-donut-wrapper">
                         <div className="dm-donut-stack">
                           <svg className="dm-donut-chart" viewBox="0 0 120 120">
-                            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="12" />
-                            <circle cx="60" cy="60" r="52" fill="none" stroke="url(#dmDonutGrad)" strokeWidth="12"
-                              strokeDasharray="240 327" strokeLinecap="round"
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="url(#dmDonutGrad)" strokeWidth="8"
+                              strokeDasharray="248 341" strokeLinecap="round"
                               transform="rotate(-90 60 60)" />
                             <defs>
                               <linearGradient id="dmDonutGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -398,8 +402,8 @@ export function NestHubLandingPage() {
                         </div>
                         <div className="dm-progress-track">
                           <div className="dm-progress-label">
-                            <span>Progression</span>
-                            <span className="dm-progress-value">455 / 1000</span>
+                            <span>46%</span>
+                            <span className="dm-progress-value">→ prochain : Or</span>
                           </div>
                           <div className="dm-progress-bar">
                             <div className="dm-progress-fill" style={{ width: '46%' }} />
@@ -407,19 +411,15 @@ export function NestHubLandingPage() {
                         </div>
                       </div>
                       <div className="dm-hearts-col">
-                        <span className="dm-hearts-title">TEMPS D'ÉCRAN</span>
-                        <div className="dm-hearts-list">
+                        <span className="dm-hearts-title">Écran</span>
+                        <div className="dm-hearts-row">
                           <span className="dm-heart dm-heart--fade dm-heart--fade-1">❤️</span>
                           <span className="dm-heart dm-heart--fade dm-heart--fade-2">❤️</span>
-                          <span className="dm-heart dm-heart--on">❤️</span>
-                          <span className="dm-heart dm-heart--on">❤️</span>
-                          <span className="dm-heart dm-heart--on">❤️</span>
+                          <span className="dm-heart dm-heart--on dm-heart--pulse">❤️</span>
+                          <span className="dm-heart dm-heart--on dm-heart--pulse">❤️</span>
+                          <span className="dm-heart dm-heart--on dm-heart--pulse">❤️</span>
                         </div>
-                        <span className="dm-hearts-meta">120 / 420 min</span>
-                        <div className="dm-hearts-anim">
-                          <span className="dm-minus-badge">-60 min</span>
-                          <span className="dm-heart-fly">💔</span>
-                        </div>
+                        <span className="dm-hearts-meta">Il reste 2h</span>
                       </div>
                     </div>
                   </article>
@@ -428,21 +428,23 @@ export function NestHubLandingPage() {
                   <article className="dm-screen dm-screen--tasks">
                     <div className="dm-widget-header">
                       <span className="dm-widget-title">Tâches du jour</span>
-                      <span className="dm-widget-badge">6 tâches</span>
+                      <span className="dm-widget-badge">4 restantes</span>
                     </div>
                     <div className="dm-tasks-grid">
                       <div className="dm-task-card dm-task-card--done dm-tone-blue">
-                        <span className="dm-task-icon">📱</span>
+                        <span className="dm-task-done-stamp">✓</span>
+                        <span className="dm-task-icon">⏳</span>
                         <span className="dm-task-name">Temps d'écran</span>
-                        <span className="dm-task-done-badge">✔ Fait</span>
                       </div>
-                      <div className="dm-task-card dm-tone-violet">
-                        <span className="dm-task-icon">🧹</span>
-                        <span className="dm-task-name">Ranger chambre</span>
-                      </div>
-                      <div className="dm-task-card dm-tone-green">
+                      <div className="dm-task-card dm-task-card--done dm-tone-green">
+                        <span className="dm-task-done-stamp">✓</span>
                         <span className="dm-task-icon">📖</span>
                         <span className="dm-task-name">Lire 20 min</span>
+                      </div>
+                      <div className="dm-task-card dm-tone-violet dm-task-card--priority">
+                        <span className="dm-task-priority-dot" />
+                        <span className="dm-task-icon">✨</span>
+                        <span className="dm-task-name">Ranger chambre</span>
                       </div>
                       <div className="dm-task-card dm-tone-orange">
                         <span className="dm-task-icon">🎹</span>
@@ -457,42 +459,40 @@ export function NestHubLandingPage() {
                         <span className="dm-task-name">Sac d'école</span>
                       </div>
                     </div>
-                    <div className="dm-tasks-nav">
-                      <button className="dm-tasks-nav-btn" type="button" disabled>‹</button>
-                      <span className="dm-tasks-nav-label">1 / 2</span>
-                      <button className="dm-tasks-nav-btn" type="button">›</button>
-                    </div>
                   </article>
 
                   {/* ── Screen 3: Calendar ── */}
                   <article className="dm-screen dm-screen--calendar">
                     <div className="dm-widget-header">
-                      <span className="dm-widget-title">Calendrier</span>
-                      <span className="dm-widget-badge">3 événements</span>
+                      <span className="dm-widget-title">Agenda familial</span>
+                      <span className="dm-widget-badge">Aujourd'hui</span>
                     </div>
                     <div className="dm-timeline">
                       <div className="dm-timeline-group">
                         <div className="dm-timeline-day">Aujourd'hui</div>
                         <div className="dm-event-card dm-event--urgent">
                           <div className="dm-event-time-row">
-                            <span className="dm-event-time">09:00</span>
-                            <span className="dm-event-relative">Dans 25 min</span>
+                            <span className="dm-event-relative dm-event-relative--primary">Dans 25 min</span>
+                            <span className="dm-event-time">09:00 – 10:00</span>
                           </div>
-                          <span className="dm-event-title">Dentiste — Charlotte</span>
+                          <span className="dm-event-title">Dentiste</span>
+                          <span className="dm-event-person">👦 Charlotte</span>
                         </div>
                         <div className="dm-event-card dm-event--soon">
                           <div className="dm-event-time-row">
-                            <span className="dm-event-time">14:30</span>
-                            <span className="dm-event-relative">Cet après-midi</span>
+                            <span className="dm-event-relative dm-event-relative--primary">Cet après-midi</span>
+                            <span className="dm-event-time">14:30 – 15:30</span>
                           </div>
-                          <span className="dm-event-title">Judo — Georges</span>
+                          <span className="dm-event-title">Judo</span>
+                          <span className="dm-event-person">👧 Georges</span>
                         </div>
                       </div>
                       <div className="dm-timeline-group">
                         <div className="dm-timeline-day">Demain</div>
                         <div className="dm-event-card dm-event--future">
                           <div className="dm-event-time-row">
-                            <span className="dm-event-time">10:00</span>
+                            <span className="dm-event-relative dm-event-relative--primary">Demain matin</span>
+                            <span className="dm-event-time">10:00 – 11:30</span>
                           </div>
                           <span className="dm-event-title">Réunion parents</span>
                         </div>
@@ -500,51 +500,40 @@ export function NestHubLandingPage() {
                     </div>
                   </article>
 
-                  {/* ── Screen 4: Menu semaine (matches screenshot) ── */}
+                  {/* ── Screen 4: Menu semaine ── */}
                   <article className="dm-screen dm-screen--menu">
-                    {/* Menu header bar */}
-                    <div className="dm-menu-header">
-                      <span className="dm-menu-title">Menu de la semaine</span>
-                      <div className="dm-menu-header-icons">
-                        <span>🍽️</span>
-                        <span>🛒</span>
-                      </div>
-                      <span className="dm-menu-date">12 - 18 janv</span>
+                    <div className="dm-widget-header">
+                      <span className="dm-widget-title">Menu de la semaine</span>
+                      <span className="dm-widget-badge">12 – 18 janv</span>
                     </div>
 
-                    {/* Day cards grid */}
-                    <div className="dm-menu-cards">
-                      <div className="dm-menu-card">
+                    {/* Day cards — today is hero, siblings are secondary */}
+                    <div className="dm-menu-cards dm-menu-cards--focus">
+                      <div className="dm-menu-card dm-menu-card--sibling">
                         <span className="dm-menu-card__day">LUN</span>
-                        <span className="dm-menu-card__num">12</span>
                         <span className="dm-menu-card__emoji">🍔</span>
                         <span className="dm-menu-card__meal">Hamburgers</span>
-                        <button className="dm-menu-card__add" type="button">+ Ajouter</button>
                       </div>
                       <div className="dm-menu-card dm-menu-card--today">
                         <span className="dm-menu-card__today-badge">Aujourd'hui</span>
-                        <span className="dm-menu-card__day">MAR</span>
-                        <span className="dm-menu-card__num">13</span>
-                        <div className="dm-menu-card__emojis">
-                          <span>🍙</span><span>🍣</span><span>🍱</span>
-                        </div>
-                        <span className="dm-menu-card__meal">Pokebowl</span>
-                        <button className="dm-menu-card__add" type="button">+ Ajouter</button>
+                        <span className="dm-menu-card__day">MAR 13</span>
+                        <span className="dm-menu-card__emoji dm-menu-card__emoji--hero">🍣</span>
+                        <span className="dm-menu-card__meal dm-menu-card__meal--hero">Pokebowl</span>
                       </div>
-                      <div className="dm-menu-card">
+                      <div className="dm-menu-card dm-menu-card--sibling">
                         <span className="dm-menu-card__day">MER</span>
-                        <span className="dm-menu-card__num">14</span>
                         <span className="dm-menu-card__emoji">🍲</span>
                         <span className="dm-menu-card__meal">Pâté chinois</span>
-                        <button className="dm-menu-card__add" type="button">+ Ajouter</button>
                       </div>
                     </div>
 
-                    {/* mIAm chatbot floating button */}
-                    <div className="dm-miam-btn">
-                      <span className="dm-miam-icon">🤖</span>
-                      <span className="dm-miam-label">mIAm</span>
-                      <span className="dm-miam-phrase brand-matrix">Je suis ton géni de cuisine</span>
+                    {/* mIAm chatbot floating button + tooltip */}
+                    <div className="dm-miam-wrap">
+                      <div className="dm-miam-tooltip brand-matrix">Je suis ton géni de cuisine</div>
+                      <div className="dm-miam-btn">
+                        <span className="dm-miam-icon">🤖</span>
+                        <span className="dm-miam-label">mIAm</span>
+                      </div>
                     </div>
                   </article>
 
