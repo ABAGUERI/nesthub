@@ -409,13 +409,13 @@ export function NestHubLandingPage() {
                       <div className="dm-hearts-col">
                         <span className="dm-hearts-title">TEMPS D'ÉCRAN</span>
                         <div className="dm-hearts-list">
+                          <span className="dm-heart dm-heart--fade dm-heart--fade-1">❤️</span>
+                          <span className="dm-heart dm-heart--fade dm-heart--fade-2">❤️</span>
                           <span className="dm-heart dm-heart--on">❤️</span>
                           <span className="dm-heart dm-heart--on">❤️</span>
                           <span className="dm-heart dm-heart--on">❤️</span>
-                          <span className="dm-heart dm-heart--on">❤️</span>
-                          <span className="dm-heart dm-heart--losing">❤️</span>
                         </div>
-                        <span className="dm-hearts-meta">0 / 420 min</span>
+                        <span className="dm-hearts-meta">120 / 420 min</span>
                         <div className="dm-hearts-anim">
                           <span className="dm-minus-badge">-60 min</span>
                           <span className="dm-heart-fly">💔</span>
@@ -521,7 +521,8 @@ export function NestHubLandingPage() {
                         <span className="dm-menu-card__meal">Hamburgers</span>
                         <button className="dm-menu-card__add" type="button">+ Ajouter</button>
                       </div>
-                      <div className="dm-menu-card">
+                      <div className="dm-menu-card dm-menu-card--today">
+                        <span className="dm-menu-card__today-badge">Aujourd'hui</span>
                         <span className="dm-menu-card__day">MAR</span>
                         <span className="dm-menu-card__num">13</span>
                         <div className="dm-menu-card__emojis">
@@ -543,13 +544,14 @@ export function NestHubLandingPage() {
                     <div className="dm-miam-btn">
                       <span className="dm-miam-icon">🤖</span>
                       <span className="dm-miam-label">mIAm</span>
+                      <span className="dm-miam-phrase brand-matrix">Je suis ton géni de cuisine</span>
                     </div>
                   </article>
 
-                  {/* ── Screen 5: Piggy bank ── */}
+                  {/* ── Screen 5: Tirelire de Sifaw ── */}
                   <article className="dm-screen dm-screen--piggy">
                     <div className="dm-widget-header">
-                      <span className="dm-widget-title">Tirelire familiale</span>
+                      <span className="dm-widget-title">Tirelire de Sifaw</span>
                       <span className="dm-widget-badge">🪙</span>
                     </div>
                     <div className="dm-piggy-hero">
@@ -561,15 +563,28 @@ export function NestHubLandingPage() {
                       <div className="dm-piggy-amount">
                         <span ref={piggyAmountRef}>28 CAD</span>
                       </div>
-                      <span className="dm-piggy-meta">Projet long terme</span>
+                      <span className="dm-piggy-meta">Total tirelire</span>
                     </div>
-                    <div className="dm-piggy-progress">
-                      <div className="dm-progress-label">
-                        <span>Objectif: vélo familial</span>
-                        <span className="dm-progress-value">42%</span>
+                    <div className="dm-piggy-projects">
+                      <div className="dm-piggy-project">
+                        <span className="dm-piggy-project__icon">🚁</span>
+                        <div className="dm-piggy-project__info">
+                          <span className="dm-piggy-project__name">Drone</span>
+                          <div className="dm-progress-bar">
+                            <div className="dm-progress-fill" style={{ width: '32%' }} />
+                          </div>
+                        </div>
+                        <span className="dm-piggy-project__amount">16 CAD</span>
                       </div>
-                      <div className="dm-progress-bar">
-                        <div className="dm-progress-fill dm-progress-fill--orange" style={{ width: '42%' }} />
+                      <div className="dm-piggy-project">
+                        <span className="dm-piggy-project__icon">🌳</span>
+                        <div className="dm-piggy-project__info">
+                          <span className="dm-piggy-project__name">Lego Bonsaï</span>
+                          <div className="dm-progress-bar">
+                            <div className="dm-progress-fill dm-progress-fill--orange" style={{ width: '19%' }} />
+                          </div>
+                        </div>
+                        <span className="dm-piggy-project__amount">12 CAD</span>
                       </div>
                     </div>
                   </article>
