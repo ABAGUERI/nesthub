@@ -305,246 +305,235 @@ export function NestHubLandingPage() {
           </div>
 
           <div className="nesthub-landing__hero-visual scroll-reveal scroll-reveal--delay-2">
-            <div className="nesthub-landing__carousel">
-              <div className="nesthub-landing__carousel-track" aria-hidden="true">
-                <article className="carousel-slide">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      08 h 35 <span>Jeudi 29 janv.</span>
-                    </div>
-                    <div className="carousel-title">Cap Famille O</div>
-                    <div className="carousel-icons">
-                      <span>🏠</span>
-                      <span>👨‍👩‍👧‍👦</span>
-                      <span>🍽️</span>
-                      <span>💰</span>
-                    </div>
-                  </div>
+            <div className="device-mockup">
+              {/* Device frame top bar */}
+              <div className="device-mockup__topbar">
+                <div className="device-mockup__dots"><span /><span /><span /></div>
+                <span className="device-mockup__brand">Cap Famille O</span>
+              </div>
 
-                  <div className="carousel-panel">
-                    <div className="carousel-highlight">
-                      <div>
-                        <div className="carousel-label">🏆 Objectif famille</div>
-                        <div className="carousel-subtitle">455 pts / 1000</div>
-                      </div>
-                      <div className="carousel-avatar" />
-                    </div>
-                    <div className="carousel-progress">
-                      <span style={{ ['--w' as string]: '46%' }} />
-                    </div>
-                    <div className="carousel-progress__meta">Progression · 46%</div>
-                    <div className="carousel-hearts">
-                      <span className="life is-full is-gain">❤️</span>
-                      <span className="life is-full">❤️</span>
-                      <span className="life is-warning is-loss">🤍</span>
-                    </div>
-                  </div>
-                </article>
+              {/* Dashboard header inside device */}
+              <div className="device-mockup__dash-header">
+                <div className="dm-time-group">
+                  <span className="dm-time">08:35</span>
+                  <span className="dm-date">Jeu. 29 janv.</span>
+                </div>
+                <div className="dm-header-title">
+                  <span className="dm-section-title">Cap Famille O</span>
+                  <span className="dm-section-desc">Famille Dupont · 3 enfants</span>
+                </div>
+                <div className="dm-nav-btns">
+                  <span className="dm-nav-btn dm-nav-btn--active">🏠</span>
+                  <span className="dm-nav-btn">👨‍👩‍👧‍👦</span>
+                  <span className="dm-nav-btn">📅</span>
+                  <span className="dm-nav-btn">🍽️</span>
+                </div>
+              </div>
 
-                <article className="carousel-slide carousel-slide--tasks">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      08 h 20 <span>Vue globale</span>
-                    </div>
-                    <div className="carousel-title">Tâches du jour</div>
-                    <div className="carousel-icons">
-                      <span>⭐</span>
-                      <span>🧹</span>
-                      <span>📖</span>
-                    </div>
-                    <button className="mockup-cta" type="button">
-                      🐷 Ma tirelire
-                    </button>
-                  </div>
-                  <div className="carousel-grid">
-                    <div className="carousel-task mockup-task mockup-task--complete">
-                      <div className="mockup-task__label">Temps d'écran</div>
-                      <div className="mockup-task__progress">
-                        <span style={{ ['--w' as string]: '72%' }} />
-                      </div>
-                      <div className="mockup-task__meta">Validée</div>
-                      <div className="mockup-task__reward" aria-hidden="true">
-                        +20 XP · ❤️ +1
-                      </div>
-                      <span className="mockup-task__check" aria-hidden="true">
-                        ✔
-                      </span>
-                      <span className="mockup-task__xp" aria-hidden="true">
-                        +20 XP
-                      </span>
-                      <span className="mockup-task__heart" aria-hidden="true">
-                        ❤️
-                      </span>
-                    </div>
-                    <div className="carousel-task">
-                      <div className="mockup-task__label">Ranger chambre</div>
-                      <div className="mockup-task__meta">En cours</div>
-                    </div>
-                    <div className="carousel-task">
-                      <div className="mockup-task__label">Lire 20 min</div>
-                      <div className="mockup-task__meta">Bonus</div>
-                    </div>
-                  </div>
-                </article>
+              {/* Cycling screen content */}
+              <div className="device-mockup__viewport">
+                <div className="device-mockup__track" aria-hidden="true">
 
-                <article className="carousel-slide carousel-slide--piggy">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      08 h 23 <span>Finances</span>
+                  {/* ── Screen 1: Children / Progress ── */}
+                  <article className="dm-screen dm-screen--children">
+                    <div className="dm-child-switcher">
+                      <button className="dm-pill dm-pill--active" type="button">
+                        <span className="dm-pill__icon">👦</span>
+                        <span className="dm-pill__name">Sifaw</span>
+                      </button>
+                      <button className="dm-pill" type="button">
+                        <span className="dm-pill__icon">👧</span>
+                        <span className="dm-pill__name">Georges</span>
+                      </button>
+                      <button className="dm-pill" type="button">
+                        <span className="dm-pill__icon">🧒</span>
+                        <span className="dm-pill__name">Lucas</span>
+                      </button>
                     </div>
-                    <div className="carousel-title">Ta tirelire</div>
-                    <div className="carousel-icons">
-                      <span>🐷</span>
-                      <span>🪙</span>
-                      <span>🎯</span>
-                    </div>
-                  </div>
-                  <div className="carousel-panel carousel-panel--piggy">
-                    <div className="piggy piggy--active">
-                      <span className="piggy__coin" aria-hidden="true">
-                        🪙
-                      </span>
-                      <span className="piggy__sparkle" aria-hidden="true">
-                        ✦
-                      </span>
-                      <div className="piggy__icon" aria-hidden="true">
-                        🐷
-                      </div>
-                      <div>
-                        <div className="piggy__amount">
-                          <span ref={piggyAmountRef}>28 CAD</span>
+                    <div className="dm-donut-hearts">
+                      <div className="dm-donut-wrapper">
+                        <div className="dm-donut-stack">
+                          <svg className="dm-donut-chart" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="12" />
+                            <circle cx="60" cy="60" r="52" fill="none" stroke="url(#dmDonutGrad)" strokeWidth="12"
+                              strokeDasharray="240 327" strokeLinecap="round"
+                              transform="rotate(-90 60 60)" />
+                            <defs>
+                              <linearGradient id="dmDonutGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#22d3ee" />
+                                <stop offset="100%" stopColor="#a855f7" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                          <div className="dm-donut-avatar">👦</div>
                         </div>
-                        <div className="piggy__meta">Projet long terme</div>
+                        <div className="dm-progress-track">
+                          <div className="dm-progress-label">
+                            <span>Progression</span>
+                            <span className="dm-progress-value">455 / 1000</span>
+                          </div>
+                          <div className="dm-progress-bar">
+                            <div className="dm-progress-fill" style={{ width: '46%' }} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="dm-hearts-col">
+                        <span className="dm-hearts-title">TEMPS D'ÉCRAN</span>
+                        <div className="dm-hearts-list">
+                          <span className="dm-heart dm-heart--on">❤️</span>
+                          <span className="dm-heart dm-heart--on">❤️</span>
+                          <span className="dm-heart dm-heart--on">❤️</span>
+                          <span className="dm-heart dm-heart--on">❤️</span>
+                          <span className="dm-heart dm-heart--losing">❤️</span>
+                        </div>
+                        <span className="dm-hearts-meta">0 / 420 min</span>
+                        <div className="dm-hearts-anim">
+                          <span className="dm-minus-badge">-60 min</span>
+                          <span className="dm-heart-fly">💔</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="piggy__progress">
-                      <span style={{ ['--w' as string]: '42%' }} />
-                    </div>
-                    <div className="piggy__goal">Objectif: vélo familial</div>
-                  </div>
-                </article>
+                  </article>
 
-                <article className="carousel-slide carousel-slide--kitchen">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      08 h 39 <span>Cuisine</span>
+                  {/* ── Screen 2: Daily Tasks ── */}
+                  <article className="dm-screen dm-screen--tasks">
+                    <div className="dm-widget-header">
+                      <span className="dm-widget-title">Tâches du jour</span>
+                      <span className="dm-widget-badge">6 tâches</span>
                     </div>
-                    <div className="carousel-title">Menu semaine</div>
-                    <div className="carousel-icons">
-                      <span>🍲</span>
-                      <span>🛒</span>
-                      <span>📅</span>
-                    </div>
-                  </div>
-                  <div className="carousel-menu carousel-menu--full">
-                    <div className="carousel-menu__header">
-                      <span className="carousel-menu__week">Semaine du 27 janv.</span>
-                    </div>
-                    <div className="carousel-menu__days">
-                      <div className="carousel-menu__day">
-                        <span className="carousel-menu__day-name">Lun</span>
-                        <span className="carousel-menu__meal">🍗 Poulet BBQ</span>
+                    <div className="dm-tasks-grid">
+                      <div className="dm-task-card dm-task-card--done dm-tone-blue">
+                        <span className="dm-task-icon">📱</span>
+                        <span className="dm-task-name">Temps d'écran</span>
+                        <span className="dm-task-done-badge">✔ Fait</span>
                       </div>
-                      <div className="carousel-menu__day">
-                        <span className="carousel-menu__day-name">Mar</span>
-                        <span className="carousel-menu__meal">🍝 Spaghetti</span>
+                      <div className="dm-task-card dm-tone-violet">
+                        <span className="dm-task-icon">🧹</span>
+                        <span className="dm-task-name">Ranger chambre</span>
                       </div>
-                      <div className="carousel-menu__day">
-                        <span className="carousel-menu__day-name">Mer</span>
-                        <span className="carousel-menu__meal">🥡 Pâtes chinoises</span>
+                      <div className="dm-task-card dm-tone-green">
+                        <span className="dm-task-icon">📖</span>
+                        <span className="dm-task-name">Lire 20 min</span>
                       </div>
-                      <div className="carousel-menu__day">
-                        <span className="carousel-menu__day-name">Jeu</span>
-                        <span className="carousel-menu__meal">🥗 Salade César</span>
+                      <div className="dm-task-card dm-tone-orange">
+                        <span className="dm-task-icon">🎹</span>
+                        <span className="dm-task-name">Piano</span>
                       </div>
-                      <div className="carousel-menu__day">
-                        <span className="carousel-menu__day-name">Ven</span>
-                        <span className="carousel-menu__meal">🌮 Fajitas</span>
+                      <div className="dm-task-card dm-tone-cyan">
+                        <span className="dm-task-icon">🐕</span>
+                        <span className="dm-task-name">Promener Max</span>
+                      </div>
+                      <div className="dm-task-card dm-tone-violet">
+                        <span className="dm-task-icon">🎒</span>
+                        <span className="dm-task-name">Sac d'école</span>
                       </div>
                     </div>
-                    <div className="carousel-menu__grocery">
+                    <div className="dm-tasks-nav">
+                      <button className="dm-tasks-nav-btn" type="button" disabled>‹</button>
+                      <span className="dm-tasks-nav-label">1 / 2</span>
+                      <button className="dm-tasks-nav-btn" type="button">›</button>
+                    </div>
+                  </article>
+
+                  {/* ── Screen 3: Calendar ── */}
+                  <article className="dm-screen dm-screen--calendar">
+                    <div className="dm-widget-header">
+                      <span className="dm-widget-title">Calendrier</span>
+                      <span className="dm-widget-badge">3 événements</span>
+                    </div>
+                    <div className="dm-timeline">
+                      <div className="dm-timeline-group">
+                        <div className="dm-timeline-day">Aujourd'hui</div>
+                        <div className="dm-event-card dm-event--urgent">
+                          <div className="dm-event-time-row">
+                            <span className="dm-event-time">09:00</span>
+                            <span className="dm-event-relative">Dans 25 min</span>
+                          </div>
+                          <span className="dm-event-title">Dentiste — Sifaw</span>
+                        </div>
+                        <div className="dm-event-card dm-event--soon">
+                          <div className="dm-event-time-row">
+                            <span className="dm-event-time">14:30</span>
+                            <span className="dm-event-relative">Cet après-midi</span>
+                          </div>
+                          <span className="dm-event-title">Judo — Georges</span>
+                        </div>
+                      </div>
+                      <div className="dm-timeline-group">
+                        <div className="dm-timeline-day">Demain</div>
+                        <div className="dm-event-card dm-event--future">
+                          <div className="dm-event-time-row">
+                            <span className="dm-event-time">10:00</span>
+                          </div>
+                          <span className="dm-event-title">Réunion parents</span>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+
+                  {/* ── Screen 4: Menu semaine ── */}
+                  <article className="dm-screen dm-screen--menu">
+                    <div className="dm-widget-header">
+                      <span className="dm-widget-title">Menu semaine</span>
+                      <span className="dm-widget-badge">Semaine du 27 janv.</span>
+                    </div>
+                    <div className="dm-menu-list">
+                      <div className="dm-menu-row">
+                        <span className="dm-menu-day">Lun</span>
+                        <span className="dm-menu-meal">🍗 Poulet BBQ</span>
+                      </div>
+                      <div className="dm-menu-row">
+                        <span className="dm-menu-day">Mar</span>
+                        <span className="dm-menu-meal">🍝 Spaghetti</span>
+                      </div>
+                      <div className="dm-menu-row">
+                        <span className="dm-menu-day">Mer</span>
+                        <span className="dm-menu-meal">🥡 Pâtes chinoises</span>
+                      </div>
+                      <div className="dm-menu-row">
+                        <span className="dm-menu-day">Jeu</span>
+                        <span className="dm-menu-meal">🥗 Salade César</span>
+                      </div>
+                      <div className="dm-menu-row">
+                        <span className="dm-menu-day">Ven</span>
+                        <span className="dm-menu-meal">🌮 Fajitas</span>
+                      </div>
+                    </div>
+                    <div className="dm-menu-grocery">
                       <span>🛒</span> 12 articles · Liste prête
                     </div>
-                  </div>
-                  <div className="carousel-action">✨ Générer menu & épicerie</div>
-                </article>
+                    <button className="dm-menu-cta" type="button">✨ Générer menu & épicerie</button>
+                  </article>
 
-                {/* Temps d'écran slide */}
-                <article className="carousel-slide carousel-slide--screentime">
-                  {/* Child switcher tabs */}
-                  <div className="st-switcher">
-                    <button className="st-pill st-pill--active" type="button">
-                      <span className="st-pill__avatar">👦</span>
-                      <span className="st-pill__name">Sifaw</span>
-                    </button>
-                    <button className="st-pill" type="button">
-                      <span className="st-pill__avatar">👧</span>
-                      <span className="st-pill__name">Georges</span>
-                    </button>
-                    <button className="st-pill" type="button">
-                      <span className="st-pill__avatar">🧒</span>
-                      <span className="st-pill__name">Lucas</span>
-                    </button>
-                  </div>
-
-                  {/* Avatar central avec fond étoilé */}
-                  <div className="st-avatar-container">
-                    <div className="st-avatar-ring">
-                      <div className="st-avatar-stars" />
-                      <div className="st-avatar-img">👦</div>
+                  {/* ── Screen 5: Piggy bank ── */}
+                  <article className="dm-screen dm-screen--piggy">
+                    <div className="dm-widget-header">
+                      <span className="dm-widget-title">Tirelire familiale</span>
+                      <span className="dm-widget-badge">🪙</span>
                     </div>
-                  </div>
-
-                  {/* Hearts panel */}
-                  <div className="st-hearts-panel">
-                    <div className="st-hearts-label">TEMPS D'ÉCRAN</div>
-                    <div className="st-hearts-row">
-                      <span className="st-heart st-heart--on">❤️</span>
-                      <span className="st-heart st-heart--on">❤️</span>
-                      <span className="st-heart st-heart--on">❤️</span>
-                      <span className="st-heart st-heart--on">❤️</span>
-                      <span className="st-heart st-heart--losing">❤️</span>
-                    </div>
-                    <div className="st-time-display">0 / 420 min</div>
-                    <div className="st-time-anim">
-                      <span className="st-minus-badge">-60 min</span>
-                      <span className="st-heart-fly">💔</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="carousel-slide">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      08 h 35 <span>Jeudi 29 janv.</span>
-                    </div>
-                    <div className="carousel-title">Cap Famille O</div>
-                    <div className="carousel-icons">
-                      <span>🏠</span>
-                      <span>👨‍👩‍👧‍👦</span>
-                      <span>🍽️</span>
-                      <span>💰</span>
-                    </div>
-                  </div>
-                  <div className="carousel-panel">
-                    <div className="carousel-highlight">
-                      <div>
-                        <div className="carousel-label">🏆 Objectif famille</div>
-                        <div className="carousel-subtitle">455 pts / 1000</div>
+                    <div className="dm-piggy-hero">
+                      <div className="dm-piggy-icon-wrap">
+                        <span className="dm-piggy-coin" aria-hidden="true">🪙</span>
+                        <span className="dm-piggy-sparkle" aria-hidden="true">✦</span>
+                        <span className="dm-piggy-emoji">🐷</span>
                       </div>
-                      <div className="carousel-avatar" />
+                      <div className="dm-piggy-amount">
+                        <span ref={piggyAmountRef}>28 CAD</span>
+                      </div>
+                      <span className="dm-piggy-meta">Projet long terme</span>
                     </div>
-                    <div className="carousel-progress">
-                      <span style={{ ['--w' as string]: '46%' }} />
+                    <div className="dm-piggy-progress">
+                      <div className="dm-progress-label">
+                        <span>Objectif: vélo familial</span>
+                        <span className="dm-progress-value">42%</span>
+                      </div>
+                      <div className="dm-progress-bar">
+                        <div className="dm-progress-fill dm-progress-fill--orange" style={{ width: '42%' }} />
+                      </div>
                     </div>
-                    <div className="carousel-progress__meta">Progression · 46%</div>
-                    <div className="carousel-hearts">
-                      <span className="life is-full is-gain">❤️</span>
-                      <span className="life is-full">❤️</span>
-                      <span className="life is-warning is-loss">🤍</span>
-                    </div>
-                  </div>
-                </article>
+                  </article>
+
+                </div>
               </div>
             </div>
           </div>
