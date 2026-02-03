@@ -7,7 +7,7 @@ const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
 
 const FAQ_ITEMS = [
   {
-    question: 'Comment ajouter mes enfants à NestHub ?',
+    question: 'Comment ajouter mes enfants à Cap Famille O ?',
     answer:
       "Après votre inscription, accédez à l'onglet Configuration > Famille. Vous pouvez ajouter jusqu'à 4 membres de famille (enfants ou adultes). Chaque enfant reçoit un avatar personnalisé (abeille, coccinelle, papillon ou chenille) et peut être configuré avec son âge pour adapter les tâches.",
   },
@@ -27,24 +27,24 @@ const FAQ_ITEMS = [
       "Chaque enfant peut créer jusqu'à 8 projets d'épargne actifs (ex: « Nouveau vélo », « Console de jeux »). L'argent gagné via les tâches s'accumule automatiquement. L'enfant peut suivre sa progression vers son objectif et apprendre à faire des choix financiers : dépenser maintenant ou économiser pour un projet plus grand ?",
   },
   {
-    question: "Comment NestHub génère-t-il les menus de la semaine ?",
+    question: "Comment Cap Famille O génère-t-il les menus de la semaine ?",
     answer:
-      "NestHub utilise l'intelligence artificielle pour créer des menus personnalisés. Configurez vos préférences (nombre de personnes, restrictions alimentaires, cuisines préférées, budget) et l'IA génère un menu complet pour 7 jours avec la liste d'épicerie correspondante. Vous pouvez aussi planifier manuellement vos repas.",
+      "Cap Famille O utilise l'intelligence artificielle pour créer des menus personnalisés. Configurez vos préférences (nombre de personnes, restrictions alimentaires, cuisines préférées, budget) et l'IA génère un menu complet pour 7 jours avec la liste d'épicerie correspondante. Vous pouvez aussi planifier manuellement vos repas.",
   },
   {
     question: 'Mes données sont-elles en sécurité ?',
     answer:
-      "Absolument. Vos données sont hébergées de façon sécurisée et isolées par famille grâce à notre système de Row Level Security (RLS). Aucun partenaire n'a accès à vos données familiales. Nous ne vendons jamais vos informations. NestHub est développé au Québec avec les valeurs de confidentialité qui nous tiennent à cœur.",
+      "Absolument. Vos données sont hébergées de façon sécurisée et isolées par famille grâce à notre système de Row Level Security (RLS). Aucun partenaire n'a accès à vos données familiales. Nous ne vendons jamais vos informations. Cap Famille O est développé au Québec avec les valeurs de confidentialité qui nous tiennent à cœur.",
   },
   {
-    question: 'NestHub fonctionne-t-il avec Google Calendar et Google Tasks ?',
+    question: 'Cap Famille O fonctionne-t-il avec Google Calendar et Google Tasks ?',
     answer:
-      "Oui ! NestHub s'intègre avec votre compte Google pour synchroniser votre calendrier familial, vos listes de tâches et même vos photos via Google Drive. Connectez votre compte lors de l'assistant de configuration et choisissez les modules que vous souhaitez activer.",
+      "Oui ! Cap Famille O s'intègre avec votre compte Google pour synchroniser votre calendrier familial, vos listes de tâches et même vos photos via Google Drive. Connectez votre compte lors de l'assistant de configuration et choisissez les modules que vous souhaitez activer.",
   },
   {
-    question: 'Puis-je utiliser NestHub sur plusieurs appareils ?',
+    question: 'Puis-je utiliser Cap Famille O sur plusieurs appareils ?',
     answer:
-      "Oui, NestHub fonctionne sur tous vos appareils via le navigateur web. Idéalement, installez-le sur une tablette dans votre cuisine comme « tableau de bord familial », mais chaque membre peut aussi y accéder depuis son téléphone ou ordinateur.",
+      "Oui, Cap Famille O fonctionne sur tous vos appareils via le navigateur web. Idéalement, installez-le sur une tablette dans votre cuisine comme « tableau de bord familial », mais chaque membre peut aussi y accéder depuis son téléphone ou ordinateur.",
   },
 ];
 
@@ -53,11 +53,6 @@ export function NestHubLandingPage() {
   const savingsAmountRef = useRef<HTMLSpanElement | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-
-  // Screen time demo state
-  const [screenTimeHearts, setScreenTimeHearts] = useState(7);
-  const [screenTimeUsed, setScreenTimeUsed] = useState(0);
-  const [losingHeartIndex, setLosingHeartIndex] = useState<number | null>(null);
 
   // Savings demo state
   const [savingsTotal, setSavingsTotal] = useState(28);
@@ -73,7 +68,6 @@ export function NestHubLandingPage() {
     { id: 'hero', label: 'Hub familial', icon: '🏠' },
     { id: 'how-it-works', label: 'Comment ça marche ?', icon: '❓' },
     { id: 'autonomy', label: 'Autonomie développée', icon: '🌱' },
-    { id: 'screentime', label: 'Temps d\'écran', icon: '📱' },
     { id: 'finance', label: 'Futur investisseur', icon: '💰' },
     { id: 'features', label: 'Organisation partagée', icon: '👨‍👩‍👧‍👦' },
     { id: 'kitchen', label: 'Écran Cuisine', icon: '🍽️' },
@@ -93,27 +87,6 @@ export function NestHubLandingPage() {
       setSavingsTotal((prev) => prev + 2);
       setCoinAnimation(null);
     }, 800);
-  }, []);
-
-  // Handle screen time usage simulation
-  const handleUseScreenTime = useCallback(() => {
-    if (screenTimeHearts > 0) {
-      const heartToLose = screenTimeHearts - 1;
-      setLosingHeartIndex(heartToLose);
-
-      setTimeout(() => {
-        setScreenTimeHearts((prev) => Math.max(0, prev - 1));
-        setScreenTimeUsed((prev) => prev + 60);
-        setLosingHeartIndex(null);
-      }, 600);
-    }
-  }, [screenTimeHearts]);
-
-  // Reset screen time demo
-  const handleResetScreenTime = useCallback(() => {
-    setScreenTimeHearts(7);
-    setScreenTimeUsed(0);
-    setLosingHeartIndex(null);
   }, []);
 
   // Reset savings demo
@@ -286,7 +259,7 @@ export function NestHubLandingPage() {
 
       <header ref={headerRef} className="nesthub-landing__header">
         <div className="nesthub-landing__header-inner">
-          <div className="nesthub-landing__brand">NestHub</div>
+          <div className="nesthub-landing__brand">Cap Famille O</div>
           <nav className="nesthub-landing__nav">
             {!ALPHA_MODE && (
               <a href="#tarifs" className="nesthub-landing__nav-link">
@@ -309,7 +282,7 @@ export function NestHubLandingPage() {
       <main className="nesthub-landing__main">
         <section id="hero" className="nesthub-landing__hero">
           <div className="nesthub-landing__hero-copy scroll-reveal">
-            <p className="nesthub-landing__eyebrow">NestHub</p>
+            <p className="nesthub-landing__eyebrow">Projet Cap Famille O – Alpha</p>
             <h1>Le hub familial qui transforme l'organisation en terrain de jeu</h1>
             <p className="nesthub-landing__subtitle">
               Développé à Québec, dans le quartier de Limoilou.
@@ -554,7 +527,7 @@ export function NestHubLandingPage() {
               <div className="how-step__icon">📱</div>
               <h3 className="how-step__title">Installez sur votre tablette</h3>
               <p className="how-step__desc">
-                Placez NestHub sur une tablette dans la cuisine. Toute la famille y accède facilement.
+                Placez Cap Famille O sur une tablette dans la cuisine. Toute la famille y accède facilement.
               </p>
               <span className="how-step__time">⏱️ 1 min</span>
             </div>
@@ -575,7 +548,7 @@ export function NestHubLandingPage() {
           <div className="nesthub-landing__section-copy">
             <h2>Accompagner vers l'autonomie et la responsabilité</h2>
             <p className="autonomy-intro">
-              Chaque enfant avance à son rythme. NestHub l'accompagne dans son parcours
+              Chaque enfant avance à son rythme. Cap Famille O l'accompagne dans son parcours
               vers l'autonomie, étape par étape.
             </p>
           </div>
@@ -638,7 +611,7 @@ export function NestHubLandingPage() {
               « Lucas a rangé sa chambre sans qu'on le lui demande.
               Il voulait gagner ses points pour son projet drone ! »
             </blockquote>
-            <cite>— Une famille NestHub, Québec</cite>
+            <cite>— Une famille Cap Famille O, Québec</cite>
           </div>
         </section>
 
@@ -885,7 +858,7 @@ export function NestHubLandingPage() {
             <p>
               Entre l'école, les devoirs, les écrans, les repas, les paiements, les
               rendez-vous et les activités, l'organisation repose trop souvent sur une
-              seule personne. NestHub a été conçu pour redistribuer la charge, et faire
+              seule personne. Cap Famille O a été conçu pour redistribuer la charge, et faire
               de l'organisation une responsabilité collective.
             </p>
           </div>
@@ -961,146 +934,6 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
-        {/* Screen Time Gamechanger Section */}
-        <section id="screentime" className="nesthub-landing__section nesthub-landing__screentime scroll-reveal">
-          <div className="screentime-hero">
-            <div className="screentime-content">
-              <div className="screentime-badge">
-                <span>🎮</span>
-                <span>LE GAMECHANGER</span>
-              </div>
-              <h2>
-                Le temps d'écran :<br />
-                <span>un fléau, notre solution</span>
-              </h2>
-              <p className="screentime-problem">
-                Le temps d'écran est devenu l'un des plus grands défis des familles modernes.
-                Négociations sans fin, conflits quotidiens, culpabilité parentale...
-              </p>
-              <div className="screentime-stats">
-                <div className="screentime-stat">
-                  <span className="screentime-stat__value">7h/jour</span>
-                  <span className="screentime-stat__label">temps d'écran moyen des enfants</span>
-                </div>
-                <div className="screentime-stat">
-                  <span className="screentime-stat__value">85%</span>
-                  <span className="screentime-stat__label">des parents inquiets</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="screentime-demo">
-              <div className="screentime-card screentime-card--interactive">
-                <div className="screentime-card__header">
-                  <span className="screentime-card__title">
-                    <span>📱</span>
-                    Temps d'écran hebdomadaire
-                  </span>
-                  <span className="screentime-card__child">
-                    <span>👧</span>
-                    Sifaw
-                  </span>
-                </div>
-
-                <div className="screentime-budget">
-                  <div className="screentime-budget__label">
-                    <span>Budget alloué</span>
-                    <span className="screentime-budget__time">420 min / semaine</span>
-                  </div>
-                </div>
-
-                <div className="screentime-hearts">
-                  {Array.from({ length: 7 }).map((_, index) => {
-                    const isLosing = losingHeartIndex === index;
-                    const isFull = index < screenTimeHearts;
-                    return (
-                      <span
-                        key={index}
-                        className={`screentime-heart ${isFull ? 'is-full' : 'is-empty'} ${isLosing ? 'is-losing' : ''}`}
-                        aria-label={isFull ? 'vie pleine' : 'vie utilisée'}
-                      >
-                        {isFull ? '❤️' : '🤍'}
-                      </span>
-                    );
-                  })}
-                  <div className="screentime-hearts__label">
-                    <span className="screentime-hearts__count">{screenTimeHearts} / 7 vies</span>
-                    <span>= {screenTimeHearts * 60} min restantes</span>
-                  </div>
-                </div>
-
-                <div className="screentime-usage">
-                  <div className="screentime-usage__header">
-                    <span>Temps utilisé</span>
-                    <span className="screentime-usage__value">{screenTimeUsed} min consommées</span>
-                  </div>
-                  <div className="screentime-usage__bar">
-                    <div className="screentime-usage__fill" style={{ width: `${(screenTimeUsed / 420) * 100}%` }} />
-                  </div>
-                  <span className="screentime-usage__info">
-                    1 coeur = 60 min · Budget se réinitialise chaque lundi
-                  </span>
-                </div>
-
-                <div className="screentime-actions">
-                  <button
-                    type="button"
-                    className="screentime-action-btn screentime-action-btn--use"
-                    onClick={handleUseScreenTime}
-                    disabled={screenTimeHearts === 0}
-                  >
-                    <span>📺</span>
-                    {screenTimeHearts > 0 ? 'Utiliser 60 min' : 'Plus de temps !'}
-                  </button>
-                  <button
-                    type="button"
-                    className="screentime-action-btn screentime-action-btn--reset"
-                    onClick={handleResetScreenTime}
-                  >
-                    <span>🔄</span>
-                    Réinitialiser
-                  </button>
-                </div>
-
-                <div className="screentime-demo-hint">
-                  👆 Cliquez pour simuler l'utilisation du temps d'écran
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="screentime-solution">
-            <div className="screentime-benefit scroll-reveal scroll-reveal--delay-1">
-              <span className="screentime-benefit__icon">🎯</span>
-              <span className="screentime-benefit__title">Visualisation claire</span>
-              <span className="screentime-benefit__desc">
-                L'enfant voit ses coeurs, comprend son budget et apprend à le gérer lui-même
-              </span>
-            </div>
-            <div className="screentime-benefit scroll-reveal scroll-reveal--delay-2">
-              <span className="screentime-benefit__icon">🤝</span>
-              <span className="screentime-benefit__title">Fin des négociations</span>
-              <span className="screentime-benefit__desc">
-                Plus de "encore 5 minutes". Les règles sont claires et acceptées par tous
-              </span>
-            </div>
-            <div className="screentime-benefit scroll-reveal scroll-reveal--delay-3">
-              <span className="screentime-benefit__icon">📈</span>
-              <span className="screentime-benefit__title">Responsabilisation</span>
-              <span className="screentime-benefit__desc">
-                L'enfant choisit quand utiliser son temps. Il développe l'auto-régulation
-              </span>
-            </div>
-            <div className="screentime-benefit scroll-reveal scroll-reveal--delay-3">
-              <span className="screentime-benefit__icon">😌</span>
-              <span className="screentime-benefit__title">Sérénité parentale</span>
-              <span className="screentime-benefit__desc">
-                Le parent accompagne, il ne contrôle plus. Moins de stress, plus de complicité
-              </span>
-            </div>
-          </div>
-        </section>
-
         {/* Kitchen Section with Menu Preview */}
         <section id="kitchen" className="nesthub-landing__section nesthub-landing__kitchen scroll-reveal">
           <div className="nesthub-landing__section-copy">
@@ -1164,7 +997,7 @@ export function NestHubLandingPage() {
         <section className="nesthub-landing__section scroll-reveal">
           <div className="nesthub-landing__section-copy">
             <h2>Les adultes aussi ont leurs tâches</h2>
-            <p>NestHub n'est pas réservé aux enfants.</p>
+            <p>Cap Famille O n'est pas réservé aux enfants.</p>
           </div>
           <div className="adult-tasks">
             <div className="adult-task scroll-reveal scroll-reveal--delay-1">
@@ -1214,7 +1047,7 @@ export function NestHubLandingPage() {
           <div className="nesthub-landing__section-copy">
             <h2>Un beau cadre numérique pour vos souvenirs</h2>
             <p>
-              NestHub, c'est aussi :
+              Cap Famille O, c'est aussi :
               <br />
               - Un espace pour vos photos
               <br />
@@ -1264,7 +1097,7 @@ export function NestHubLandingPage() {
           <div className="nesthub-landing__section-copy">
             <h2>Une solution familiale, pas une app de contrôle</h2>
             <p>
-              NestHub repose sur une conviction simple : Les enfants sont capables de plus
+              Cap Famille O repose sur une conviction simple : Les enfants sont capables de plus
               quand on leur donne les bons outils.
             </p>
           </div>
@@ -1305,7 +1138,7 @@ export function NestHubLandingPage() {
                 </div>
                 <ul className="pricing-card__features">
                   <li>Toutes les fonctionnalités</li>
-                  <li>Composants 100% NestHub inclus</li>
+                  <li>Composants 100% Cap Famille O inclus</li>
                   <li>Mises à jour à vie</li>
                   <li>Intégrations Google</li>
                   <li>Génération de menus IA</li>
@@ -1346,7 +1179,7 @@ export function NestHubLandingPage() {
 
         <section className="nesthub-landing__final scroll-reveal">
           <div className="nesthub-landing__final-card">
-            <h2>{ALPHA_MODE ? 'Rejoignez la liste d\'attente Alpha' : 'Créez votre NestHub familial'}</h2>
+            <h2>{ALPHA_MODE ? 'Rejoignez la liste d\'attente Alpha' : 'Créez votre espace Cap Famille O'}</h2>
             <p>
               {ALPHA_MODE ? (
                 <>
@@ -1428,13 +1261,13 @@ export function NestHubLandingPage() {
 
           <div className="nesthub-landing__footer-bottom">
             <div className="footer-brand">
-              <span className="footer-brand__logo">NestHub</span>
+              <span className="footer-brand__logo">Cap Famille O</span>
               <span className="footer-brand__location">
                 Développé avec ❤️ à Québec, Canada
               </span>
             </div>
             <div className="footer-copy">
-              © {new Date().getFullYear()} NestHub. Tous droits réservés.
+              © {new Date().getFullYear()} Cap Famille O. Tous droits réservés.
             </div>
           </div>
         </div>
