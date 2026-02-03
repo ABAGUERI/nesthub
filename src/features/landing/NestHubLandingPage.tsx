@@ -312,7 +312,7 @@ export function NestHubLandingPage() {
                     <div className="carousel-time">
                       08 h 35 <span>Jeudi 29 janv.</span>
                     </div>
-                    <div className="carousel-title">Nesthub</div>
+                    <div className="carousel-title">Cap Famille O</div>
                     <div className="carousel-icons">
                       <span>🏠</span>
                       <span>👨‍👩‍👧‍👦</span>
@@ -436,21 +436,89 @@ export function NestHubLandingPage() {
                       <span>📅</span>
                     </div>
                   </div>
-                  <div className="carousel-menu">
-                    <div className="carousel-menu__day">
-                      <span>Lun</span>
-                      <strong>Poulet BBQ</strong>
+                  <div className="carousel-menu carousel-menu--full">
+                    <div className="carousel-menu__header">
+                      <span className="carousel-menu__week">Semaine du 27 janv.</span>
                     </div>
-                    <div className="carousel-menu__day">
-                      <span>Mer</span>
-                      <strong>Pâtes chinoises</strong>
+                    <div className="carousel-menu__days">
+                      <div className="carousel-menu__day">
+                        <span className="carousel-menu__day-name">Lun</span>
+                        <span className="carousel-menu__meal">🍗 Poulet BBQ</span>
+                      </div>
+                      <div className="carousel-menu__day">
+                        <span className="carousel-menu__day-name">Mar</span>
+                        <span className="carousel-menu__meal">🍝 Spaghetti</span>
+                      </div>
+                      <div className="carousel-menu__day">
+                        <span className="carousel-menu__day-name">Mer</span>
+                        <span className="carousel-menu__meal">🥡 Pâtes chinoises</span>
+                      </div>
+                      <div className="carousel-menu__day">
+                        <span className="carousel-menu__day-name">Jeu</span>
+                        <span className="carousel-menu__meal">🥗 Salade César</span>
+                      </div>
+                      <div className="carousel-menu__day">
+                        <span className="carousel-menu__day-name">Ven</span>
+                        <span className="carousel-menu__meal">🌮 Fajitas</span>
+                      </div>
                     </div>
-                    <div className="carousel-menu__day">
-                      <span>Ven</span>
-                      <strong>Fajitas</strong>
+                    <div className="carousel-menu__grocery">
+                      <span>🛒</span> 12 articles · Liste prête
                     </div>
                   </div>
                   <div className="carousel-action">✨ Générer menu & épicerie</div>
+                </article>
+
+                {/* Temps d'écran slide */}
+                <article className="carousel-slide carousel-slide--screentime">
+                  <div className="carousel-toolbar">
+                    <div className="carousel-time">
+                      15 h 42 <span>Temps d'écran</span>
+                    </div>
+                    <div className="carousel-title">Écran</div>
+                    <div className="carousel-icons">
+                      <span>📱</span>
+                      <span>🎮</span>
+                      <span>❤️</span>
+                    </div>
+                  </div>
+                  <div className="carousel-screentime">
+                    <div className="carousel-screentime__tabs">
+                      <button className="carousel-screentime__tab is-active" type="button">
+                        <span className="carousel-screentime__avatar">👦</span>
+                        <span>Sifaw</span>
+                      </button>
+                      <button className="carousel-screentime__tab" type="button">
+                        <span className="carousel-screentime__avatar">👧</span>
+                        <span>Georges</span>
+                      </button>
+                      <button className="carousel-screentime__tab" type="button">
+                        <span className="carousel-screentime__avatar">🧒</span>
+                        <span>Lucas</span>
+                      </button>
+                    </div>
+                    <div className="carousel-screentime__main">
+                      <div className="carousel-screentime__avatar-large">
+                        <div className="carousel-screentime__avatar-ring">
+                          <span>👦</span>
+                        </div>
+                      </div>
+                      <div className="carousel-screentime__label">TEMPS D'ÉCRAN</div>
+                      <div className="carousel-screentime__hearts">
+                        <span className="screentime-heart is-full">❤️</span>
+                        <span className="screentime-heart is-full">❤️</span>
+                        <span className="screentime-heart is-full">❤️</span>
+                        <span className="screentime-heart is-full">❤️</span>
+                        <span className="screentime-heart is-losing">❤️</span>
+                        <span className="screentime-heart is-empty">🤍</span>
+                        <span className="screentime-heart is-empty">🤍</span>
+                      </div>
+                      <div className="carousel-screentime__time">
+                        <span className="carousel-screentime__used">60 / 420 min</span>
+                        <span className="carousel-screentime__anim">-60 min</span>
+                      </div>
+                    </div>
+                  </div>
                 </article>
 
                 <article className="carousel-slide">
@@ -458,7 +526,7 @@ export function NestHubLandingPage() {
                     <div className="carousel-time">
                       08 h 35 <span>Jeudi 29 janv.</span>
                     </div>
-                    <div className="carousel-title">Nesthub</div>
+                    <div className="carousel-title">Cap Famille O</div>
                     <div className="carousel-icons">
                       <span>🏠</span>
                       <span>👨‍👩‍👧‍👦</span>
