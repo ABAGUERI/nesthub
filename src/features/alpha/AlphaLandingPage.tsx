@@ -189,11 +189,14 @@ export function AlphaLandingPage() {
       {/* Header */}
       <header ref={headerRef} className="alpha-landing__header">
         <div className="alpha-landing__header-inner">
-          <div className="alpha-landing__brand">
+          <Link to="/" className="alpha-landing__brand">
             <span className="alpha-landing__logo">Cap Famille O</span>
             <span className="alpha-landing__badge">Alpha</span>
-          </div>
+          </Link>
           <nav className="alpha-landing__nav">
+            <Link to="/" className="alpha-landing__nav-link">
+              Accueil
+            </Link>
             <Link to="/login" className="alpha-landing__nav-link">
               Se connecter
             </Link>
