@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import './NestHubLandingPage.css';
 
 // Feature flag for Alpha mode
-const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
-// const ALPHA_MODE = true;
+// const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
+const ALPHA_MODE = true;
 
 const FAQ_ITEMS = [
   {
@@ -300,7 +300,7 @@ export function NestHubLandingPage() {
                         <div className="hero-menu-card">
                           <span className="hero-menu-day">Mar</span>
                           <span className="hero-menu-date">13</span>
-                          <span className="hero-menu-icon">🍙🍣🍱🥢</span>
+                          <span className="hero-menu-icon">🍙🍣🍱</span>
                           <span className="hero-menu-meal">Pokebowl</span>
                           <span className="hero-menu-cta">+ Ajouter</span>
                         </div>
