@@ -365,16 +365,40 @@
   gap: 8px;
   padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  color: #e2e8f0;
+  background: linear-gradient(135deg, #22d3ee, #a855f7);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #0b1220;
   font-size: 0.75rem;
-  font-weight: 700;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.45);
+  font-weight: 800;
+  box-shadow:
+    0 16px 32px rgba(88, 28, 135, 0.45),
+    0 0 20px rgba(34, 211, 238, 0.55);
+  animation: chatbotPulse 2.2s ease-in-out infinite;
 }
 
 .hero-menu-chatbot__icon {
-  font-size: 1rem;
+  font-size: 1.1rem;
+  filter: drop-shadow(0 4px 10px rgba(255, 255, 255, 0.35));
+}
+
+.hero-menu-chatbot__label {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+@keyframes chatbotPulse {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow:
+      0 16px 32px rgba(88, 28, 135, 0.45),
+      0 0 20px rgba(34, 211, 238, 0.55);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow:
+      0 20px 38px rgba(14, 116, 144, 0.45),
+      0 0 26px rgba(14, 165, 233, 0.7);
+  }
 }
 
 .st-avatar-ring--large {
