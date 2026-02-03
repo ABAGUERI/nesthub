@@ -332,6 +332,10 @@ export function NestHubLandingPage() {
                           <span className="hero-menu-cta">+ Ajouter</span>
                         </div>
                       </div>
+                      <div className="hero-menu-chatbot">
+                        <span className="hero-menu-chatbot__icon">🤖</span>
+                        <span className="hero-menu-chatbot__label">mIAm</span>
+                      </div>
                     </article>
 
                     <article className="hero-screen__slide hero-screen__slide--screen-time">
