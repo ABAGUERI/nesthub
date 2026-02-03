@@ -471,52 +471,44 @@ export function NestHubLandingPage() {
 
                 {/* Temps d'écran slide */}
                 <article className="carousel-slide carousel-slide--screentime">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      15 h 42 <span>Temps d'écran</span>
-                    </div>
-                    <div className="carousel-title">Écran</div>
-                    <div className="carousel-icons">
-                      <span>📱</span>
-                      <span>🎮</span>
-                      <span>❤️</span>
+                  {/* Child switcher tabs */}
+                  <div className="st-switcher">
+                    <button className="st-pill st-pill--active" type="button">
+                      <span className="st-pill__avatar">👦</span>
+                      <span className="st-pill__name">Sifaw</span>
+                    </button>
+                    <button className="st-pill" type="button">
+                      <span className="st-pill__avatar">👧</span>
+                      <span className="st-pill__name">Georges</span>
+                    </button>
+                    <button className="st-pill" type="button">
+                      <span className="st-pill__avatar">🧒</span>
+                      <span className="st-pill__name">Lucas</span>
+                    </button>
+                  </div>
+
+                  {/* Avatar central avec fond étoilé */}
+                  <div className="st-avatar-container">
+                    <div className="st-avatar-ring">
+                      <div className="st-avatar-stars" />
+                      <div className="st-avatar-img">👦</div>
                     </div>
                   </div>
-                  <div className="carousel-screentime">
-                    <div className="carousel-screentime__tabs">
-                      <button className="carousel-screentime__tab is-active" type="button">
-                        <span className="carousel-screentime__avatar">👦</span>
-                        <span>Sifaw</span>
-                      </button>
-                      <button className="carousel-screentime__tab" type="button">
-                        <span className="carousel-screentime__avatar">👧</span>
-                        <span>Georges</span>
-                      </button>
-                      <button className="carousel-screentime__tab" type="button">
-                        <span className="carousel-screentime__avatar">🧒</span>
-                        <span>Lucas</span>
-                      </button>
+
+                  {/* Hearts panel */}
+                  <div className="st-hearts-panel">
+                    <div className="st-hearts-label">TEMPS D'ÉCRAN</div>
+                    <div className="st-hearts-row">
+                      <span className="st-heart st-heart--on">❤️</span>
+                      <span className="st-heart st-heart--on">❤️</span>
+                      <span className="st-heart st-heart--on">❤️</span>
+                      <span className="st-heart st-heart--on">❤️</span>
+                      <span className="st-heart st-heart--losing">❤️</span>
                     </div>
-                    <div className="carousel-screentime__main">
-                      <div className="carousel-screentime__avatar-large">
-                        <div className="carousel-screentime__avatar-ring">
-                          <span>👦</span>
-                        </div>
-                      </div>
-                      <div className="carousel-screentime__label">TEMPS D'ÉCRAN</div>
-                      <div className="carousel-screentime__hearts">
-                        <span className="screentime-heart is-full">❤️</span>
-                        <span className="screentime-heart is-full">❤️</span>
-                        <span className="screentime-heart is-full">❤️</span>
-                        <span className="screentime-heart is-full">❤️</span>
-                        <span className="screentime-heart is-losing">❤️</span>
-                        <span className="screentime-heart is-empty">🤍</span>
-                        <span className="screentime-heart is-empty">🤍</span>
-                      </div>
-                      <div className="carousel-screentime__time">
-                        <span className="carousel-screentime__used">60 / 420 min</span>
-                        <span className="carousel-screentime__anim">-60 min</span>
-                      </div>
+                    <div className="st-time-display">0 / 420 min</div>
+                    <div className="st-time-anim">
+                      <span className="st-minus-badge">-60 min</span>
+                      <span className="st-heart-fly">💔</span>
                     </div>
                   </div>
                 </article>
