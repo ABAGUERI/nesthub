@@ -63,6 +63,41 @@ export function NestHubLandingPage() {
   // Progress navigation state
   const [activeSection, setActiveSection] = useState('hero');
 
+  // Matrix typing animation for brand name: "CAP FAMILLE O" → "CAP FAMILLE Organisée"
+  const [typedSuffix, setTypedSuffix] = useState('');
+  const suffixTarget = 'rganisée';
+
+  useEffect(() => {
+    let charIndex = 0;
+    let isTyping = true;
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      if (isTyping) {
+        charIndex++;
+        setTypedSuffix(suffixTarget.slice(0, charIndex));
+        if (charIndex >= suffixTarget.length) {
+          isTyping = false;
+          timeout = setTimeout(tick, 2500); // pause before erasing
+        } else {
+          timeout = setTimeout(tick, 120); // typing speed
+        }
+      } else {
+        charIndex--;
+        setTypedSuffix(suffixTarget.slice(0, charIndex));
+        if (charIndex <= 0) {
+          isTyping = true;
+          timeout = setTimeout(tick, 1200); // pause before retyping
+        } else {
+          timeout = setTimeout(tick, 60); // erasing speed
+        }
+      }
+    };
+
+    timeout = setTimeout(tick, 1500); // initial delay
+    return () => clearTimeout(timeout);
+  }, []);
+
   // Progress sections configuration
   const progressSections = [
     { id: 'hero', label: 'Hub familial', icon: '🏠' },
@@ -259,7 +294,9 @@ export function NestHubLandingPage() {
 
       <header ref={headerRef} className="nesthub-landing__header">
         <div className="nesthub-landing__header-inner">
-          <div className="nesthub-landing__brand">Cap Famille O</div>
+          <div className="nesthub-landing__brand">
+            Cap Famille O<span className="brand-matrix">{typedSuffix}</span><span className="brand-cursor">_</span>
+          </div>
           <nav className="nesthub-landing__nav">
             {!ALPHA_MODE && (
               <a href="#tarifs" className="nesthub-landing__nav-link">
@@ -306,33 +343,27 @@ export function NestHubLandingPage() {
 
           <div className="nesthub-landing__hero-visual scroll-reveal scroll-reveal--delay-2">
             <div className="device-mockup">
-              {/* Device frame top bar */}
-              <div className="device-mockup__topbar">
-                <div className="device-mockup__dots"><span /><span /><span /></div>
-                <span className="device-mockup__brand">Cap Famille O</span>
-              </div>
+              <div className="device-mockup__inner">
+                {/* Dashboard header inside screen */}
+                <div className="device-mockup__dash-header">
+                  <div className="dm-time-group">
+                    <span className="dm-time">08:35</span>
+                    <span className="dm-date">Jeu. 29 janv.</span>
+                  </div>
+                  <div className="dm-header-title">
+                    <span className="dm-section-title">Cap Famille O<span className="brand-matrix brand-matrix--sm">{typedSuffix}</span></span>
+                  </div>
+                  <div className="dm-nav-btns">
+                    <span className="dm-nav-btn dm-nav-btn--active">🏠</span>
+                    <span className="dm-nav-btn">👨‍👩‍👧‍👦</span>
+                    <span className="dm-nav-btn">📅</span>
+                    <span className="dm-nav-btn">🍽️</span>
+                  </div>
+                </div>
 
-              {/* Dashboard header inside device */}
-              <div className="device-mockup__dash-header">
-                <div className="dm-time-group">
-                  <span className="dm-time">08:35</span>
-                  <span className="dm-date">Jeu. 29 janv.</span>
-                </div>
-                <div className="dm-header-title">
-                  <span className="dm-section-title">Cap Famille O</span>
-                  <span className="dm-section-desc">Famille Dupont · 3 enfants</span>
-                </div>
-                <div className="dm-nav-btns">
-                  <span className="dm-nav-btn dm-nav-btn--active">🏠</span>
-                  <span className="dm-nav-btn">👨‍👩‍👧‍👦</span>
-                  <span className="dm-nav-btn">📅</span>
-                  <span className="dm-nav-btn">🍽️</span>
-                </div>
-              </div>
-
-              {/* Cycling screen content */}
-              <div className="device-mockup__viewport">
-                <div className="device-mockup__track" aria-hidden="true">
+                {/* Cycling screen content */}
+                <div className="device-mockup__viewport">
+                  <div className="device-mockup__track" aria-hidden="true">
 
                   {/* ── Screen 1: Children / Progress ── */}
                   <article className="dm-screen dm-screen--children">
@@ -471,38 +502,50 @@ export function NestHubLandingPage() {
                     </div>
                   </article>
 
-                  {/* ── Screen 4: Menu semaine ── */}
+                  {/* ── Screen 4: Menu semaine (matches screenshot) ── */}
                   <article className="dm-screen dm-screen--menu">
-                    <div className="dm-widget-header">
-                      <span className="dm-widget-title">Menu semaine</span>
-                      <span className="dm-widget-badge">Semaine du 27 janv.</span>
+                    {/* Menu header bar */}
+                    <div className="dm-menu-header">
+                      <span className="dm-menu-title">Menu de la semaine</span>
+                      <div className="dm-menu-header-icons">
+                        <span>🍽️</span>
+                        <span>🛒</span>
+                      </div>
+                      <span className="dm-menu-date">12 - 18 janv</span>
                     </div>
-                    <div className="dm-menu-list">
-                      <div className="dm-menu-row">
-                        <span className="dm-menu-day">Lun</span>
-                        <span className="dm-menu-meal">🍗 Poulet BBQ</span>
+
+                    {/* Day cards grid */}
+                    <div className="dm-menu-cards">
+                      <div className="dm-menu-card">
+                        <span className="dm-menu-card__day">LUN</span>
+                        <span className="dm-menu-card__num">12</span>
+                        <span className="dm-menu-card__emoji">🍔</span>
+                        <span className="dm-menu-card__meal">Hamburgers</span>
+                        <button className="dm-menu-card__add" type="button">+ Ajouter</button>
                       </div>
-                      <div className="dm-menu-row">
-                        <span className="dm-menu-day">Mar</span>
-                        <span className="dm-menu-meal">🍝 Spaghetti</span>
+                      <div className="dm-menu-card">
+                        <span className="dm-menu-card__day">MAR</span>
+                        <span className="dm-menu-card__num">13</span>
+                        <div className="dm-menu-card__emojis">
+                          <span>🍙</span><span>🍣</span><span>🍱</span>
+                        </div>
+                        <span className="dm-menu-card__meal">Pokebowl</span>
+                        <button className="dm-menu-card__add" type="button">+ Ajouter</button>
                       </div>
-                      <div className="dm-menu-row">
-                        <span className="dm-menu-day">Mer</span>
-                        <span className="dm-menu-meal">🥡 Pâtes chinoises</span>
-                      </div>
-                      <div className="dm-menu-row">
-                        <span className="dm-menu-day">Jeu</span>
-                        <span className="dm-menu-meal">🥗 Salade César</span>
-                      </div>
-                      <div className="dm-menu-row">
-                        <span className="dm-menu-day">Ven</span>
-                        <span className="dm-menu-meal">🌮 Fajitas</span>
+                      <div className="dm-menu-card">
+                        <span className="dm-menu-card__day">MER</span>
+                        <span className="dm-menu-card__num">14</span>
+                        <span className="dm-menu-card__emoji">🍲</span>
+                        <span className="dm-menu-card__meal">Pâté chinois</span>
+                        <button className="dm-menu-card__add" type="button">+ Ajouter</button>
                       </div>
                     </div>
-                    <div className="dm-menu-grocery">
-                      <span>🛒</span> 12 articles · Liste prête
+
+                    {/* mIAm chatbot floating button */}
+                    <div className="dm-miam-btn">
+                      <span className="dm-miam-icon">🤖</span>
+                      <span className="dm-miam-label">mIAm</span>
                     </div>
-                    <button className="dm-menu-cta" type="button">✨ Générer menu & épicerie</button>
                   </article>
 
                   {/* ── Screen 5: Piggy bank ── */}
@@ -533,8 +576,10 @@ export function NestHubLandingPage() {
                     </div>
                   </article>
 
+                  </div>
                 </div>
               </div>
+              <span className="device-mockup__bezel" aria-hidden="true" />
             </div>
           </div>
         </section>

@@ -99,6 +99,31 @@
   color: #f8fafc;
 }
 
+/* Matrix typing effect for "Organisée" */
+.brand-matrix {
+  font-family: 'Courier New', Courier, monospace;
+  color: #22c55e;
+  text-shadow: 0 0 8px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
+  text-transform: none;
+}
+
+.brand-matrix--sm {
+  font-size: 0.55rem;
+}
+
+.brand-cursor {
+  font-family: 'Courier New', Courier, monospace;
+  color: #22c55e;
+  text-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+  animation: brandBlink 0.7s step-end infinite;
+  text-transform: none;
+}
+
+@keyframes brandBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 .nesthub-landing__nav {
   display: flex;
   gap: 12px;
@@ -221,53 +246,35 @@
 }
 
 /* =====================================================
- * DEVICE MOCKUP – Realistic dashboard screen
+ * DEVICE MOCKUP – Tablet/Screen frame (like digital-frame)
  * ===================================================== */
 .device-mockup {
-  width: min(580px, 100%);
-  border-radius: 24px;
-  background: linear-gradient(160deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.98));
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  box-shadow: 0 30px 80px rgba(8, 15, 35, 0.8), 0 0 0 1px rgba(255,255,255,0.04);
+  position: relative;
+  width: min(600px, 100%);
+  border-radius: 28px;
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  padding: 16px;
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
 
-/* Top bar with window dots */
-.device-mockup__topbar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 10px 16px;
-  background: rgba(15, 23, 42, 0.7);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-  position: relative;
+.device-mockup__inner {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #020617;
 }
 
-.device-mockup__dots {
+.device-mockup__bezel {
   position: absolute;
-  left: 14px;
-  display: flex;
-  gap: 6px;
-}
-
-.device-mockup__dots span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(148, 163, 184, 0.3);
-}
-
-.device-mockup__dots span:first-child { background: #f87171; }
-.device-mockup__dots span:nth-child(2) { background: #fbbf24; }
-.device-mockup__dots span:last-child { background: #4ade80; }
-
-.device-mockup__brand {
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-size: 0.7rem;
-  color: rgba(226, 232, 240, 0.7);
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Dashboard header bar (mirrors DashboardHeader.css) */
@@ -313,11 +320,6 @@
   font-weight: 800;
   color: #e2e8f0;
   letter-spacing: 0.5px;
-}
-
-.dm-section-desc {
-  font-size: 0.55rem;
-  color: rgba(226, 232, 240, 0.6);
 }
 
 .dm-nav-btns {
@@ -802,63 +804,133 @@
 }
 
 /* =====================================================
- * Screen 4: Menu semaine
+ * Screen 4: Menu semaine (card-based, matches screenshot)
  * ===================================================== */
-.dm-menu-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.dm-screen--menu {
+  position: relative;
 }
 
-.dm-menu-row {
+.dm-menu-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  border-radius: 10px;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
   background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
-.dm-menu-day {
-  font-size: 0.55rem;
-  font-weight: 700;
-  color: #7dd3fc;
-  min-width: 24px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: rgba(56, 189, 248, 0.15);
-  text-align: center;
-}
-
-.dm-menu-meal {
-  font-size: 0.65rem;
-  color: #e2e8f0;
+.dm-menu-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  font-style: italic;
   flex: 1;
 }
 
-.dm-menu-grocery {
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(52, 211, 153, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.2);
+.dm-menu-header-icons {
+  display: flex;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.dm-menu-date {
   font-size: 0.6rem;
-  color: #6ee7b7;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* Day cards grid */
+.dm-menu-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  flex: 1;
+}
+
+.dm-menu-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05), 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dm-menu-card__day {
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.dm-menu-card__num {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #e2e8f0;
+  line-height: 1;
+}
+
+.dm-menu-card__emoji {
+  font-size: 1.5rem;
+}
+
+.dm-menu-card__emojis {
+  display: flex;
+  gap: 2px;
+  font-size: 1rem;
+}
+
+.dm-menu-card__meal {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  text-align: center;
+}
+
+.dm-menu-card__add {
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: #22d3ee;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  background: rgba(34, 211, 238, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* mIAm chatbot button */
+.dm-miam-btn {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22d3ee, #a855f7);
+  box-shadow: 0 8px 24px rgba(34, 211, 238, 0.3);
+  cursor: pointer;
+  animation: dmMiamPulse 3s ease-in-out infinite;
 }
 
-.dm-menu-cta {
-  text-align: center;
-  padding: 10px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(34, 211, 238, 0.2), rgba(168, 85, 247, 0.2));
-  border: 1px solid rgba(34, 211, 238, 0.25);
-  color: #e2e8f0;
-  font-size: 0.65rem;
-  font-weight: 700;
-  cursor: pointer;
+.dm-miam-icon { font-size: 1rem; }
+.dm-miam-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+@keyframes dmMiamPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 /* =====================================================
