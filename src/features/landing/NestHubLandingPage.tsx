@@ -300,15 +300,15 @@ export function NestHubLandingPage() {
                         <div className="hero-menu-card">
                           <span className="hero-menu-day">Mar</span>
                           <span className="hero-menu-date">13</span>
-                          <span className="hero-menu-icon">🍗</span>
-                          <span className="hero-menu-meal">Spaghetti</span>
+                          <span className="hero-menu-icon">🍙🍣🍱🥢</span>
+                          <span className="hero-menu-meal">Pokebowl</span>
                           <span className="hero-menu-cta">+ Ajouter</span>
                         </div>
                         <div className="hero-menu-card">
                           <span className="hero-menu-day">Mer</span>
                           <span className="hero-menu-date">14</span>
                           <span className="hero-menu-icon">🍲</span>
-                          <span className="hero-menu-meal">Ndolé</span>
+                          <span className="hero-menu-meal">Pâté chinois</span>
                           <span className="hero-menu-cta">+ Ajouter</span>
                         </div>
                         <div className="hero-menu-card">
