@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import './NestHubLandingPage.css';
 
 // Feature flag for Alpha mode
-// const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
-// const ALPHA_MODE = true
+const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
+// const ALPHA_MODE = true;
 
 const FAQ_ITEMS = [
   {
