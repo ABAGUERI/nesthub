@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import './NestHubLandingPage.css';
 
 // Feature flag for Alpha mode
-const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
+// const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
+const ALPHA_MODE =true
 
 const FAQ_ITEMS = [
   {
@@ -370,7 +371,7 @@ export function NestHubLandingPage() {
                     <div className="dm-child-switcher">
                       <button className="dm-pill dm-pill--active" type="button">
                         <span className="dm-pill__icon">👦</span>
-                        <span className="dm-pill__name">Sifaw</span>
+                        <span className="dm-pill__name">Charlotte</span>
                       </button>
                       <button className="dm-pill" type="button">
                         <span className="dm-pill__icon">👧</span>
@@ -480,7 +481,7 @@ export function NestHubLandingPage() {
                             <span className="dm-event-time">09:00</span>
                             <span className="dm-event-relative">Dans 25 min</span>
                           </div>
-                          <span className="dm-event-title">Dentiste — Sifaw</span>
+                          <span className="dm-event-title">Dentiste — Charlotte</span>
                         </div>
                         <div className="dm-event-card dm-event--soon">
                           <div className="dm-event-time-row">
@@ -839,9 +840,9 @@ export function NestHubLandingPage() {
 
           <div className="finance-projects finance-projects--interactive">
             <div className="finance-projects__header">
-              <div className="family-member__avatar family-member__avatar--sifaw finance-avatar">👧</div>
+              <div className="family-member__avatar family-member__avatar--Charlotte finance-avatar">👧</div>
               <div>
-                <h3 className="finance-projects__title">Projets en cours de Sifaw</h3>
+                <h3 className="finance-projects__title">Projets en cours de Charlotte</h3>
                 <p className="finance-projects__subtitle">Cliquez sur "Ajouter 2$" pour voir la magie ✨</p>
               </div>
               <button
@@ -967,8 +968,8 @@ export function NestHubLandingPage() {
 
           <div className="family-preview">
             <div className="family-member scroll-reveal scroll-reveal--delay-1">
-              <div className="family-member__avatar family-member__avatar--sifaw">👧</div>
-              <div className="family-member__name">Sifaw</div>
+              <div className="family-member__avatar family-member__avatar--Charlotte">👧</div>
+              <div className="family-member__name">Charlotte</div>
               <div className="family-member__tasks">
                 <div className="mini-task">
                   <span className="mini-task__icon">🍽️</span>
