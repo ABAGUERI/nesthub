@@ -552,15 +552,11 @@
 }
 
 .dm-hearts-anim {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 4px;
-  animation: dmFloatUp 2.5s ease-in-out infinite;
-}
-
-@keyframes dmFloatUp {
-  0%, 100% { transform: translateY(0); opacity: 1; }
-  50% { transform: translateY(-5px); opacity: 0.6; }
+  padding-right: 16px;
 }
 
 .dm-minus-badge {
@@ -573,14 +569,23 @@
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-.dm-heart-fly {
+.dm-heart-fall {
   font-size: 0.7rem;
-  animation: dmHeartFly 2.5s ease-in-out infinite;
+  position: absolute;
+  right: 0;
+  animation: dmHeartDrop 2.6s ease-in-out infinite;
+  opacity: 0;
 }
 
-@keyframes dmHeartFly {
-  0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
-  50% { transform: translateY(-6px) scale(0.8); opacity: 0.4; }
+.dm-heart-fall--1 { animation-delay: 0s; }
+.dm-heart-fall--2 { animation-delay: 0.6s; }
+.dm-heart-fall--3 { animation-delay: 1.2s; }
+
+@keyframes dmHeartDrop {
+  0% { transform: translateY(-6px) scale(1); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 0.5; }
+  100% { transform: translateY(10px) scale(0.75); opacity: 0; }
 }
 
 /* =====================================================
@@ -634,7 +639,7 @@
   box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05), 0 8px 18px rgba(0, 0, 0, 0.35);
 }
 
-.dm-task-icon { font-size: 1.2rem; }
+.dm-task-icon { font-size: 1.6rem; }
 .dm-task-name {
   font-size: 0.55rem;
   font-weight: 700;
@@ -860,6 +865,24 @@
   box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05), 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
+.dm-menu-card--today {
+  border-color: rgba(34, 211, 238, 0.6);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25), 0 12px 24px rgba(34, 211, 238, 0.2);
+  background: radial-gradient(circle at top, rgba(34, 211, 238, 0.18), rgba(15, 23, 42, 0.7) 60%);
+  transform: translateY(-2px);
+}
+
+.dm-menu-card__badge {
+  font-size: 0.45rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #0f172a;
+  background: linear-gradient(90deg, #38bdf8, #22d3ee);
+  padding: 2px 6px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
 .dm-menu-card__day {
   font-size: 0.5rem;
   font-weight: 700;
@@ -926,6 +949,15 @@
   font-weight: 800;
   color: #fff;
   letter-spacing: 0.5px;
+}
+
+.dm-miam-tagline {
+  font-size: 0.55rem;
+  font-family: 'Share Tech Mono', 'Fira Mono', 'Courier New', monospace;
+  color: #22c55e;
+  text-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 @keyframes dmMiamPulse {
@@ -1000,6 +1032,52 @@
 
 .dm-piggy-progress {
   padding: 0 8px;
+}
+
+.dm-piggy-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 10px 12px;
+}
+
+.dm-piggy-project {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.55);
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+.dm-piggy-project__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dm-piggy-project__name {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.dm-piggy-project__amount {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.dm-piggy-project__meta {
+  font-size: 0.5rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.dm-progress-bar--slim {
+  height: 6px;
 }
 
 .nesthub-landing__section {
