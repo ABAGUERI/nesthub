@@ -407,10 +407,26 @@
 }
 
 .st-hearts-panel--wide {
-  width: min(360px, 90%);
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 18px;
+  width: min(380px, 92%);
+  background: linear-gradient(160deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(94, 234, 212, 0.35);
+  border-radius: 20px;
+  padding: 14px 16px;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.45);
+}
+
+.hero-screen__slide--screen-time .st-hearts-row {
+  font-size: 1.4rem;
+  gap: 12px;
+}
+
+.hero-screen__slide--screen-time .st-hearts-label {
+  color: #e0f2fe;
+  letter-spacing: 0.2em;
+}
+
+.hero-screen__slide--screen-time .st-time-display {
+  color: #f8fafc;
 }
 
 .hero-calendar {
