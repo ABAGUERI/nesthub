@@ -8,6 +8,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  VITE_ALPHA_MODE='true'
 
 [dev]
   targetPort = 3000
