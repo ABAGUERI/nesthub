@@ -365,9 +365,13 @@ export function NestHubLandingPage() {
                           <span className="st-heart st-heart--on">❤️</span>
                           <span className="st-heart st-heart--on">❤️</span>
                           <span className="st-heart st-heart--on">❤️</span>
-                          <span className="st-heart st-heart--on">❤️</span>
+                          <span className="st-heart st-heart--losing">❤️</span>
                         </div>
                         <div className="st-time-display">0 / 420 min</div>
+                        <div className="st-time-anim">
+                          <span className="st-minus-badge">-60 min</span>
+                          <span className="st-heart-fly">💔</span>
+                        </div>
                       </div>
                     </article>
 
