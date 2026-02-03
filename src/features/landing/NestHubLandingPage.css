@@ -418,6 +418,8 @@
 .hero-screen__slide--screen-time .st-hearts-row {
   font-size: 1.4rem;
   gap: 12px;
+  flex-direction: column;
+  align-items: center;
 }
 
 .hero-screen__slide--screen-time .st-hearts-label {
