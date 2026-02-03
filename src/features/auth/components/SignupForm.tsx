@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
+import { ALPHA_MODE } from '@/routes/guards/AlphaPublicGate';
 import './AuthForms.css';
 
 export const SignupForm: React.FC = () => {
   const navigate = useNavigate();
   const { signUp } = useAuth();
+
+  if (ALPHA_MODE) {
+    return <Navigate to="/alpha" replace />;
+  }
   
   const [formData, setFormData] = useState({
     firstName: '',
