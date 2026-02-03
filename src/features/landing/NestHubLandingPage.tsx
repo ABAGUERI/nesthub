@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import '../dashboard/Dashboard.css';
+import '../dashboard/components/CalendarWidget.css';
+import '../dashboard/components/DailyTasksWidget.css';
+import '../dashboard/components/FinanceWidget.css';
+import '../dashboard/components/GoogleTasksWidget.css';
+import '../dashboard/components/StockTicker.css';
+import '../dashboard/components/VehicleWidget.css';
 import './NestHubLandingPage.css';
 
 // Feature flag for Alpha mode
@@ -49,7 +56,6 @@ const FAQ_ITEMS = [
 ];
 
 export function NestHubLandingPage() {
-  const piggyAmountRef = useRef<HTMLSpanElement | null>(null);
   const savingsAmountRef = useRef<HTMLSpanElement | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
@@ -121,35 +127,6 @@ export function NestHubLandingPage() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Piggy bank amount animation
-  useEffect(() => {
-    let frameId = 0;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let start = 0;
-    let from = 28;
-    let to = 29;
-    const animate = (timestamp: number) => {
-      if (!start) start = timestamp;
-      const progress = Math.min((timestamp - start) / 900, 1);
-      const value = Math.round(from + (to - from) * progress);
-      if (piggyAmountRef.current) {
-        piggyAmountRef.current.textContent = `${value} CAD`;
-      }
-      if (progress < 1) {
-        frameId = requestAnimationFrame(animate);
-      } else {
-        start = 0;
-        [from, to] = [to, from];
-        timeoutId = setTimeout(() => requestAnimationFrame(animate), 1800);
-      }
-    };
-    frameId = requestAnimationFrame(animate);
-    return () => {
-      cancelAnimationFrame(frameId);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
   }, []);
 
   // Savings amount animation for the financial education section
@@ -305,247 +282,315 @@ export function NestHubLandingPage() {
           </div>
 
           <div className="nesthub-landing__hero-visual scroll-reveal scroll-reveal--delay-2">
-            <div className="nesthub-landing__carousel">
-              <div className="nesthub-landing__carousel-track" aria-hidden="true">
-                <article className="carousel-slide">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      08 h 35 <span>Jeudi 29 janv.</span>
-                    </div>
-                    <div className="carousel-title">Cap Famille O</div>
-                    <div className="carousel-icons">
-                      <span>🏠</span>
-                      <span>👨‍👩‍👧‍👦</span>
-                      <span>🍽️</span>
-                      <span>💰</span>
-                    </div>
-                  </div>
-
-                  <div className="carousel-panel">
-                    <div className="carousel-highlight">
-                      <div>
-                        <div className="carousel-label">🏆 Objectif famille</div>
-                        <div className="carousel-subtitle">455 pts / 1000</div>
-                      </div>
-                      <div className="carousel-avatar" />
-                    </div>
-                    <div className="carousel-progress">
-                      <span style={{ ['--w' as string]: '46%' }} />
-                    </div>
-                    <div className="carousel-progress__meta">Progression · 46%</div>
-                    <div className="carousel-hearts">
-                      <span className="life is-full is-gain">❤️</span>
-                      <span className="life is-full">❤️</span>
-                      <span className="life is-warning is-loss">🤍</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="carousel-slide carousel-slide--tasks">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      08 h 20 <span>Vue globale</span>
-                    </div>
-                    <div className="carousel-title">Tâches du jour</div>
-                    <div className="carousel-icons">
-                      <span>⭐</span>
-                      <span>🧹</span>
-                      <span>📖</span>
-                    </div>
-                    <button className="mockup-cta" type="button">
-                      🐷 Ma tirelire
-                    </button>
-                  </div>
-                  <div className="carousel-grid">
-                    <div className="carousel-task mockup-task mockup-task--complete">
-                      <div className="mockup-task__label">Temps d'écran</div>
-                      <div className="mockup-task__progress">
-                        <span style={{ ['--w' as string]: '72%' }} />
-                      </div>
-                      <div className="mockup-task__meta">Validée</div>
-                      <div className="mockup-task__reward" aria-hidden="true">
-                        +20 XP · ❤️ +1
-                      </div>
-                      <span className="mockup-task__check" aria-hidden="true">
-                        ✔
-                      </span>
-                      <span className="mockup-task__xp" aria-hidden="true">
-                        +20 XP
-                      </span>
-                      <span className="mockup-task__heart" aria-hidden="true">
-                        ❤️
-                      </span>
-                    </div>
-                    <div className="carousel-task">
-                      <div className="mockup-task__label">Ranger chambre</div>
-                      <div className="mockup-task__meta">En cours</div>
-                    </div>
-                    <div className="carousel-task">
-                      <div className="mockup-task__label">Lire 20 min</div>
-                      <div className="mockup-task__meta">Bonus</div>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="carousel-slide carousel-slide--piggy">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      08 h 23 <span>Finances</span>
-                    </div>
-                    <div className="carousel-title">Ta tirelire</div>
-                    <div className="carousel-icons">
-                      <span>🐷</span>
-                      <span>🪙</span>
-                      <span>🎯</span>
-                    </div>
-                  </div>
-                  <div className="carousel-panel carousel-panel--piggy">
-                    <div className="piggy piggy--active">
-                      <span className="piggy__coin" aria-hidden="true">
-                        🪙
-                      </span>
-                      <span className="piggy__sparkle" aria-hidden="true">
-                        ✦
-                      </span>
-                      <div className="piggy__icon" aria-hidden="true">
-                        🐷
-                      </div>
-                      <div>
-                        <div className="piggy__amount">
-                          <span ref={piggyAmountRef}>28 CAD</span>
+            <div className="nesthub-landing__carousel digital-frame digital-frame--dashboard">
+              <div className="digital-frame__inner">
+                <div className="landing-screen">
+                  <div className="landing-screen__track" aria-hidden="true">
+                    <article className="landing-screen__slide">
+                      <div className="landing-screen__toolbar">
+                        <div className="landing-screen__time">
+                          08 h 12 <span>Matin calme</span>
                         </div>
-                        <div className="piggy__meta">Projet long terme</div>
+                        <div className="landing-screen__title">Vue famille</div>
+                        <div className="landing-screen__icons">
+                          <span>🏠</span>
+                          <span>👨‍👩‍👧‍👦</span>
+                          <span>📅</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="piggy__progress">
-                      <span style={{ ['--w' as string]: '42%' }} />
-                    </div>
-                    <div className="piggy__goal">Objectif: vélo familial</div>
-                  </div>
-                </article>
+                      <div className="landing-screen__grid">
+                        <div className="widget daily-tasks-widget landing-screen__widget">
+                          <div className="widget-header">
+                            <div className="widget-title">⭐ Tâches du jour</div>
+                            <span className="landing-screen__chip">3 / 6</span>
+                          </div>
+                          <div className="widget-scroll">
+                            <div className="tasks-list">
+                              <div className="task-row tone-blue">
+                                <div className="task-icon">🧹</div>
+                                <div className="task-name">Ranger la chambre</div>
+                              </div>
+                              <div className="task-row tone-violet completed is-done">
+                                <div className="task-icon">📖</div>
+                                <div className="task-name">Lecture 20 min</div>
+                                <div className="task-done-badge" aria-hidden="true">
+                                  ✓ Validé
+                                </div>
+                              </div>
+                              <div className="task-row tone-green">
+                                <div className="task-icon">🍎</div>
+                                <div className="task-name">Collation saine</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
 
-                <article className="carousel-slide carousel-slide--kitchen">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      08 h 39 <span>Cuisine</span>
-                    </div>
-                    <div className="carousel-title">Menu semaine</div>
-                    <div className="carousel-icons">
-                      <span>🍲</span>
-                      <span>🛒</span>
-                      <span>📅</span>
-                    </div>
-                  </div>
-                  <div className="carousel-menu carousel-menu--full">
-                    <div className="carousel-menu__header">
-                      <span className="carousel-menu__week">Semaine du 27 janv.</span>
-                    </div>
-                    <div className="carousel-menu__days">
-                      <div className="carousel-menu__day">
-                        <span className="carousel-menu__day-name">Lun</span>
-                        <span className="carousel-menu__meal">🍗 Poulet BBQ</span>
+                        <div className="widget landing-screen__widget">
+                          <div className="widget-header">
+                            <div className="widget-title">📅 Agenda familial</div>
+                            <span className="landing-screen__chip">Aujourd'hui</span>
+                          </div>
+                          <div className="widget-scroll">
+                            <div className="timeline-container">
+                              <div className="timeline-group">
+                                <div className="timeline-header">Aujourd'hui</div>
+                                <div className="event-card urgent tone-violet">
+                                  <div className="event-time-row">
+                                    <span className="event-time">09:30</span>
+                                    <span className="event-relative">Dans 1h</span>
+                                  </div>
+                                  <div className="event-content">
+                                    <div className="event-title-row">
+                                      <span className="event-title">Dentiste</span>
+                                      <span className="event-calendar">Famille</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="event-card soon tone-blue">
+                                  <div className="event-time-row">
+                                    <span className="event-time">16:15</span>
+                                    <span className="event-relative">Après école</span>
+                                  </div>
+                                  <div className="event-title">Soccer</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="carousel-menu__day">
-                        <span className="carousel-menu__day-name">Mar</span>
-                        <span className="carousel-menu__meal">🍝 Spaghetti</span>
-                      </div>
-                      <div className="carousel-menu__day">
-                        <span className="carousel-menu__day-name">Mer</span>
-                        <span className="carousel-menu__meal">🥡 Pâtes chinoises</span>
-                      </div>
-                      <div className="carousel-menu__day">
-                        <span className="carousel-menu__day-name">Jeu</span>
-                        <span className="carousel-menu__meal">🥗 Salade César</span>
-                      </div>
-                      <div className="carousel-menu__day">
-                        <span className="carousel-menu__day-name">Ven</span>
-                        <span className="carousel-menu__meal">🌮 Fajitas</span>
-                      </div>
-                    </div>
-                    <div className="carousel-menu__grocery">
-                      <span>🛒</span> 12 articles · Liste prête
-                    </div>
-                  </div>
-                  <div className="carousel-action">✨ Générer menu & épicerie</div>
-                </article>
+                    </article>
 
-                {/* Temps d'écran slide */}
-                <article className="carousel-slide carousel-slide--screentime">
-                  {/* Child switcher tabs */}
-                  <div className="st-switcher">
-                    <button className="st-pill st-pill--active" type="button">
-                      <span className="st-pill__avatar">👦</span>
-                      <span className="st-pill__name">Sifaw</span>
-                    </button>
-                    <button className="st-pill" type="button">
-                      <span className="st-pill__avatar">👧</span>
-                      <span className="st-pill__name">Georges</span>
-                    </button>
-                    <button className="st-pill" type="button">
-                      <span className="st-pill__avatar">🧒</span>
-                      <span className="st-pill__name">Lucas</span>
-                    </button>
-                  </div>
-
-                  {/* Avatar central avec fond étoilé */}
-                  <div className="st-avatar-container">
-                    <div className="st-avatar-ring">
-                      <div className="st-avatar-stars" />
-                      <div className="st-avatar-img">👦</div>
-                    </div>
-                  </div>
-
-                  {/* Hearts panel */}
-                  <div className="st-hearts-panel">
-                    <div className="st-hearts-label">TEMPS D'ÉCRAN</div>
-                    <div className="st-hearts-row">
-                      <span className="st-heart st-heart--on">❤️</span>
-                      <span className="st-heart st-heart--on">❤️</span>
-                      <span className="st-heart st-heart--on">❤️</span>
-                      <span className="st-heart st-heart--on">❤️</span>
-                      <span className="st-heart st-heart--losing">❤️</span>
-                    </div>
-                    <div className="st-time-display">0 / 420 min</div>
-                    <div className="st-time-anim">
-                      <span className="st-minus-badge">-60 min</span>
-                      <span className="st-heart-fly">💔</span>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="carousel-slide">
-                  <div className="carousel-toolbar">
-                    <div className="carousel-time">
-                      08 h 35 <span>Jeudi 29 janv.</span>
-                    </div>
-                    <div className="carousel-title">Cap Famille O</div>
-                    <div className="carousel-icons">
-                      <span>🏠</span>
-                      <span>👨‍👩‍👧‍👦</span>
-                      <span>🍽️</span>
-                      <span>💰</span>
-                    </div>
-                  </div>
-                  <div className="carousel-panel">
-                    <div className="carousel-highlight">
-                      <div>
-                        <div className="carousel-label">🏆 Objectif famille</div>
-                        <div className="carousel-subtitle">455 pts / 1000</div>
+                    <article className="landing-screen__slide">
+                      <div className="landing-screen__toolbar">
+                        <div className="landing-screen__time">
+                          12 h 45 <span>Finances</span>
+                        </div>
+                        <div className="landing-screen__title">Objectifs & économie</div>
+                        <div className="landing-screen__icons">
+                          <span>💰</span>
+                          <span>📈</span>
+                          <span>🐷</span>
+                        </div>
                       </div>
-                      <div className="carousel-avatar" />
-                    </div>
-                    <div className="carousel-progress">
-                      <span style={{ ['--w' as string]: '46%' }} />
-                    </div>
-                    <div className="carousel-progress__meta">Progression · 46%</div>
-                    <div className="carousel-hearts">
-                      <span className="life is-full is-gain">❤️</span>
-                      <span className="life is-full">❤️</span>
-                      <span className="life is-warning is-loss">🤍</span>
-                    </div>
+                      <div className="landing-screen__grid landing-screen__grid--stack">
+                        <div className="widget finance-widget landing-screen__widget">
+                          <div className="widget-header">
+                            <div className="widget-title">📊 Portefeuille familial</div>
+                            <span className="market-chip open">Marché ouvert</span>
+                          </div>
+                          <div className="finance-hero">
+                            <div>
+                              <div className="finance-label">Épargne totale</div>
+                              <div className="finance-total">1 280 CAD</div>
+                            </div>
+                            <div className="finance-delta up">+6,4%</div>
+                          </div>
+                          <div className="finance-grid">
+                            <div className="finance-row">
+                              <div className="finance-symbol">
+                                <span className="symbol-pill">VAC</span>
+                                <span className="stock-name">Vacances 2025</span>
+                              </div>
+                              <div className="finance-values">
+                                <span className="stock-price">420 CAD</span>
+                                <span className="stock-change up">+2,1%</span>
+                              </div>
+                            </div>
+                            <div className="finance-row">
+                              <div className="finance-symbol">
+                                <span className="symbol-pill">VÉLO</span>
+                                <span className="stock-name">Objectif vélo</span>
+                              </div>
+                              <div className="finance-values">
+                                <span className="stock-price">260 CAD</span>
+                                <span className="stock-change down">-0,4%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="stock-ticker">
+                          <div className="stock-ticker-content">
+                            <div className="stock-item">
+                              <span className="stock-symbol">COEUR</span>
+                              <span className="stock-up">+3 ❤️</span>
+                            </div>
+                            <div className="stock-item">
+                              <span className="stock-symbol">XP</span>
+                              <span className="stock-up">+120</span>
+                            </div>
+                            <div className="stock-item">
+                              <span className="stock-symbol">TEMPS</span>
+                              <span className="stock-down">-15 min</span>
+                            </div>
+                            <div className="stock-item">
+                              <span className="stock-symbol">COEUR</span>
+                              <span className="stock-up">+3 ❤️</span>
+                            </div>
+                            <div className="stock-item">
+                              <span className="stock-symbol">XP</span>
+                              <span className="stock-up">+120</span>
+                            </div>
+                            <div className="stock-item">
+                              <span className="stock-symbol">TEMPS</span>
+                              <span className="stock-down">-15 min</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article className="landing-screen__slide">
+                      <div className="landing-screen__toolbar">
+                        <div className="landing-screen__time">
+                          18 h 05 <span>Maison connectée</span>
+                        </div>
+                        <div className="landing-screen__title">Modules du soir</div>
+                        <div className="landing-screen__icons">
+                          <span>🚗</span>
+                          <span>✅</span>
+                          <span>🔔</span>
+                        </div>
+                      </div>
+                      <div className="landing-screen__grid">
+                        <div className="widget landing-screen__widget">
+                          <div className="widget-header">
+                            <div className="widget-title">✅ Google Tasks</div>
+                            <span className="landing-screen__chip">4</span>
+                          </div>
+                          <div className="widget-scroll">
+                            <details className="gtask-group" open>
+                              <summary className="gtask-summary">
+                                Courses maison <span className="task-count">2</span>
+                              </summary>
+                              <div className="gtask-list">
+                                <div className="gtask-row">
+                                  <span className="gtask-checkbox" />
+                                  <span>Préparer les lunchs</span>
+                                </div>
+                                <div className="gtask-row completed">
+                                  <span className="gtask-checkbox" />
+                                  <span>Sortir les poubelles</span>
+                                </div>
+                              </div>
+                            </details>
+                            <details className="gtask-group">
+                              <summary className="gtask-summary">
+                                Rendez-vous <span className="task-count">2</span>
+                              </summary>
+                            </details>
+                          </div>
+                        </div>
+
+                        <div className="widget vehicle-widget landing-screen__widget">
+                          <div className="vehicle-widget-header">
+                            <div className="vehicle-icon-large">🚙</div>
+                            <div className="vehicle-title-group">
+                              <div className="vehicle-name">Hybride familiale</div>
+                              <div className="vehicle-status">Prête pour demain</div>
+                            </div>
+                          </div>
+                          <div className="vehicle-stats-grid">
+                            <div className="vehicle-stat-card primary">
+                              <div className="stat-icon-large">🔋</div>
+                              <div className="stat-content">
+                                <div className="stat-label">Autonomie</div>
+                                <div className="stat-value-large">82%</div>
+                                <div className="stat-subtext">330 km restants</div>
+                              </div>
+                            </div>
+                            <div className="vehicle-stat-card">
+                              <div className="stat-icon">⛽</div>
+                              <div className="stat-details">
+                                <div className="stat-label">Carburant</div>
+                                <div className="stat-value">Plein fait</div>
+                              </div>
+                            </div>
+                          </div>
+                          <button className="vehicle-preheat-btn" type="button">
+                            <span className="vehicle-btn-content">🌡️ Démarrer le chauffage</span>
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article className="landing-screen__slide">
+                      <div className="landing-screen__toolbar">
+                        <div className="landing-screen__time">
+                          08 h 12 <span>Matin calme</span>
+                        </div>
+                        <div className="landing-screen__title">Vue famille</div>
+                        <div className="landing-screen__icons">
+                          <span>🏠</span>
+                          <span>👨‍👩‍👧‍👦</span>
+                          <span>📅</span>
+                        </div>
+                      </div>
+                      <div className="landing-screen__grid">
+                        <div className="widget daily-tasks-widget landing-screen__widget">
+                          <div className="widget-header">
+                            <div className="widget-title">⭐ Tâches du jour</div>
+                            <span className="landing-screen__chip">3 / 6</span>
+                          </div>
+                          <div className="widget-scroll">
+                            <div className="tasks-list">
+                              <div className="task-row tone-blue">
+                                <div className="task-icon">🧹</div>
+                                <div className="task-name">Ranger la chambre</div>
+                              </div>
+                              <div className="task-row tone-violet completed is-done">
+                                <div className="task-icon">📖</div>
+                                <div className="task-name">Lecture 20 min</div>
+                                <div className="task-done-badge" aria-hidden="true">
+                                  ✓ Validé
+                                </div>
+                              </div>
+                              <div className="task-row tone-green">
+                                <div className="task-icon">🍎</div>
+                                <div className="task-name">Collation saine</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="widget landing-screen__widget">
+                          <div className="widget-header">
+                            <div className="widget-title">📅 Agenda familial</div>
+                            <span className="landing-screen__chip">Aujourd'hui</span>
+                          </div>
+                          <div className="widget-scroll">
+                            <div className="timeline-container">
+                              <div className="timeline-group">
+                                <div className="timeline-header">Aujourd'hui</div>
+                                <div className="event-card urgent tone-violet">
+                                  <div className="event-time-row">
+                                    <span className="event-time">09:30</span>
+                                    <span className="event-relative">Dans 1h</span>
+                                  </div>
+                                  <div className="event-content">
+                                    <div className="event-title-row">
+                                      <span className="event-title">Dentiste</span>
+                                      <span className="event-calendar">Famille</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="event-card soon tone-blue">
+                                  <div className="event-time-row">
+                                    <span className="event-time">16:15</span>
+                                    <span className="event-relative">Après école</span>
+                                  </div>
+                                  <div className="event-title">Soccer</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
                   </div>
-                </article>
+                </div>
               </div>
+              <span className="digital-frame__bezel" aria-hidden="true" />
             </div>
           </div>
         </section>
