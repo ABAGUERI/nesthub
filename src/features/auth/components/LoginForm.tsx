@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
 import { Input } from '@/shared/components/Input';
@@ -49,11 +49,14 @@ export const LoginForm: React.FC = () => {
 
   return (
     <div className="auth-container">
+      <Link to="/" className="auth-home-link" aria-label="Retour à l'accueil">
+        ← Cap Famille O
+      </Link>
       <div className="auth-card">
         <div className="auth-header">
           <h1 className="auth-title">Connexion</h1>
           <p className="auth-subtitle">
-            Bon retour sur Hub Familial 2.0
+            Bon retour sur Cap Famille O
           </p>
         </div>
 
