@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import './NestHubLandingPage.css';
 
 // Feature flag for Alpha mode
-const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
+// const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
+// const ALPHA_MODE = true
 
 const FAQ_ITEMS = [
   {
@@ -340,7 +341,7 @@ export function NestHubLandingPage() {
 
                     <article className="hero-screen__slide hero-screen__slide--screen-time">
                       <div className="hero-screen__topbar hero-screen__topbar--center">
-                        <span className="hero-screen__title">Vas-tu atteindre ton objectif ?</span>
+                        <span className="hero-screen__title">Garde un oeil sur ton temps d'écran</span>
                       </div>
                       <div className="st-switcher">
                         <button className="st-pill st-pill--active" type="button">
