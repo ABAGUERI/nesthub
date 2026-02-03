@@ -243,6 +243,7 @@
 .nesthub-landing__hero-visual {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
 /* =====================================================
@@ -250,8 +251,10 @@
  * ===================================================== */
 .device-mockup {
   position: relative;
-  width: min(600px, 100%);
-  border-radius: 28px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  border-radius: 24px;
   background: linear-gradient(145deg, #1e293b, #0f172a);
   padding: 16px;
   box-shadow:
@@ -354,15 +357,15 @@
 .device-mockup__track {
   display: flex;
   width: 500%;
-  animation: dmScreenSlide 30s ease-in-out infinite;
+  animation: dmScreenSlide 35s ease-in-out infinite;
 }
 
 .dm-screen {
   width: 20%;
-  padding: 14px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   min-height: 320px;
 }
 
@@ -379,7 +382,7 @@
  * Screen 1: Children / Progress (mirrors ChildrenWidget.css)
  * ===================================================== */
 .dm-screen--children {
-  background: linear-gradient(180deg, rgba(79, 70, 229, 0.25), rgba(34, 197, 235, 0.12));
+  background: linear-gradient(160deg, rgba(34, 211, 238, 0.06), rgba(15, 23, 42, 0.9));
 }
 
 /* Child switcher (mirrors .child-switcher + .switcher-pill) */
@@ -444,9 +447,15 @@
 }
 
 .dm-donut-avatar {
-  font-size: 3rem;
+  font-size: 3.5rem;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
   z-index: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
 }
 
 /* Progress bar (mirrors .progress-track + .progress-bar) */
@@ -503,16 +512,15 @@
 }
 
 .dm-hearts-title {
-  font-size: 0.5rem;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
+  font-size: 0.6rem;
+  letter-spacing: 0.3px;
   color: #cbd5e1;
   font-weight: 700;
 }
 
-.dm-hearts-list {
+.dm-hearts-list,
+.dm-hearts-row {
   display: flex;
-  flex-direction: column;
   gap: 4px;
   align-items: center;
 }
@@ -545,47 +553,68 @@
   }
 }
 
+/* Hearts fade top-down animation */
+.dm-heart--fade {
+  animation: dmHeartFadeDown 3s ease-in-out infinite;
+}
+
+.dm-heart--fade-1 {
+  animation-delay: 0s;
+}
+
+.dm-heart--fade-2 {
+  animation-delay: 0.6s;
+}
+
+@keyframes dmHeartFadeDown {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.6));
+  }
+  30% {
+    opacity: 0.4;
+    transform: translateY(6px) scale(0.7);
+    filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.2));
+  }
+  50% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.5);
+    filter: none;
+  }
+  70% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.6));
+  }
+}
+
+/* Subtle pulse for active hearts */
+.dm-heart--pulse {
+  animation: dmHeartPulse 5s ease-in-out infinite;
+}
+
+@keyframes dmHeartPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
 .dm-hearts-meta {
-  font-size: 0.55rem;
+  font-size: 0.6rem;
   color: #e2e8f0;
   font-weight: 700;
-}
-
-.dm-hearts-anim {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  animation: dmFloatUp 2.5s ease-in-out infinite;
-}
-
-@keyframes dmFloatUp {
-  0%, 100% { transform: translateY(0); opacity: 1; }
-  50% { transform: translateY(-5px); opacity: 0.6; }
-}
-
-.dm-minus-badge {
-  font-size: 0.5rem;
-  font-weight: 700;
-  color: #f87171;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.dm-heart-fly {
-  font-size: 0.7rem;
-  animation: dmHeartFly 2.5s ease-in-out infinite;
-}
-
-@keyframes dmHeartFly {
-  0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
-  50% { transform: translateY(-6px) scale(0.8); opacity: 0.4; }
 }
 
 /* =====================================================
  * Screen 2: Daily Tasks (mirrors DailyTasksWidget.css)
  * ===================================================== */
+.dm-screen--tasks {
+  background: linear-gradient(160deg, rgba(99, 102, 241, 0.05), rgba(15, 23, 42, 0.9));
+}
 .dm-widget-header {
   display: flex;
   justify-content: space-between;
@@ -615,7 +644,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 8px;
+  gap: 10px;
   flex: 1;
 }
 
@@ -631,10 +660,10 @@
   border-radius: 12px;
   text-align: center;
   position: relative;
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05), 0 8px 18px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05), 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.dm-task-icon { font-size: 2.5rem; }
+.dm-task-icon { font-size: 2.2rem; }
 .dm-task-name {
   font-size: 0.55rem;
   font-weight: 700;
@@ -642,83 +671,83 @@
   line-height: 1.2;
 }
 
-.dm-task-done-badge {
+/* Done stamp overlay — green circle with checkmark */
+.dm-task-done-stamp {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  font-size: 0.4rem;
-  font-weight: 700;
-  color: rgba(226, 232, 240, 0.9);
-  background: rgba(34, 197, 94, 0.18);
-  border: 1px solid rgba(34, 197, 94, 0.35);
-  border-radius: 999px;
-  padding: 2px 5px;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(34, 197, 94, 0.25);
+  border-radius: 12px;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .dm-task-card--done {
-  opacity: 0.7;
-  background: rgba(15, 23, 42, 0.45);
+  filter: grayscale(0.3);
+}
+
+.dm-task-card--done .dm-task-icon {
+  opacity: 0.5;
 }
 
 .dm-task-card--done .dm-task-name {
   text-decoration: line-through;
-  text-decoration-color: rgba(148, 163, 184, 0.35);
+  text-decoration-color: rgba(148, 163, 184, 0.4);
+  opacity: 0.7;
+}
+
+/* Priority dot — pulsing indicator */
+.dm-task-priority-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+  animation: dmPriorityPulse 4s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes dmPriorityPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
 }
 
 /* Tone colors (mirrors DailyTasksWidget tone classes) */
-.dm-tone-blue { border-color: rgba(56, 189, 248, 0.7); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.15), 0 8px 18px rgba(0, 0, 0, 0.35); }
-.dm-tone-violet { border-color: rgba(168, 85, 247, 0.7); box-shadow: inset 0 0 0 1px rgba(168, 85, 247, 0.15), 0 8px 18px rgba(0, 0, 0, 0.35); }
-.dm-tone-green { border-color: rgba(34, 197, 94, 0.7); box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.15), 0 8px 18px rgba(0, 0, 0, 0.35); }
-.dm-tone-orange { border-color: rgba(251, 146, 60, 0.7); box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.15), 0 8px 18px rgba(0, 0, 0, 0.35); }
-.dm-tone-cyan { border-color: rgba(34, 211, 238, 0.7); box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.15), 0 8px 18px rgba(0, 0, 0, 0.35); }
+.dm-tone-blue { border-color: rgba(56, 189, 248, 0.6); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2); }
+.dm-tone-violet { border-color: rgba(168, 85, 247, 0.6); box-shadow: inset 0 0 0 1px rgba(168, 85, 247, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2); }
+.dm-tone-green { border-color: rgba(34, 197, 94, 0.6); box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2); }
+.dm-tone-orange { border-color: rgba(251, 146, 60, 0.6); box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2); }
+.dm-tone-cyan { border-color: rgba(34, 211, 238, 0.6); box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2); }
 
-.dm-tasks-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.dm-tasks-nav-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  background: rgba(15, 23, 42, 0.45);
-  color: rgba(226, 232, 240, 0.85);
-  font-weight: 900;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  font-size: 0.75rem;
-}
-
-.dm-tasks-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.dm-tasks-nav-label {
-  font-size: 0.55rem;
-  font-weight: 800;
-  color: rgba(148, 163, 184, 0.9);
-  min-width: 40px;
-  text-align: center;
-}
+/* (tasks nav removed — not needed in mockup) */
 
 /* =====================================================
  * Screen 3: Calendar (mirrors CalendarWidget.css)
  * ===================================================== */
+.dm-screen--calendar {
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.9));
+}
+
 .dm-timeline {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   padding-left: 6px;
 }
 
 .dm-timeline-group {
   position: relative;
-  padding-left: 16px;
+  padding-left: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .dm-timeline-group::before {
@@ -726,44 +755,42 @@
   position: absolute;
   left: 0;
   top: 10px;
-  bottom: -8px;
-  width: 2px;
-  background: linear-gradient(180deg, rgba(168, 85, 247, 0.7), rgba(34, 211, 238, 0.7));
-  box-shadow: 0 0 8px rgba(168, 85, 247, 0.3);
+  bottom: -10px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .dm-timeline-group:last-child::before { display: none; }
 
 .dm-timeline-day {
-  font-size: 0.6rem;
-  color: #cbd5e1;
+  font-size: 0.7rem;
+  color: #e2e8f0;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  padding-left: 14px;
+  letter-spacing: 0.4px;
+  padding-left: 12px;
   position: relative;
 }
 
 .dm-timeline-day::after {
   content: '';
   position: absolute;
-  left: -6px;
-  top: 1px;
-  width: 10px;
-  height: 10px;
-  background: linear-gradient(135deg, #22d3ee, #a855f7);
+  left: -4px;
+  top: 2px;
+  width: 7px;
+  height: 7px;
+  background: rgba(226, 232, 240, 0.4);
   border-radius: 50%;
-  border: 2px solid #020617;
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+  border: 1.5px solid #020617;
 }
 
 .dm-event-card {
-  margin-left: 14px;
+  margin-left: 12px;
   background: rgba(255, 255, 255, 0.04);
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 12px;
   border-left: 3px solid #3b82f6;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -781,13 +808,10 @@
 }
 
 .dm-event-time {
-  font-weight: 800;
-  font-size: 0.7rem;
-  color: #e0f2fe;
+  font-weight: 700;
+  font-size: 0.55rem;
+  color: #94a3b8;
 }
-
-.dm-event--urgent .dm-event-time { color: #f87171; }
-.dm-event--soon .dm-event-time { color: #fbbf24; }
 
 .dm-event-relative {
   font-size: 0.5rem;
@@ -797,6 +821,26 @@
   letter-spacing: 0.4px;
 }
 
+/* Primary relative time — shown larger */
+.dm-event-relative--primary {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #e0f2fe;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.dm-event--urgent .dm-event-relative--primary { color: #f87171; }
+.dm-event--soon .dm-event-relative--primary { color: #fbbf24; }
+
+/* Person with avatar */
+.dm-event-person {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-top: 2px;
+}
+
 .dm-event-title {
   font-size: 0.65rem;
   color: #e2e8f0;
@@ -804,120 +848,133 @@
 }
 
 /* =====================================================
- * Screen 4: Menu semaine (card-based, matches screenshot)
+ * Screen 4: Menu semaine — warm "tableau du frigo" feel
  * ===================================================== */
 .dm-screen--menu {
   position: relative;
+  background: linear-gradient(160deg, rgba(251, 146, 60, 0.05), rgba(15, 23, 42, 0.9));
 }
 
-.dm-menu-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.12);
-}
-
-.dm-menu-title {
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: #cbd5e1;
-  font-style: italic;
-  flex: 1;
-}
-
-.dm-menu-header-icons {
-  display: flex;
-  gap: 6px;
-  font-size: 0.9rem;
-}
-
-.dm-menu-date {
-  font-size: 0.6rem;
-  color: #94a3b8;
-  white-space: nowrap;
-}
-
-/* Day cards grid */
-.dm-menu-cards {
+/* Focus layout: today card is hero, siblings are secondary */
+.dm-menu-cards--focus {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: 1fr 1.8fr 1fr;
+  gap: 10px;
   flex: 1;
+  align-items: stretch;
 }
 
 .dm-menu-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 12px 8px;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 8px;
   background: rgba(15, 23, 42, 0.65);
   border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 14px;
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05), 0 8px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+/* Sibling (non-today) cards — smaller & muted */
+.dm-menu-card--sibling {
+  opacity: 0.65;
+  transform: scale(0.95);
 }
 
 .dm-menu-card__day {
-  font-size: 0.5rem;
+  font-size: 0.55rem;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
   color: #94a3b8;
   text-transform: uppercase;
 }
 
-.dm-menu-card__num {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #e2e8f0;
-  line-height: 1;
-}
-
 .dm-menu-card__emoji {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
 }
 
-.dm-menu-card__emojis {
-  display: flex;
-  gap: 2px;
-  font-size: 1rem;
+/* Hero emoji for today card */
+.dm-menu-card__emoji--hero {
+  font-size: 2.8rem;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
 }
 
 .dm-menu-card__meal {
   font-size: 0.6rem;
-  font-weight: 700;
-  color: #e2e8f0;
+  font-weight: 600;
+  color: #f1f5f9;
   text-align: center;
 }
 
-.dm-menu-card__add {
-  font-size: 0.5rem;
-  font-weight: 700;
-  color: #22d3ee;
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(34, 211, 238, 0.3);
-  background: rgba(34, 211, 238, 0.08);
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* Hero meal label — larger for today */
+.dm-menu-card__meal--hero {
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
-/* mIAm chatbot button */
-.dm-miam-btn {
+/* Today highlight card */
+.dm-menu-card--today {
+  border-color: rgba(34, 211, 238, 0.6);
+  background: linear-gradient(160deg, rgba(34, 211, 238, 0.1), rgba(15, 23, 42, 0.7));
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.12), 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.dm-menu-card__today-badge {
   position: absolute;
-  bottom: 14px;
-  right: 14px;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.4rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #020617;
+  background: linear-gradient(135deg, #22d3ee, #a855f7);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.3);
+}
+
+/* mIAm — wrap = floating container, tooltip + button */
+.dm-miam-wrap {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.dm-miam-tooltip {
+  font-size: 0.5rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 10px 10px 4px 10px;
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  animation: dmTooltipFade 4s ease-in-out infinite;
+}
+
+@keyframes dmTooltipFade {
+  0%, 100% { opacity: 0.5; transform: translateY(2px); }
+  50% { opacity: 1; transform: translateY(0); }
+}
+
+.dm-miam-btn {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
   border-radius: 999px;
   background: linear-gradient(135deg, #22d3ee, #a855f7);
-  box-shadow: 0 8px 24px rgba(34, 211, 238, 0.3);
+  box-shadow: 0 6px 20px rgba(34, 211, 238, 0.25);
   cursor: pointer;
-  animation: dmMiamPulse 3s ease-in-out infinite;
 }
 
 .dm-miam-icon { font-size: 1rem; }
@@ -926,11 +983,6 @@
   font-weight: 800;
   color: #fff;
   letter-spacing: 0.5px;
-}
-
-@keyframes dmMiamPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
 }
 
 /* =====================================================
@@ -998,8 +1050,50 @@
   color: #94a3b8;
 }
 
-.dm-piggy-progress {
+/* Piggy project rows */
+.dm-piggy-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding: 0 8px;
+}
+
+.dm-piggy-project {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dm-piggy-project__icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.dm-piggy-project__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dm-piggy-project__name {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.dm-piggy-project__amount {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #fbbf24;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nesthub-landing__section {
@@ -2902,6 +2996,21 @@
 
   .nesthub-landing__hero {
     grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .nesthub-landing__hero-visual {
+    order: -1;
+  }
+
+  .nesthub-landing__hero-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .nesthub-landing__cta {
+    justify-content: center;
   }
 
   .carousel-grid {
@@ -2936,6 +3045,50 @@
     width: 100%;
     justify-content: flex-start;
   }
+
+  /* Device mockup — compact for small screens */
+  .device-mockup {
+    padding: 10px;
+    border-radius: 18px;
+  }
+
+  .device-mockup__inner {
+    border-radius: 12px;
+  }
+
+  .dm-screen {
+    padding: 12px;
+    gap: 10px;
+    min-height: 260px;
+  }
+
+  .device-mockup__dash-header {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .dm-time { font-size: 0.9rem; }
+  .dm-section-title { font-size: 0.65rem; }
+  .dm-nav-btn { width: 24px; height: 24px; font-size: 0.6rem; border-radius: 8px; }
+
+  .dm-donut-stack { width: 100px; height: 100px; }
+  .dm-donut-avatar { font-size: 2.5rem; width: 48px; height: 48px; }
+  .dm-widget-title { font-size: 0.72rem; }
+  .dm-widget-badge { font-size: 0.48rem; }
+
+  .dm-task-icon { font-size: 1.6rem; }
+  .dm-task-card { padding: 8px 4px; gap: 4px; }
+
+  .dm-menu-card__emoji--hero { font-size: 2rem; }
+  .dm-menu-card__meal--hero { font-size: 0.65rem; }
+
+  .dm-miam-wrap { bottom: 10px; right: 10px; }
+  .dm-miam-btn { padding: 6px 10px; }
+  .dm-miam-label { font-size: 0.6rem; }
+  .dm-miam-tooltip { font-size: 0.45rem; }
+
+  .dm-piggy-emoji { font-size: 2.2rem; }
+  .dm-piggy-amount { font-size: 1.2rem; }
 }
 
 /* Pricing Section */
