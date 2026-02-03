@@ -4,7 +4,7 @@ import './NestHubLandingPage.css';
 
 // Feature flag for Alpha mode
 // const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
-const ALPHA_MODE = true;
+const ALPHA_MODE =true
 
 const FAQ_ITEMS = [
   {
@@ -62,6 +62,41 @@ export function NestHubLandingPage() {
 
   // Progress navigation state
   const [activeSection, setActiveSection] = useState('hero');
+
+  // Matrix typing animation for brand name: "CAP FAMILLE O" → "CAP FAMILLE Organisée"
+  const [typedSuffix, setTypedSuffix] = useState('');
+  const suffixTarget = 'rganisée';
+
+  useEffect(() => {
+    let charIndex = 0;
+    let isTyping = true;
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      if (isTyping) {
+        charIndex++;
+        setTypedSuffix(suffixTarget.slice(0, charIndex));
+        if (charIndex >= suffixTarget.length) {
+          isTyping = false;
+          timeout = setTimeout(tick, 2500); // pause before erasing
+        } else {
+          timeout = setTimeout(tick, 120); // typing speed
+        }
+      } else {
+        charIndex--;
+        setTypedSuffix(suffixTarget.slice(0, charIndex));
+        if (charIndex <= 0) {
+          isTyping = true;
+          timeout = setTimeout(tick, 1200); // pause before retyping
+        } else {
+          timeout = setTimeout(tick, 60); // erasing speed
+        }
+      }
+    };
+
+    timeout = setTimeout(tick, 1500); // initial delay
+    return () => clearTimeout(timeout);
+  }, []);
 
   // Progress sections configuration
   const progressSections = [
@@ -230,7 +265,9 @@ export function NestHubLandingPage() {
 
       <header ref={headerRef} className="nesthub-landing__header">
         <div className="nesthub-landing__header-inner">
-          <div className="nesthub-landing__brand">Cap Famille O</div>
+          <div className="nesthub-landing__brand">
+            Cap Famille O<span className="brand-matrix">{typedSuffix}</span><span className="brand-cursor">_</span>
+          </div>
           <nav className="nesthub-landing__nav">
             {!ALPHA_MODE && (
               <a href="#tarifs" className="nesthub-landing__nav-link">
@@ -276,152 +313,244 @@ export function NestHubLandingPage() {
           </div>
 
           <div className="nesthub-landing__hero-visual scroll-reveal scroll-reveal--delay-2">
-            <div className="nesthub-landing__carousel digital-frame digital-frame--dashboard">
-              <div className="digital-frame__inner">
-                <div className="hero-screen">
-                  <div className="hero-screen__track" aria-hidden="true">
-                    <article className="hero-screen__slide hero-screen__slide--menu">
-                      <div className="hero-screen__topbar">
-                        <span className="hero-screen__title">Menu de la semaine</span>
-                        <div className="hero-screen__actions">
-                          <span>🍽️</span>
-                          <span>🛒</span>
-                        </div>
-                        <span className="hero-screen__dates">12 - 18 janv</span>
-                      </div>
-                      <div className="hero-menu-grid">
-                        <div className="hero-menu-card">
-                          <span className="hero-menu-day">Lun</span>
-                          <span className="hero-menu-date">12</span>
-                          <span className="hero-menu-icon">🍔</span>
-                          <span className="hero-menu-meal">Hamburgers</span>
-                          <span className="hero-menu-cta">+ Ajouter</span>
-                        </div>
-                        <div className="hero-menu-card">
-                          <span className="hero-menu-day">Mar</span>
-                          <span className="hero-menu-date">13</span>
-                          <span className="hero-menu-icon">🍙🍣🍱</span>
-                          <span className="hero-menu-meal">Pokebowl</span>
-                          <span className="hero-menu-cta">+ Ajouter</span>
-                        </div>
-                        <div className="hero-menu-card">
-                          <span className="hero-menu-day">Mer</span>
-                          <span className="hero-menu-date">14</span>
-                          <span className="hero-menu-icon">🍲</span>
-                          <span className="hero-menu-meal">Pâté chinois</span>
-                          <span className="hero-menu-cta">+ Ajouter</span>
-                        </div>
-                        <div className="hero-menu-card">
-                          <span className="hero-menu-day">Jeu</span>
-                          <span className="hero-menu-date">15</span>
-                          <span className="hero-menu-icon">🍗</span>
-                          <span className="hero-menu-meal">Poulet DG</span>
-                          <span className="hero-menu-cta">+ Ajouter</span>
-                        </div>
-                        <div className="hero-menu-card">
-                          <span className="hero-menu-day">Ven</span>
-                          <span className="hero-menu-date">16</span>
-                          <span className="hero-menu-icon">🐟</span>
-                          <span className="hero-menu-meal">Poisson braisé</span>
-                          <span className="hero-menu-cta">+ Ajouter</span>
-                        </div>
-                        <div className="hero-menu-card">
-                          <span className="hero-menu-day">Sam</span>
-                          <span className="hero-menu-date">17</span>
-                          <span className="hero-menu-icon">🥞</span>
-                          <span className="hero-menu-meal">Crêpes bretonnes</span>
-                          <span className="hero-menu-cta">+ Ajouter</span>
-                        </div>
-                      </div>
-                      <div className="hero-menu-chatbot">
-                        <span className="hero-menu-chatbot__icon">🤖</span>
-                        <span className="hero-menu-chatbot__label">mIAm</span>
-                      </div>
-                    </article>
+            <div className="device-mockup">
+              <div className="device-mockup__inner">
+                {/* Dashboard header inside screen */}
+                <div className="device-mockup__dash-header">
+                  <div className="dm-time-group">
+                    <span className="dm-time">08:35</span>
+                    <span className="dm-date">Jeu. 29 janv.</span>
+                  </div>
+                  <div className="dm-header-title">
+                    <span className="dm-section-title">Cap Famille O<span className="brand-matrix brand-matrix--sm">{typedSuffix}</span></span>
+                  </div>
+                  <div className="dm-nav-btns">
+                    <span className="dm-nav-btn dm-nav-btn--active">🏠</span>
+                    <span className="dm-nav-btn">👨‍👩‍👧‍👦</span>
+                    <span className="dm-nav-btn">📅</span>
+                    <span className="dm-nav-btn">🍽️</span>
+                  </div>
+                </div>
 
-                    <article className="hero-screen__slide hero-screen__slide--screen-time">
-                      <div className="hero-screen__topbar hero-screen__topbar--center">
-                        <span className="hero-screen__title">Garde un oeil sur ton temps d'écran</span>
-                      </div>
-                      <div className="st-switcher">
-                        <button className="st-pill st-pill--active" type="button">
-                          <span className="st-pill__avatar">👦</span>
-                          <span className="st-pill__name">Sifaw</span>
-                        </button>
-                        <button className="st-pill" type="button">
-                          <span className="st-pill__avatar">👦</span>
-                          <span className="st-pill__name">Georges</span>
-                        </button>
-                        <button className="st-pill" type="button">
-                          <span className="st-pill__avatar">👦</span>
-                          <span className="st-pill__name">Lucas</span>
-                        </button>
-                      </div>
-                      <div className="st-avatar-container">
-                        <div className="st-avatar-ring st-avatar-ring--large">
-                          <div className="st-avatar-stars" />
-                          <div className="st-avatar-img">👦</div>
-                        </div>
-                      </div>
-                      <div className="st-hearts-panel st-hearts-panel--wide">
-                        <div className="st-hearts-label">TEMPS D'ÉCRAN</div>
-                        <div className="st-hearts-row">
-                          <span className="st-heart st-heart--on">❤️</span>
-                          <span className="st-heart st-heart--on">❤️</span>
-                          <span className="st-heart st-heart--on">❤️</span>
-                          <span className="st-heart st-heart--on">❤️</span>
-                          <span className="st-heart st-heart--losing">❤️</span>
-                        </div>
-                        <div className="st-time-display">0 / 420 min</div>
-                        <div className="st-time-anim">
-                          <span className="st-minus-badge">-60 min</span>
-                          <span className="st-heart-fly">💔</span>
-                        </div>
-                      </div>
-                    </article>
+                {/* Cycling screen content */}
+                <div className="device-mockup__viewport">
+                  <div className="device-mockup__track" aria-hidden="true">
 
-                    <article className="hero-screen__slide hero-screen__slide--calendar">
-                      <div className="hero-screen__topbar">
-                        <span className="hero-screen__title">Famille · Agenda partagé</span>
-                        <div className="hero-screen__actions">
-                          <span className="hero-screen__pill">2 - 8 févr</span>
-                          <span className="hero-screen__pill hero-screen__pill--active">Aujourd'hui</span>
+                  {/* ── Screen 1: Children / Progress ── */}
+                  <article className="dm-screen dm-screen--children">
+                    <div className="dm-child-switcher">
+                      <button className="dm-pill dm-pill--active" type="button">
+                        <span className="dm-pill__icon">👦</span>
+                        <span className="dm-pill__name">Charlotte</span>
+                      </button>
+                      <button className="dm-pill" type="button">
+                        <span className="dm-pill__icon">👧</span>
+                        <span className="dm-pill__name">Georges</span>
+                      </button>
+                      <button className="dm-pill" type="button">
+                        <span className="dm-pill__icon">🧒</span>
+                        <span className="dm-pill__name">Lucas</span>
+                      </button>
+                    </div>
+                    <div className="dm-donut-hearts">
+                      <div className="dm-donut-wrapper">
+                        <div className="dm-donut-stack">
+                          <svg className="dm-donut-chart" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="12" />
+                            <circle cx="60" cy="60" r="52" fill="none" stroke="url(#dmDonutGrad)" strokeWidth="12"
+                              strokeDasharray="240 327" strokeLinecap="round"
+                              transform="rotate(-90 60 60)" />
+                            <defs>
+                              <linearGradient id="dmDonutGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#22d3ee" />
+                                <stop offset="100%" stopColor="#a855f7" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                          <div className="dm-donut-avatar">👦</div>
                         </div>
-                      </div>
-                      <div className="hero-calendar">
-                        <div className="hero-calendar__header">
-                          {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day, index) => (
-                            <div key={day} className={`hero-calendar__day ${index === 0 ? 'is-active' : ''}`}>
-                              <span>{day}.</span>
-                              <span>{2 + index} févr.</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="hero-calendar__grid">
-                          <div className="hero-calendar__time">
-                            <span>07:00</span>
-                            <span>10:00</span>
-                            <span>13:00</span>
-                            <span>16:00</span>
+                        <div className="dm-progress-track">
+                          <div className="dm-progress-label">
+                            <span>Progression</span>
+                            <span className="dm-progress-value">455 / 1000</span>
                           </div>
-                          <div className="hero-calendar__cells">
-                            <div className="hero-calendar__event hero-calendar__event--blue">Rdv relance Lhanout</div>
-                            <div className="hero-calendar__event hero-calendar__event--purple">Visite réparation dégâts</div>
-                            <div className="hero-calendar__event hero-calendar__event--teal">Lucas · patins école</div>
-                            <div className="hero-calendar__event hero-calendar__event--pink">Sifaw · Ski de fond</div>
-                            <div className="hero-calendar__event hero-calendar__event--cyan">Écrire à Alexandre</div>
+                          <div className="dm-progress-bar">
+                            <div className="dm-progress-fill" style={{ width: '46%' }} />
                           </div>
                         </div>
-                        <div className="hero-calendar__footer">
-                          <span>À faire prochainement</span>
-                          <span className="hero-screen__pill">10 tâches</span>
+                      </div>
+                      <div className="dm-hearts-col">
+                        <span className="dm-hearts-title">TEMPS D'ÉCRAN</span>
+                        <div className="dm-hearts-list">
+                          <span className="dm-heart dm-heart--on">❤️</span>
+                          <span className="dm-heart dm-heart--on">❤️</span>
+                          <span className="dm-heart dm-heart--on">❤️</span>
+                          <span className="dm-heart dm-heart--on">❤️</span>
+                          <span className="dm-heart dm-heart--losing">❤️</span>
+                        </div>
+                        <span className="dm-hearts-meta">0 / 420 min</span>
+                        <div className="dm-hearts-anim">
+                          <span className="dm-minus-badge">-60 min</span>
+                          <span className="dm-heart-fly">💔</span>
                         </div>
                       </div>
-                    </article>
+                    </div>
+                  </article>
+
+                  {/* ── Screen 2: Daily Tasks ── */}
+                  <article className="dm-screen dm-screen--tasks">
+                    <div className="dm-widget-header">
+                      <span className="dm-widget-title">Tâches du jour</span>
+                      <span className="dm-widget-badge">6 tâches</span>
+                    </div>
+                    <div className="dm-tasks-grid">
+                      <div className="dm-task-card dm-task-card--done dm-tone-blue">
+                        <span className="dm-task-icon">📱</span>
+                        <span className="dm-task-name">Temps d'écran</span>
+                        <span className="dm-task-done-badge">✔ Fait</span>
+                      </div>
+                      <div className="dm-task-card dm-tone-violet">
+                        <span className="dm-task-icon">🧹</span>
+                        <span className="dm-task-name">Ranger chambre</span>
+                      </div>
+                      <div className="dm-task-card dm-tone-green">
+                        <span className="dm-task-icon">📖</span>
+                        <span className="dm-task-name">Lire 20 min</span>
+                      </div>
+                      <div className="dm-task-card dm-tone-orange">
+                        <span className="dm-task-icon">🎹</span>
+                        <span className="dm-task-name">Piano</span>
+                      </div>
+                      <div className="dm-task-card dm-tone-cyan">
+                        <span className="dm-task-icon">🐕</span>
+                        <span className="dm-task-name">Promener Max</span>
+                      </div>
+                      <div className="dm-task-card dm-tone-violet">
+                        <span className="dm-task-icon">🎒</span>
+                        <span className="dm-task-name">Sac d'école</span>
+                      </div>
+                    </div>
+                    <div className="dm-tasks-nav">
+                      <button className="dm-tasks-nav-btn" type="button" disabled>‹</button>
+                      <span className="dm-tasks-nav-label">1 / 2</span>
+                      <button className="dm-tasks-nav-btn" type="button">›</button>
+                    </div>
+                  </article>
+
+                  {/* ── Screen 3: Calendar ── */}
+                  <article className="dm-screen dm-screen--calendar">
+                    <div className="dm-widget-header">
+                      <span className="dm-widget-title">Calendrier</span>
+                      <span className="dm-widget-badge">3 événements</span>
+                    </div>
+                    <div className="dm-timeline">
+                      <div className="dm-timeline-group">
+                        <div className="dm-timeline-day">Aujourd'hui</div>
+                        <div className="dm-event-card dm-event--urgent">
+                          <div className="dm-event-time-row">
+                            <span className="dm-event-time">09:00</span>
+                            <span className="dm-event-relative">Dans 25 min</span>
+                          </div>
+                          <span className="dm-event-title">Dentiste — Charlotte</span>
+                        </div>
+                        <div className="dm-event-card dm-event--soon">
+                          <div className="dm-event-time-row">
+                            <span className="dm-event-time">14:30</span>
+                            <span className="dm-event-relative">Cet après-midi</span>
+                          </div>
+                          <span className="dm-event-title">Judo — Georges</span>
+                        </div>
+                      </div>
+                      <div className="dm-timeline-group">
+                        <div className="dm-timeline-day">Demain</div>
+                        <div className="dm-event-card dm-event--future">
+                          <div className="dm-event-time-row">
+                            <span className="dm-event-time">10:00</span>
+                          </div>
+                          <span className="dm-event-title">Réunion parents</span>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+
+                  {/* ── Screen 4: Menu semaine (matches screenshot) ── */}
+                  <article className="dm-screen dm-screen--menu">
+                    {/* Menu header bar */}
+                    <div className="dm-menu-header">
+                      <span className="dm-menu-title">Menu de la semaine</span>
+                      <div className="dm-menu-header-icons">
+                        <span>🍽️</span>
+                        <span>🛒</span>
+                      </div>
+                      <span className="dm-menu-date">12 - 18 janv</span>
+                    </div>
+
+                    {/* Day cards grid */}
+                    <div className="dm-menu-cards">
+                      <div className="dm-menu-card">
+                        <span className="dm-menu-card__day">LUN</span>
+                        <span className="dm-menu-card__num">12</span>
+                        <span className="dm-menu-card__emoji">🍔</span>
+                        <span className="dm-menu-card__meal">Hamburgers</span>
+                        <button className="dm-menu-card__add" type="button">+ Ajouter</button>
+                      </div>
+                      <div className="dm-menu-card">
+                        <span className="dm-menu-card__day">MAR</span>
+                        <span className="dm-menu-card__num">13</span>
+                        <div className="dm-menu-card__emojis">
+                          <span>🍙</span><span>🍣</span><span>🍱</span>
+                        </div>
+                        <span className="dm-menu-card__meal">Pokebowl</span>
+                        <button className="dm-menu-card__add" type="button">+ Ajouter</button>
+                      </div>
+                      <div className="dm-menu-card">
+                        <span className="dm-menu-card__day">MER</span>
+                        <span className="dm-menu-card__num">14</span>
+                        <span className="dm-menu-card__emoji">🍲</span>
+                        <span className="dm-menu-card__meal">Pâté chinois</span>
+                        <button className="dm-menu-card__add" type="button">+ Ajouter</button>
+                      </div>
+                    </div>
+
+                    {/* mIAm chatbot floating button */}
+                    <div className="dm-miam-btn">
+                      <span className="dm-miam-icon">🤖</span>
+                      <span className="dm-miam-label">mIAm</span>
+                    </div>
+                  </article>
+
+                  {/* ── Screen 5: Piggy bank ── */}
+                  <article className="dm-screen dm-screen--piggy">
+                    <div className="dm-widget-header">
+                      <span className="dm-widget-title">Tirelire familiale</span>
+                      <span className="dm-widget-badge">🪙</span>
+                    </div>
+                    <div className="dm-piggy-hero">
+                      <div className="dm-piggy-icon-wrap">
+                        <span className="dm-piggy-coin" aria-hidden="true">🪙</span>
+                        <span className="dm-piggy-sparkle" aria-hidden="true">✦</span>
+                        <span className="dm-piggy-emoji">🐷</span>
+                      </div>
+                      <div className="dm-piggy-amount">
+                        <span ref={piggyAmountRef}>28 CAD</span>
+                      </div>
+                      <span className="dm-piggy-meta">Projet long terme</span>
+                    </div>
+                    <div className="dm-piggy-progress">
+                      <div className="dm-progress-label">
+                        <span>Objectif: vélo familial</span>
+                        <span className="dm-progress-value">42%</span>
+                      </div>
+                      <div className="dm-progress-bar">
+                        <div className="dm-progress-fill dm-progress-fill--orange" style={{ width: '42%' }} />
+                      </div>
+                    </div>
+                  </article>
+
                   </div>
                 </div>
               </div>
-              <span className="digital-frame__bezel" aria-hidden="true" />
+              <span className="device-mockup__bezel" aria-hidden="true" />
             </div>
           </div>
         </section>
@@ -681,9 +810,9 @@ export function NestHubLandingPage() {
 
           <div className="finance-projects finance-projects--interactive">
             <div className="finance-projects__header">
-              <div className="family-member__avatar family-member__avatar--sifaw finance-avatar">👧</div>
+              <div className="family-member__avatar family-member__avatar--Charlotte finance-avatar">👧</div>
               <div>
-                <h3 className="finance-projects__title">Projets en cours de Sifaw</h3>
+                <h3 className="finance-projects__title">Projets en cours de Charlotte</h3>
                 <p className="finance-projects__subtitle">Cliquez sur "Ajouter 2$" pour voir la magie ✨</p>
               </div>
               <button
@@ -809,8 +938,8 @@ export function NestHubLandingPage() {
 
           <div className="family-preview">
             <div className="family-member scroll-reveal scroll-reveal--delay-1">
-              <div className="family-member__avatar family-member__avatar--sifaw">👧</div>
-              <div className="family-member__name">Sifaw</div>
+              <div className="family-member__avatar family-member__avatar--Charlotte">👧</div>
+              <div className="family-member__name">Charlotte</div>
               <div className="family-member__tasks">
                 <div className="mini-task">
                   <span className="mini-task__icon">🍽️</span>
