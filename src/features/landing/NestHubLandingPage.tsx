@@ -529,7 +529,7 @@ export function NestHubLandingPage() {
 
                     {/* mIAm chatbot floating button + tooltip */}
                     <div className="dm-miam-wrap">
-                      <div className="dm-miam-tooltip brand-matrix">Je suis ton géni de cuisine</div>
+                      {/* <div className="dm-miam-tooltip brand-matrix">Je suis ton géni de cuisine</div> */}
                       <div className="dm-miam-btn">
                         <span className="dm-miam-icon">🤖</span>
                         <span className="dm-miam-label">mIAm</span>
@@ -537,10 +537,10 @@ export function NestHubLandingPage() {
                     </div>
                   </article>
 
-                  {/* ── Screen 5: Tirelire de Sifaw ── */}
+                  {/* ── Screen 5: Tirelire de Charlotte ── */}
                   <article className="dm-screen dm-screen--piggy">
                     <div className="dm-widget-header">
-                      <span className="dm-widget-title">Tirelire de Sifaw</span>
+                      <span className="dm-widget-title">Tirelire de Charlotte</span>
                       <span className="dm-widget-badge">🪙</span>
                     </div>
                     <div className="dm-piggy-hero">
