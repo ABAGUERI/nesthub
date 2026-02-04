@@ -434,6 +434,46 @@
 }
 
 /* ===================================================== */
+/* Airplane Indicator (current week only)                */
+/* ===================================================== */
+.timeline-airplane {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  pointer-events: none;
+  filter:
+    drop-shadow(0 0 6px rgba(90, 190, 255, 0.45))
+    drop-shadow(0 0 14px rgba(170, 130, 255, 0.30));
+  animation: airplane-fly 5s ease-in-out infinite;
+  transform: translateY(-50%);
+}
+
+.timeline-airplane-icon {
+  display: block;
+  color: rgba(200, 220, 255, 0.88);
+  /* Rotate the top-down airplane icon to point right */
+  transform: rotate(90deg);
+}
+
+@keyframes airplane-fly {
+  0%, 100% {
+    transform: translateY(-50%) translate(0, 0);
+  }
+  20% {
+    transform: translateY(-50%) translate(3px, -2.5px);
+  }
+  45% {
+    transform: translateY(-50%) translate(5px, -0.5px);
+  }
+  70% {
+    transform: translateY(-50%) translate(2px, 1.5px);
+  }
+  90% {
+    transform: translateY(-50%) translate(-1px, -1px);
+  }
+}
+
+/* ===================================================== */
 /* Responsive */
 /* ===================================================== */
 @media (prefers-reduced-motion: reduce) {
@@ -442,9 +482,14 @@
   .timeline-event-more {
     transition: none;
   }
-  
+
   .timeline-card::before {
     animation: none;
+  }
+
+  .timeline-airplane {
+    animation: none;
+    transform: translateY(-50%);
   }
 }
 
