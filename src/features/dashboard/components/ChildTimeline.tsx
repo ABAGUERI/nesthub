@@ -83,11 +83,28 @@ export default function ChildTimeline({ childName, events }: Props) {
     const today = startOfDay(new Date());
     return addDays(today, weekOffset * 7);
   }, [weekOffset]);
-  
+
   const weekStart = useMemo(() => startOfWeek(weekBaseDate), [weekBaseDate]);
   const weekEnd = useMemo(() => endOfDay(addDays(weekStart, 6)), [weekStart]);
 
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+
+  // Airplane indicator: only visible on the current week
+  const isCurrentWeek = weekOffset === 0;
+
+  const todayDayIndex = useMemo(() => {
+    if (!isCurrentWeek) return -1;
+    const today = startOfDay(new Date());
+    const todayKey = formatKey(today);
+    return days.findIndex((day) => formatKey(day) === todayKey);
+  }, [isCurrentWeek, days]);
+
+  const airplaneLeft = useMemo(() => {
+    if (todayDayIndex < 0) return undefined;
+    // Position slightly before (0.3 day-units) the current day dot
+    const position = (Math.max(0, todayDayIndex - 0.3) / 6) * 100;
+    return `${position}%`;
+  }, [todayDayIndex]);
 
   const weekEvents = useMemo(() => {
     const sorted = [...(events || [])].sort(
@@ -259,6 +276,24 @@ export default function ChildTimeline({ childName, events }: Props) {
 
       <div className="timeline-rail-zone" aria-label="Timeline de la semaine">
         <div className="timeline-rail" />
+
+        {isCurrentWeek && todayDayIndex >= 0 && (
+          <div
+            className="timeline-airplane"
+            style={{ left: airplaneLeft }}
+            aria-hidden="true"
+          >
+            <svg
+              className="timeline-airplane-icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+            </svg>
+          </div>
+        )}
 
         {days.map((day, index) => {
           const left = `${(index / 6) * 100}%`;
