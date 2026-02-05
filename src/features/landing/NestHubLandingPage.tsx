@@ -446,33 +446,36 @@ export function NestHubLandingPage() {
                   </div>
                 </article>
 
-                <article className="carousel-slide carousel-slide--kitchen">
+                <article className="carousel-slide carousel-slide--miam">
                   <div className="carousel-toolbar">
                     <div className="carousel-time">
                       08 h 39 <span>Cuisine</span>
                     </div>
-                    <div className="carousel-title">Menu semaine</div>
+                    <div className="carousel-title">mIAm</div>
                     <div className="carousel-icons">
-                      <span>🍲</span>
-                      <span>🛒</span>
-                      <span>📅</span>
+                      <span>🧑‍🍳</span>
+                      <span>🤖</span>
+                      <span>🍽️</span>
                     </div>
                   </div>
-                  <div className="carousel-menu">
-                    <div className="carousel-menu__day">
-                      <span>Lun</span>
-                      <strong>Poulet BBQ</strong>
+                  <div className="miam-chat">
+                    <div className="miam-chat__bubble miam-chat__bubble--user miam-chat__anim-1">
+                      On mange quoi ce soir ?
                     </div>
-                    <div className="carousel-menu__day">
-                      <span>Mer</span>
-                      <strong>Pâtes chinoises</strong>
+                    <div className="miam-chat__typing miam-chat__anim-2">
+                      <span className="miam-chat__brand">mIAm</span>
+                      <span className="miam-dot" /><span className="miam-dot" /><span className="miam-dot" />
                     </div>
-                    <div className="carousel-menu__day">
-                      <span>Ven</span>
-                      <strong>Fajitas</strong>
+                    <div className="miam-chat__bubble miam-chat__bubble--ai miam-chat__anim-3">
+                      <strong>Fajitas au poulet!</strong>
+                      <span>30 min · Budget · 5 pers.</span>
+                    </div>
+                    <div className="miam-chat__menu miam-chat__anim-4">
+                      <div className="miam-menu-day"><span>Lun</span><strong>Poulet BBQ</strong></div>
+                      <div className="miam-menu-day"><span>Mar</span><strong>Pâté chinois</strong></div>
+                      <div className="miam-menu-day"><span>Mer</span><strong>Fajitas</strong></div>
                     </div>
                   </div>
-                  <div className="carousel-action">✨ Générer menu & épicerie</div>
                 </article>
 
                 <article className="carousel-slide">
@@ -1094,62 +1097,81 @@ export function NestHubLandingPage() {
           </div>
         </section>
 
-        {/* Kitchen Section with Menu Preview */}
+        {/* Kitchen Section with mIAm Assistant */}
         <section id="kitchen" className="nesthub-landing__section nesthub-landing__kitchen scroll-reveal">
           <div className="nesthub-landing__section-copy">
-            <h2>L'écran cuisine : le tableau du frigo… en mieux</h2>
+            <h2>mIAm : votre assistant culinaire IA</h2>
             <p>
-              « Papa, on mange quoi ce soir ? » Cette phrase disparaît.
+              « On mange quoi ce soir ? » Demandez à mIAm, il s'en occupe.
             </p>
           </div>
 
-          <div className="kitchen-preview">
-            <div className="menu-week scroll-reveal scroll-reveal--delay-1">
-              <div className="menu-week__header">
-                <span className="menu-week__title">Menu de la semaine</span>
-                <span className="menu-week__dates">5 - 11 janv</span>
+          <div className="kitchen-preview kitchen-preview--miam">
+            <div className="miam-demo scroll-reveal scroll-reveal--delay-1">
+              <div className="miam-demo__header">
+                <span className="miam-demo__logo">🧑‍🍳</span>
+                <div>
+                  <span className="miam-demo__brand">mIAm</span>
+                  <span className="miam-demo__tagline">Assistant culinaire IA</span>
+                </div>
               </div>
-              <div className="menu-week__grid">
-                <div className="menu-day">
-                  <span className="menu-day__name">Lun</span>
-                  <span className="menu-day__num">5</span>
-                  <span className="menu-day__icon">🍗</span>
-                  <span className="menu-day__meal">Poitrines de poulet</span>
+              <div className="miam-demo__chat">
+                <div className="miam-demo__msg miam-demo__msg--user miam-demo__reveal-1">
+                  On mange quoi cette semaine ? On est 5, budget serré.
                 </div>
-                <div className="menu-day">
-                  <span className="menu-day__name">Mar</span>
-                  <span className="menu-day__num">6</span>
-                  <span className="menu-day__icon">🍝</span>
-                  <span className="menu-day__meal">Spaghetti bolognaise</span>
+                <div className="miam-demo__msg miam-demo__msg--ai miam-demo__reveal-2">
+                  <strong>Voici votre menu de la semaine!</strong>
                 </div>
-                <div className="menu-day">
-                  <span className="menu-day__name">Mer</span>
-                  <span className="menu-day__num">7</span>
-                  <span className="menu-day__icon">🥧</span>
-                  <span className="menu-day__meal">Pâté chinois</span>
+                <div className="miam-demo__week miam-demo__reveal-3">
+                  <div className="miam-demo__day">
+                    <span className="miam-demo__day-label">Lun</span>
+                    <span className="miam-demo__day-icon">🍗</span>
+                    <span className="miam-demo__day-meal">Poulet BBQ</span>
+                  </div>
+                  <div className="miam-demo__day">
+                    <span className="miam-demo__day-label">Mar</span>
+                    <span className="miam-demo__day-icon">🍝</span>
+                    <span className="miam-demo__day-meal">Spaghetti bolo</span>
+                  </div>
+                  <div className="miam-demo__day">
+                    <span className="miam-demo__day-label">Mer</span>
+                    <span className="miam-demo__day-icon">🥧</span>
+                    <span className="miam-demo__day-meal">Pâté chinois</span>
+                  </div>
+                  <div className="miam-demo__day">
+                    <span className="miam-demo__day-label">Jeu</span>
+                    <span className="miam-demo__day-icon">🌮</span>
+                    <span className="miam-demo__day-meal">Fajitas</span>
+                  </div>
+                  <div className="miam-demo__day">
+                    <span className="miam-demo__day-label">Ven</span>
+                    <span className="miam-demo__day-icon">🍕</span>
+                    <span className="miam-demo__day-meal">Pizza maison</span>
+                  </div>
                 </div>
-                <div className="menu-day">
-                  <span className="menu-day__name">Jeu</span>
-                  <span className="menu-day__num">8</span>
-                  <span className="menu-day__icon">🍕</span>
-                  <span className="menu-day__meal">Lasagnes</span>
+                <div className="miam-demo__msg miam-demo__msg--ai miam-demo__reveal-4">
+                  🛒 Liste d'épicerie générée — <strong>62 $ estimé</strong>
                 </div>
               </div>
             </div>
 
-            <div className="ai-menu scroll-reveal scroll-reveal--delay-2">
-              <div className="ai-menu__header">
-                <span className="ai-menu__icon">🤖</span>
-                <span className="ai-menu__title">La Boussole des Repas</span>
+            <div className="miam-features scroll-reveal scroll-reveal--delay-2">
+              <div className="miam-features__header">
+                <span className="miam-features__icon">🤖</span>
+                <span className="miam-features__title">mIAm sait tout faire</span>
               </div>
-              <ul className="ai-menu__features">
-                <li>✨ Menu 7 jours équilibrés</li>
-                <li>🛒 Liste épicerie complète</li>
-                <li>✏️ Modifiable avant validation</li>
+              <ul className="miam-features__list">
+                <li>🗣️ Demandez en langage naturel</li>
+                <li>📅 Menu 7 jours équilibrés</li>
+                <li>🛒 Liste épicerie auto-générée</li>
+                <li>💰 Respecte votre budget</li>
+                <li>🥗 Adapté aux allergies & régimes</li>
               </ul>
-              <button type="button" className="ai-menu__cta">
-                ✨ Générer menu et épicerie
-              </button>
+              <div className="miam-features__cta-wrap">
+                <button type="button" className="miam-features__cta">
+                  🧑‍🍳 Essayer mIAm
+                </button>
+              </div>
             </div>
           </div>
         </section>

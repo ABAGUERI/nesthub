@@ -386,38 +386,126 @@
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 }
 
-.carousel-menu {
-  display: grid;
-  gap: 10px;
-  padding: 14px;
-  border-radius: 18px;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+/* mIAm carousel slide */
+.carousel-slide--miam {
+  background: linear-gradient(160deg, rgba(251, 146, 60, 0.06), rgba(15, 23, 42, 0.9));
 }
 
-.carousel-menu__day {
+.miam-chat {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+.miam-chat__bubble {
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  opacity: 0;
+  animation: miamFadeIn 0.5s ease-out forwards;
+}
+
+.miam-chat__bubble--user {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #bae6fd;
+  align-self: end;
+  justify-self: end;
+  max-width: 80%;
+}
+
+.miam-chat__bubble--ai {
+  background: rgba(251, 146, 60, 0.12);
+  border: 1px solid rgba(251, 146, 60, 0.25);
+  color: #fed7aa;
+  max-width: 90%;
+  display: grid;
+  gap: 2px;
+}
+
+.miam-chat__bubble--ai span {
+  font-size: 0.62rem;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.miam-chat__typing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  opacity: 0;
+  animation: miamFadeIn 0.4s ease-out forwards, miamTypingHide 0.4s ease-out 2.6s forwards;
+}
+
+.miam-chat__brand {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fb923c;
+  letter-spacing: 0.05em;
+}
+
+.miam-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fb923c;
+  animation: miamBounce 1.2s ease-in-out infinite;
+}
+
+.miam-dot:nth-child(2) { animation-delay: 0.15s; }
+.miam-dot:nth-child(3) { animation-delay: 0.3s; }
+
+.miam-chat__menu {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  opacity: 0;
+  animation: miamFadeIn 0.5s ease-out forwards;
+}
+
+.miam-menu-day {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: 0.68rem;
   color: rgba(226, 232, 240, 0.85);
 }
 
-.carousel-menu__day span {
-  padding: 2px 8px;
+.miam-menu-day span {
+  padding: 1px 6px;
   border-radius: 999px;
-  background: rgba(56, 189, 248, 0.2);
-  color: #bae6fd;
-  font-size: 0.7rem;
+  background: rgba(251, 146, 60, 0.2);
+  color: #fdba74;
+  font-size: 0.6rem;
+  font-weight: 600;
 }
 
-.carousel-action {
-  text-align: center;
-  padding: 12px;
-  border-radius: 16px;
-  background: rgba(56, 189, 248, 0.2);
-  color: #e2e8f0;
-  font-size: 0.75rem;
+/* Staggered auto-trigger animations */
+.miam-chat__anim-1 { animation-delay: 0.8s; }
+.miam-chat__anim-2 { animation-delay: 1.8s; }
+.miam-chat__anim-3 { animation-delay: 2.8s; }
+.miam-chat__anim-4 { animation-delay: 3.6s; }
+
+@keyframes miamFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes miamTypingHide {
+  from { opacity: 1; max-height: 30px; }
+  to   { opacity: 0; max-height: 0; overflow: hidden; padding: 0; margin: 0; }
+}
+
+@keyframes miamBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
 }
 
 @keyframes carouselSlide {
@@ -1736,6 +1824,7 @@
   gap: 32px;
 }
 
+/* mIAm Kitchen Section */
 .kitchen-preview {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
@@ -1743,71 +1832,129 @@
   align-items: start;
 }
 
-.menu-week {
-  padding: 24px;
-  border-radius: 24px;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+.kitchen-preview--miam {
+  grid-template-columns: 1.4fr 1fr;
 }
 
-.menu-week__header {
+/* mIAm Demo Chat Panel */
+.miam-demo {
+  padding: 24px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, rgba(251, 146, 60, 0.06), rgba(15, 23, 42, 0.85));
+  border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+.miam-demo__header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
-.menu-week__title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #fb7185;
+.miam-demo__logo {
+  font-size: 2rem;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(251, 146, 60, 0.15);
+  border: 1px solid rgba(251, 146, 60, 0.3);
 }
 
-.menu-week__dates {
-  font-size: 0.85rem;
+.miam-demo__brand {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fb923c;
+  letter-spacing: 0.04em;
+}
+
+.miam-demo__tagline {
+  display: block;
+  font-size: 0.8rem;
   color: rgba(148, 163, 184, 0.8);
 }
 
-.menu-week__grid {
+.miam-demo__chat {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 12px;
 }
 
-.menu-day {
-  padding: 16px;
+.miam-demo__msg {
+  padding: 12px 16px;
   border-radius: 16px;
-  background: rgba(2, 6, 23, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.miam-demo__msg--user {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #bae6fd;
+  justify-self: end;
+  max-width: 85%;
+}
+
+.miam-demo__msg--ai {
+  background: rgba(251, 146, 60, 0.1);
+  border: 1px solid rgba(251, 146, 60, 0.2);
+  color: #fed7aa;
+  max-width: 90%;
+}
+
+/* Scroll-triggered reveal animations for section */
+.is-visible .miam-demo__reveal-1 { animation: miamReveal 0.6s ease-out 0.3s forwards; }
+.is-visible .miam-demo__reveal-2 { animation: miamReveal 0.6s ease-out 1.2s forwards; }
+.is-visible .miam-demo__reveal-3 { animation: miamReveal 0.6s ease-out 2.0s forwards; }
+.is-visible .miam-demo__reveal-4 { animation: miamReveal 0.6s ease-out 3.0s forwards; }
+
+@keyframes miamReveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Weekly menu grid in demo */
+.miam-demo__week {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.miam-demo__day {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   text-align: center;
 }
 
-.menu-day__name {
-  font-size: 0.75rem;
+.miam-demo__day-label {
+  font-size: 0.7rem;
   text-transform: uppercase;
   color: rgba(148, 163, 184, 0.7);
+  font-weight: 600;
 }
 
-.menu-day__num {
+.miam-demo__day-icon {
   font-size: 1.4rem;
-  font-weight: 700;
-  color: #f8fafc;
 }
 
-.menu-day__icon {
-  font-size: 1.6rem;
+.miam-demo__day-meal {
+  font-size: 0.7rem;
+  color: rgba(226, 232, 240, 0.8);
 }
 
-.menu-day__meal {
-  font-size: 0.8rem;
-  color: rgba(226, 232, 240, 0.85);
-}
-
-.ai-menu {
+/* Features sidebar */
+.miam-features {
   padding: 24px;
   border-radius: 24px;
   background: rgba(15, 23, 42, 0.7);
@@ -1817,23 +1964,23 @@
   gap: 16px;
 }
 
-.ai-menu__header {
+.miam-features__header {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.ai-menu__icon {
+.miam-features__icon {
   font-size: 1.5rem;
 }
 
-.ai-menu__title {
+.miam-features__title {
   font-size: 1.05rem;
   font-weight: 600;
   color: #f8fafc;
 }
 
-.ai-menu__features {
+.miam-features__list {
   list-style: none;
   padding: 0;
   display: flex;
@@ -1841,18 +1988,28 @@
   gap: 10px;
 }
 
-.ai-menu__features li {
+.miam-features__list li {
   font-size: 0.9rem;
   color: rgba(226, 232, 240, 0.85);
   padding: 10px 14px;
   border-radius: 12px;
   background: rgba(2, 6, 23, 0.4);
+  transition: background 0.2s ease;
 }
 
-.ai-menu__cta {
+.miam-features__list li:hover {
+  background: rgba(251, 146, 60, 0.1);
+}
+
+.miam-features__cta-wrap {
+  margin-top: 4px;
+}
+
+.miam-features__cta {
+  width: 100%;
   padding: 14px 20px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #22d3ee, #3b82f6);
+  background: linear-gradient(135deg, #fb923c, #f97316);
   border: none;
   color: #0b1224;
   font-size: 0.95rem;
@@ -1861,9 +2018,9 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.ai-menu__cta:hover {
+.miam-features__cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(34, 211, 238, 0.3);
+  box-shadow: 0 10px 30px rgba(251, 146, 60, 0.3);
 }
 
 /* How It Works Section */
@@ -2533,6 +2690,10 @@
     grid-template-columns: 1fr;
   }
 
+  .miam-demo__week {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
   .nesthub-landing__header-inner {
     flex-direction: column;
     align-items: flex-start;
@@ -3139,8 +3300,16 @@
   .progress-nav__dot,
   .finance-piggy,
   .finance-total__amount,
-  .savings-project--interactive {
+  .savings-project--interactive,
+  .miam-chat__bubble,
+  .miam-chat__typing,
+  .miam-chat__menu,
+  .miam-dot,
+  .miam-demo__msg,
+  .miam-demo__week {
     animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   .scroll-reveal,
