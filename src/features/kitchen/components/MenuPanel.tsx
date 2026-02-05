@@ -4,6 +4,7 @@ import { getStableFoodEmoji } from '@/shared/utils/emoji';
 import { getWeekMenu, saveWeekMenu } from '../services/menu.service';
 import { WeekMenu, WEEK_DAYS } from '@/shared/types/kitchen.types';
 import { TimerCard } from './TimerCard';
+import { MiamChatDemo } from './MiamChatDemo';
 import './MenuPanel.css';
 
 interface MealDraft {
@@ -83,6 +84,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
   const [editingMeals, setEditingMeals] = useState<MealDraft[]>([{ label: '', emoji: '' }]);
   const [editingDayLabel, setEditingDayLabel] = useState<string>('');
   const [saving, setSaving] = useState(false);
+  const [showMiamChat, setShowMiamChat] = useState(false);
 
   useEffect(() => {
     loadWeekMenu();
@@ -202,6 +204,15 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
           
           <div className="menu-action-btns">
             <button
+              className={`menu-action-btn ${showMiamChat ? 'active' : ''}`}
+              onClick={() => setShowMiamChat(true)}
+              type="button"
+              title="mIAm - Assistant culinaire"
+            >
+              🍳
+            </button>
+
+            <button
               className="menu-action-btn"
               onClick={onShowAIMenu}
               type="button"
@@ -209,7 +220,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
             >
               🍽️
             </button>
-            
+
             <button
               className="menu-action-btn"
               onClick={onShowGrocery}
@@ -313,6 +324,15 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
         {/* 8ème élément : Minuteurs */}
         <TimerCard />
       </div>
+
+      {/* Modal mIAm Chat Demo */}
+      {showMiamChat && (
+        <div className="modal-backdrop" onClick={() => setShowMiamChat(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <MiamChatDemo />
+          </div>
+        </div>
+      )}
 
       {/* Modal éditeur */}
       {editingDay && (
