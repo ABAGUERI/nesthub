@@ -478,23 +478,23 @@ export const ChildrenWidget: React.FC = () => {
         </div>
       </div>
 
-      <div className="carousel-container">
-        {children.length > 1 && (
-          <div className="child-switcher">
-            {children.map((child, index) => (
-              <button
-                key={child.id}
-                className={`switcher-pill ${index === selectedChildIndex ? 'active' : ''}`}
-                onClick={() => selectChild(index)}
-                aria-label={`Voir ${child.firstName}`}
-              >
-                <ChildAvatar child={child} size="small" className="pill-avatar" />
-                <span className="pill-name">{child.firstName}</span>
-              </button>
-            ))}
-          </div>
-        )}
+      {children.length > 1 && (
+        <div className="child-switcher">
+          {children.map((child, index) => (
+            <button
+              key={child.id}
+              className={`switcher-pill ${index === selectedChildIndex ? 'active' : ''}`}
+              onClick={() => selectChild(index)}
+              aria-label={`Voir ${child.firstName}`}
+            >
+              <ChildAvatar child={child} size="small" className="pill-avatar" />
+              <span className="pill-name">{child.firstName}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
+      <div className="carousel-container">
         <button
           className="carousel-arrow carousel-arrow-left"
           onClick={prevChild}
