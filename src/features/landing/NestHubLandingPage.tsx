@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ALPHA_MODE } from '@/routes/guards/AlphaPublicGate';
+import { MiamChatCarousel } from './components/MiamChatCarousel';
 import './NestHubLandingPage.css';
 
 const FAQ_ITEMS = [
@@ -500,41 +501,9 @@ export function NestHubLandingPage() {
                     </div>
                   </article>
 
-                  {/* ── Screen 4: Menu semaine ── */}
-                  <article className="dm-screen dm-screen--menu">
-                    <div className="dm-widget-header">
-                      <span className="dm-widget-title">Menu de la semaine</span>
-                      <span className="dm-widget-badge">12 – 18 janv</span>
-                    </div>
-
-                    {/* Day cards — today is hero, siblings are secondary */}
-                    <div className="dm-menu-cards dm-menu-cards--focus">
-                      <div className="dm-menu-card dm-menu-card--sibling">
-                        <span className="dm-menu-card__day">LUN</span>
-                        <span className="dm-menu-card__emoji">🍔</span>
-                        <span className="dm-menu-card__meal">Hamburgers</span>
-                      </div>
-                      <div className="dm-menu-card dm-menu-card--today">
-                        <span className="dm-menu-card__today-badge">Aujourd'hui</span>
-                        <span className="dm-menu-card__day">MAR 13</span>
-                        <span className="dm-menu-card__emoji dm-menu-card__emoji--hero">🍣</span>
-                        <span className="dm-menu-card__meal dm-menu-card__meal--hero">Pokebowl</span>
-                      </div>
-                      <div className="dm-menu-card dm-menu-card--sibling">
-                        <span className="dm-menu-card__day">MER</span>
-                        <span className="dm-menu-card__emoji">🍲</span>
-                        <span className="dm-menu-card__meal">Pâté chinois</span>
-                      </div>
-                    </div>
-
-                    {/* mIAm chatbot floating button + tooltip */}
-                    <div className="dm-miam-wrap">
-                      {/* <div className="dm-miam-tooltip brand-matrix">Je suis ton géni de cuisine</div> */}
-                      <div className="dm-miam-btn">
-                        <span className="dm-miam-icon">🤖</span>
-                        <span className="dm-miam-label">mIAm</span>
-                      </div>
-                    </div>
+                  {/* ── Screen 4: Menu semaine — mIAm Chat Demo ── */}
+                  <article className="dm-screen dm-screen--menu dm-screen--miam-chat">
+                    <MiamChatCarousel />
                   </article>
 
                   {/* ── Screen 5: Tirelire de Charlotte ── */}

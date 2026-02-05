@@ -865,6 +865,13 @@
   background: linear-gradient(160deg, rgba(251, 146, 60, 0.05), rgba(15, 23, 42, 0.9));
 }
 
+/* mIAm chat variant — full-bleed chat inside the carousel screen */
+.dm-screen--miam-chat {
+  padding: 8px;
+  gap: 0;
+  background: linear-gradient(160deg, rgba(34, 211, 238, 0.04), rgba(15, 23, 42, 0.95));
+}
+
 /* Focus layout: today card is hero, siblings are secondary */
 .dm-menu-cards--focus {
   display: grid;
