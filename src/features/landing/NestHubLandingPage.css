@@ -3006,7 +3006,7 @@
 
   .nesthub-landing__nav {
     gap: 6px;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
 
   .nesthub-landing__nav-link {
@@ -3029,6 +3029,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    max-width: 100%;
+  }
+
+  /* Ensure text elements stretch full width so they wrap properly */
+  .nesthub-landing__hero-copy h1,
+  .nesthub-landing__eyebrow,
+  .nesthub-landing__subtitle,
+  .nesthub-landing__hero-note,
+  .nesthub-landing__cta {
+    width: 100%;
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
 
   .nesthub-landing__cta {
@@ -3055,7 +3067,7 @@
 
 @media (max-width: 600px) {
   .nesthub-landing {
-    padding: 24px 12px 80px;
+    padding: 24px 16px 80px;
   }
 
   .nesthub-landing__header {
@@ -3091,7 +3103,16 @@
   }
 
   .nesthub-landing__hero-copy h1 {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
+    line-height: 1.25;
+  }
+
+  .nesthub-landing__subtitle {
+    font-size: 0.95rem;
+  }
+
+  .nesthub-landing__hero-note {
+    font-size: 0.82rem;
   }
 
   .nesthub-landing__cta {
