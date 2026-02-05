@@ -70,6 +70,7 @@
   background: rgba(7, 11, 23, 0.85);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  overflow: hidden;
   transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -178,11 +179,17 @@
   align-items: center;
 }
 
+.nesthub-landing__hero-copy {
+  min-width: 0;
+}
+
 .nesthub-landing__hero-copy h1 {
   font-size: clamp(2.2rem, 2.8vw, 3.2rem);
   line-height: 1.15;
   color: #f8fafc;
   margin-bottom: 20px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .nesthub-landing__eyebrow {
@@ -245,6 +252,8 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* =====================================================
@@ -3030,6 +3039,8 @@
     flex-direction: column;
     align-items: center;
     max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
   }
 
   /* Ensure text elements stretch full width so they wrap properly */
@@ -3041,6 +3052,11 @@
     width: 100%;
     max-width: 100%;
     overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .nesthub-landing__hero-visual {
+    max-width: 100%;
   }
 
   .nesthub-landing__cta {
@@ -3120,10 +3136,16 @@
     align-items: stretch;
   }
 
+  .nesthub-landing__hero-visual {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
   /* Device mockup — compact for small screens */
   .device-mockup {
     padding: 10px;
     border-radius: 18px;
+    max-width: 100%;
   }
 
   .device-mockup__inner {
