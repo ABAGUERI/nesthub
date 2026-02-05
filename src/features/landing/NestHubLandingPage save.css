@@ -343,6 +343,8 @@
 .dm-nav-btn {
   width: 30px;
   height: 30px;
+  appearance: none;
+  cursor: pointer;
   background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 10px;
@@ -351,6 +353,15 @@
   justify-content: center;
   font-size: 0.75rem;
   box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
+.dm-nav-btn:focus {
+  outline: none;
+}
+
+.dm-nav-btn:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.55);
+  outline-offset: 3px;
 }
 
 .dm-nav-btn--active {
@@ -367,7 +378,60 @@
 .device-mockup__track {
   display: flex;
   width: 500%;
-  animation: dmScreenSlide 35s ease-in-out infinite;
+  /* JS-driven carousel (slower autoplay + user navigation) */
+  transform: translateX(0);
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* Focus ring when user tabs into the carousel */
+.device-mockup__track:focus {
+  outline: none;
+}
+
+.device-mockup__track:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.55);
+  outline-offset: 6px;
+  border-radius: 14px;
+}
+
+/* Prev/next arrows */
+.dm-carousel-controls {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  pointer-events: none; /* let the track receive hover/focus; enable on buttons */
+  z-index: 3;
+}
+
+.dm-carousel-arrow {
+  pointer-events: auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
+  color: rgba(248, 250, 252, 0.9);
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.28);
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.dm-carousel-arrow:hover {
+  transform: scale(1.06);
+  border-color: rgba(34, 211, 238, 0.35);
+  background: radial-gradient(circle at 20% 20%, rgba(34,211,238,0.18), rgba(255,255,255,0.05));
+}
+
+.dm-carousel-arrow:active {
+  transform: scale(0.98);
 }
 
 .dm-screen {
@@ -659,132 +723,82 @@
 }
 
 .dm-task-card {
-  /* Premium card (no rainbow borders) */
-  --dm-accent: rgba(56, 189, 248, 0.55);
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 12px 8px;
-  border-radius: 16px;
+  gap: 6px;
+  padding: 10px 6px;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.07), rgba(15, 23, 42, 0.65) 60%);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
   text-align: center;
-
-  background:
-    radial-gradient(900px 260px at 30% 0%, rgba(255, 255, 255, 0.09), transparent 60%),
-    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(15, 23, 42, 0.58));
-
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    0 10px 22px rgba(0, 0, 0, 0.32);
-
-  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05), 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.dm-task-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  pointer-events: none;
-  background: radial-gradient(260px 120px at 50% 0%, var(--dm-accent), transparent 60%);
-  opacity: 0.22;
-}
-
-.dm-task-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(34, 211, 238, 0.22);
-  background:
-    radial-gradient(900px 260px at 30% 0%, rgba(255, 255, 255, 0.12), transparent 58%),
-    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(15, 23, 42, 0.56));
-}
-
-.dm-task-icon {
-  width: 54px;
-  height: 54px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  font-size: 1.65rem;
-  line-height: 1;
-  background: rgba(2, 6, 23, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    0 10px 18px rgba(0,0,0,0.22);
-}
-
+.dm-task-icon { font-size: 2.2rem; }
 .dm-task-name {
-  font-size: 0.62rem;
-  font-weight: 800;
-  color: rgba(248, 250, 252, 0.92);
-  letter-spacing: 0.2px;
-  line-height: 1.15;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  line-height: 1.2;
 }
 
-/* Done badge (small, not full overlay) */
+/* Done stamp overlay — green circle with checkmark */
 .dm-task-done-stamp {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 22px;
-  height: 22px;
+  inset: 0;
   display: grid;
   place-items: center;
-  border-radius: 999px;
-  font-size: 0.85rem;
+  font-size: 1.4rem;
   font-weight: 900;
-  color: rgba(255, 255, 255, 0.95);
-  background: rgba(34, 197, 94, 0.28);
-  border: 1px solid rgba(34, 197, 94, 0.35);
-  box-shadow: 0 10px 16px rgba(0,0,0,0.28);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(34, 197, 94, 0.25);
+  border-radius: 12px;
   z-index: 2;
   pointer-events: none;
 }
 
 .dm-task-card--done {
-  opacity: 0.78;
+  filter: grayscale(0.3);
 }
 
 .dm-task-card--done .dm-task-icon {
-  opacity: 0.75;
-  filter: grayscale(0.2);
+  opacity: 0.5;
 }
 
 .dm-task-card--done .dm-task-name {
   text-decoration: line-through;
-  text-decoration-color: rgba(148, 163, 184, 0.45);
-  opacity: 0.85;
+  text-decoration-color: rgba(148, 163, 184, 0.4);
+  opacity: 0.7;
 }
 
-/* Priority dot — subtle */
+/* Priority dot — pulsing indicator */
 .dm-task-priority-dot {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  width: 8px;
-  height: 8px;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #22d3ee;
-  box-shadow: 0 0 10px rgba(34, 211, 238, 0.65);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
   animation: dmPriorityPulse 4s ease-in-out infinite;
   z-index: 2;
 }
 
 @keyframes dmPriorityPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.55; transform: scale(1.25); }
+  50% { opacity: 0.5; transform: scale(1.3); }
 }
 
-/* Tone accents (now subtle, not border rainbow) */
-.dm-tone-blue { --dm-accent: rgba(56, 189, 248, 0.65); }
-.dm-tone-violet { --dm-accent: rgba(168, 85, 247, 0.60); }
-.dm-tone-green { --dm-accent: rgba(34, 197, 94, 0.55); }
-.dm-tone-orange { --dm-accent: rgba(251, 146, 60, 0.55); }
-.dm-tone-cyan { --dm-accent: rgba(34, 211, 238, 0.60); }
+/* Tone colors (mirrors DailyTasksWidget tone classes) */
+.dm-tone-blue { border-color: rgba(56, 189, 248, 0.6); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2); }
+.dm-tone-violet { border-color: rgba(168, 85, 247, 0.6); box-shadow: inset 0 0 0 1px rgba(168, 85, 247, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2); }
+.dm-tone-green { border-color: rgba(34, 197, 94, 0.6); box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2); }
+.dm-tone-orange { border-color: rgba(251, 146, 60, 0.6); box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2); }
+.dm-tone-cyan { border-color: rgba(34, 211, 238, 0.6); box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2); }
 
 /* (tasks nav removed — not needed in mockup) */
 

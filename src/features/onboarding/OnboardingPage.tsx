@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { OnboardingLayout } from './components/OnboardingLayout';
 import { FamilyStep } from './components/FamilyStep';
 import { GoogleStep } from './components/GoogleStep';
@@ -7,6 +7,7 @@ import { OnboardingChild, OnboardingNextPayload } from './types';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { ensureSession, supabase } from '@/shared/utils/supabase';
 import { createChild } from '@/shared/utils/children.service';
+import { ALPHA_MODE } from '@/routes/guards/AlphaPublicGate';
 import {
   createDefaultTaskLists,
   googleOAuthExchange,
@@ -388,6 +389,10 @@ export const OnboardingPage: React.FC = () => {
         return null;
     }
   }, [children, currentStep, error, googleConnected, handleBack, handleNext, isBusy]);
+
+  if (ALPHA_MODE) {
+    return <Navigate to="/alpha" replace />;
+  }
 
   if (authLoading || !user) {
     return null;
