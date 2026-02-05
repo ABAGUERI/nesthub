@@ -1,6 +1,8 @@
 /* === CHILDREN WIDGET CAROUSEL === */
 .children-widget {
   flex: 0.5 !important;
+  width: 100%;
+  min-width: 0;
   padding: clamp(12px, 1.6vw, 18px) clamp(14px, 2vw, 24px) !important;
   display: flex;
   flex-direction: column;
@@ -33,9 +35,12 @@
 
 .child-switcher {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(120px, 30vw), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: clamp(6px, 1vw, 12px);
-  margin-bottom: clamp(4px, 1vw, 12px);
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: clamp(8px, 1.2vw, 14px);
+  align-items: stretch;
 }
 
 .switcher-pill {
@@ -77,8 +82,8 @@
   justify-content: center;
   gap: clamp(8px, 1.5vw, 16px);
   flex: 1;
-  /* Give the dashboard room for the bottom timeline (avoid overlap) */
-  min-height: min(36vh, 300px);
+  /* Keep stable height while preserving timeline space */
+  min-height: min(34vh, 280px);
   padding: 0 clamp(4px, 1vw, 12px);
 }
 
@@ -246,12 +251,13 @@
   color: #1a1a1a;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
 /* === DONUT LARGE === */
 .donut-and-hearts {
   display: grid;
-  grid-template-columns: minmax(min(240px, 66vw), 1.1fr) auto;
+  grid-template-columns: minmax(0, minmax(min(240px, 66vw), 1.1fr)) minmax(0, auto);
   gap: clamp(10px, 2vw, 20px);
   align-items: center;
   justify-content: space-between;
@@ -624,10 +630,88 @@
 }
 
 /* === RESPONSIVE BREAKPOINTS === */
+
+
+@media (min-width: 900px) and (max-width: 1100px) and (min-height: 1200px) {
+  .child-switcher {
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  }
+
+  .donut-and-hearts {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+    align-items: center;
+    gap: 14px;
+  }
+
+  .screen-time-hearts {
+    min-width: 0;
+    width: 100%;
+    max-width: 280px;
+    justify-self: end;
+    text-align: center;
+  }
+
+  .hearts-column {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .heart {
+    font-size: clamp(18px, 2vw, 24px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .children-widget {
+    padding: 14px !important;
+  }
+
+  .child-switcher {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .child-switcher::-webkit-scrollbar {
+    display: none;
+  }
+
+  .switcher-pill {
+    flex: 0 0 auto;
+    min-width: 110px;
+  }
+
+  .donut-and-hearts {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 16px;
+  }
+
+  .screen-time-hearts {
+    width: min(100%, 360px);
+    min-width: 0;
+  }
+
+  .progress-track {
+    max-width: min(100%, 420px);
+  }
+}
+
 @media (max-width: 768px) {
   .child-switcher {
     display: flex;
     justify-content: center;
+    width: 100%;
     align-items: center;
     gap: 10px;
     margin-bottom: 6px;
@@ -643,7 +727,7 @@
   }
 
   .switcher-pill {
-    min-width: auto;
+    min-width: 96px;
     padding: 6px 10px;
     border-radius: 999px;
   }
@@ -680,6 +764,7 @@
     order: 2;
     width: 100%;
     max-width: 320px;
+    min-width: 0;
     flex-direction: column;
     justify-content: center;
     text-align: center;
@@ -714,7 +799,7 @@
 
 @media (max-width: 480px) {
   .children-widget {
-    padding: 16px !important;
+    padding: 14px !important;
   }
 
   .carousel-arrow {

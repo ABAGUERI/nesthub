@@ -64,6 +64,8 @@ export const useChildEvents = (userId: string | undefined, rangeDays: number): U
         const isUnauthorized =
           loadError?.message === 'unauthorized' ||
           loadError?.message === 'google_disconnected' ||
+          loadError?.message?.toLowerCase?.().includes?.('unauthorized') ||
+          loadError?.message?.toLowerCase?.().includes?.('forbidden') ||
           loadError?.message?.includes?.('Reconnecter');
         setError(
           isUnauthorized

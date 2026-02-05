@@ -1,5 +1,7 @@
 .dashboard-header {
   display: grid;
+  width: 100%;
+  min-width: 0;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 8px 12px;
@@ -36,7 +38,7 @@
 }
 
 .time {
-  font-size: 40px;
+  font-size: clamp(24px, 3.3vw, 36px);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -1px;
@@ -180,11 +182,47 @@
   display: none;
 }
 
+.header-title,
+.section-title,
+.section-description,
+.datetime-weather-box,
+.header-menu,
+.nav-buttons {
+  min-width: 0;
+}
+
+.section-description {
+  max-width: 100%;
+}
+
+
+@media (max-width: 1180px) {
+  .dashboard-header {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    row-gap: 10px;
+  }
+
+  .header-menu {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .nav-buttons {
+    flex-wrap: wrap;
+  }
+
+  .header-title {
+    align-self: center;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-header {
-    grid-template-columns: 1fr auto;
-    gap: 6px;
-    padding: calc(6px + env(safe-area-inset-top)) 10px 4px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 8px;
+    padding: calc(6px + env(safe-area-inset-top)) 10px 6px;
     border-radius: 12px;
   }
 
@@ -202,6 +240,7 @@
 
   .section-title {
     font-size: 15px;
+    max-width: 100%;
     letter-spacing: 0.4px;
   }
 
@@ -235,6 +274,7 @@
 
   .dashboard-header-utility {
     display: flex;
+    min-width: 0;
     grid-column: 1 / -1;
     align-items: center;
     justify-content: space-between;
