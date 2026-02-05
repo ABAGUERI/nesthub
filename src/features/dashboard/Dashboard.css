@@ -53,8 +53,9 @@
   display: grid;
   gap: 16px;
   width: 100%;
+  min-width: 0;
   align-items: stretch;
-  grid-template-columns: 7fr 3fr;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
   grid-template-rows: auto auto;
   grid-template-areas:
     'goal tasks'
@@ -63,6 +64,8 @@
 
 .kids-top {
   min-height: 0;
+  min-width: 0;
+  width: 100%;
 }
 
 .kids-goal {
@@ -76,6 +79,7 @@
 .kids-timeline {
   grid-area: timeline;
   width: 100%;
+  min-width: 0;
 }
 
 .kids-celebration {

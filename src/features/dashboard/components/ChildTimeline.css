@@ -5,6 +5,7 @@
 .timeline-card {
   /* Layout */
   width: 100%;
+  min-width: 0;
   border-radius: 22px;
   padding: 18px 18px 16px;
   position: relative;
@@ -72,6 +73,7 @@
 /* ===================================================== */
 .timeline-header {
   display: flex;
+  min-width: 0;
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
@@ -603,6 +605,7 @@
 
   .timeline-mobile-chips {
     display: flex;
+    scrollbar-width: none;
     gap: 10px;
     overflow-x: auto;
     padding-bottom: 6px;
@@ -678,5 +681,28 @@
 
   .timeline-rail-zone {
     display: none;
+  }
+}
+
+
+@media (max-width: 520px) {
+  .timeline-mobile-controls {
+    gap: 8px;
+  }
+
+  .timeline-week-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 19px;
+  }
+
+  .timeline-day-chip {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .timeline-mobile-events {
+    padding: 12px 14px;
   }
 }

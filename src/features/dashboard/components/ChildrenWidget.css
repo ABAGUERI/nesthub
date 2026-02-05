@@ -1,6 +1,8 @@
 /* === CHILDREN WIDGET CAROUSEL === */
 .children-widget {
   flex: 0.5 !important;
+  width: 100%;
+  min-width: 0;
   padding: clamp(12px, 1.6vw, 18px) clamp(14px, 2vw, 24px) !important;
   display: flex;
   flex-direction: column;
@@ -246,12 +248,13 @@
   color: #1a1a1a;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
 /* === DONUT LARGE === */
 .donut-and-hearts {
   display: grid;
-  grid-template-columns: minmax(min(240px, 66vw), 1.1fr) auto;
+  grid-template-columns: minmax(0, minmax(min(240px, 66vw), 1.1fr)) minmax(0, auto);
   gap: clamp(10px, 2vw, 20px);
   align-items: center;
   justify-content: space-between;
@@ -624,10 +627,37 @@
 }
 
 /* === RESPONSIVE BREAKPOINTS === */
+
+@media (max-width: 1024px) {
+  .children-widget {
+    padding: 14px !important;
+  }
+
+  .child-switcher {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .donut-and-hearts {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 16px;
+  }
+
+  .screen-time-hearts {
+    width: min(100%, 360px);
+    min-width: 0;
+  }
+
+  .progress-track {
+    max-width: min(100%, 420px);
+  }
+}
+
 @media (max-width: 768px) {
   .child-switcher {
     display: flex;
     justify-content: center;
+    width: 100%;
     align-items: center;
     gap: 10px;
     margin-bottom: 6px;
@@ -714,7 +744,7 @@
 
 @media (max-width: 480px) {
   .children-widget {
-    padding: 16px !important;
+    padding: 14px !important;
   }
 
   .carousel-arrow {
