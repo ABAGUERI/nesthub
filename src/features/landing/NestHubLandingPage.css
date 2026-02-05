@@ -1,11 +1,14 @@
 .nesthub-landing {
   position: relative;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
   padding: 32px 20px 120px;
   background: radial-gradient(circle at top, rgba(56, 189, 248, 0.15), transparent 45%),
     linear-gradient(135deg, #070b17 0%, #0b1224 55%, #0a0f1f 100%);
   color: #e2e8f0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 /* Premium “life” layer (subtle particles) */
@@ -70,6 +73,7 @@
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(148, 163, 184, 0.1);
   transition: background 0.3s ease, box-shadow 0.3s ease;
+  overflow-x: hidden;
 }
 
 .nesthub-landing__header.is-scrolled {
@@ -97,6 +101,8 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #f8fafc;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nesthub-landing__nav {
@@ -139,6 +145,7 @@
 
 .nesthub-landing__main {
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -147,13 +154,23 @@
 
 .nesthub-landing__hero {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 48px;
   align-items: center;
 }
 
+.nesthub-landing__hero > * {
+  min-width: 0;
+}
+
+.nesthub-landing__hero-copy {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
 .nesthub-landing__hero-copy h1 {
-  font-size: clamp(2.2rem, 2.8vw, 3.2rem);
+  font-size: clamp(1.7rem, 4.5vw, 3.2rem);
   line-height: 1.15;
   color: #f8fafc;
   margin-bottom: 20px;
@@ -649,7 +666,7 @@
 
 .nesthub-landing__section--split {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   gap: 32px;
   align-items: center;
 }
@@ -680,7 +697,7 @@
 }
 
 .nesthub-landing__list--compact {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
 }
 
 .nesthub-landing__features {
@@ -691,7 +708,7 @@
 
 .nesthub-landing__feature-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -1011,7 +1028,7 @@
 
 .nesthub-landing__memories {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -1375,7 +1392,7 @@
 
 .finance-projects__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -1604,7 +1621,7 @@
 
 .finance-lessons__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -1649,7 +1666,7 @@
 
 .family-preview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -1770,7 +1787,7 @@
 
 .menu-week__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr));
   gap: 12px;
 }
 
@@ -1976,6 +1993,7 @@
   }
 
   .how-step {
+    min-width: 0;
     max-width: 100%;
     width: 100%;
   }
@@ -2312,7 +2330,7 @@
 
 .screentime-solution {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -2350,7 +2368,7 @@
 /* Adult Tasks Section */
 .adult-tasks {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 16px;
   margin-top: 20px;
 }
@@ -2566,14 +2584,175 @@
     padding: 24px 16px 80px;
   }
 
-  .nesthub-landing__cta {
-    flex-direction: column;
-    align-items: stretch;
+  .nesthub-landing__main {
+    gap: 48px;
+  }
+
+  .nesthub-landing__header {
+    padding: 12px 16px;
+  }
+
+  .nesthub-landing__brand {
+    font-size: 16px;
+    letter-spacing: 0.04em;
   }
 
   .nesthub-landing__nav {
     width: 100%;
     justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .nesthub-landing__nav-link {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
+
+  .nesthub-landing__nav-cta {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  .nesthub-landing__hero {
+    gap: 32px;
+  }
+
+  .nesthub-landing__hero-copy h1 {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    line-height: 1.2;
+  }
+
+  .nesthub-landing__subtitle {
+    font-size: 0.95rem;
+  }
+
+  .nesthub-landing__hero-note {
+    font-size: 0.82rem;
+  }
+
+  .nesthub-landing__cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nesthub-landing__cta-primary,
+  .nesthub-landing__cta-secondary {
+    text-align: center;
+    padding: 12px 20px;
+  }
+
+  .nesthub-landing__section--split {
+    grid-template-columns: 1fr;
+  }
+
+  .nesthub-landing__feature-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .nesthub-landing__pricing-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .nesthub-landing__footer-top {
+    grid-template-columns: 1fr;
+  }
+
+  .nesthub-landing__list--compact {
+    grid-template-columns: 1fr;
+  }
+
+  .autonomy-step {
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .autonomy-step__badge {
+    grid-column: 1 / -1;
+    margin: 0 auto;
+  }
+
+  .screentime-hero {
+    padding: 20px;
+  }
+
+  .screentime-content h2 {
+    font-size: clamp(1.3rem, 5vw, 1.8rem);
+  }
+
+  .finance-header {
+    padding: 18px;
+  }
+
+  .finance-header__copy h2 {
+    font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+  }
+
+  .how-step {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .faq-item__question {
+    padding: 14px 16px;
+    font-size: 0.92rem;
+  }
+
+  .faq-item__answer-inner {
+    padding: 0 16px 14px;
+    font-size: 0.88rem;
+  }
+
+  .nesthub-landing__footer {
+    padding: 32px 16px 24px;
+  }
+}
+
+@media (max-width: 400px) {
+  .nesthub-landing {
+    padding: 20px 12px 64px;
+  }
+
+  .nesthub-landing__header {
+    padding: 10px 12px;
+  }
+
+  .nesthub-landing__brand {
+    font-size: 14px;
+  }
+
+  .nesthub-landing__nav {
+    gap: 6px;
+  }
+
+  .nesthub-landing__nav-link {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .nesthub-landing__nav-cta {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .nesthub-landing__hero-copy h1 {
+    font-size: 1.4rem;
+  }
+
+  .nesthub-landing__subtitle {
+    font-size: 0.88rem;
+  }
+
+  .nesthub-landing__hero-note {
+    font-size: 0.78rem;
+  }
+
+  .pricing-card {
+    padding: 20px;
+  }
+
+  .nesthub-landing__section-copy h2 {
+    font-size: 1.3rem;
   }
 }
 
@@ -2593,7 +2772,7 @@
 
 .nesthub-landing__pricing-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 24px;
   width: 100%;
   max-width: 700px;
@@ -2809,7 +2988,7 @@
 
 .nesthub-landing__footer-top {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 32px;
 }
 
