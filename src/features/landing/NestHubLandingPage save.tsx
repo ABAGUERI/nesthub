@@ -66,6 +66,56 @@ export function NestHubLandingPage() {
   const [typedSuffix, setTypedSuffix] = useState('');
   const suffixTarget = 'rganisée';
 
+  // ─────────────────────────────────────────────────────────────
+  // Hero device mockup carousel
+  // Slower autoplay + manual navigation (click / keyboard)
+  // ─────────────────────────────────────────────────────────────
+  const DEMO_SCREENS = useRef([
+    { icon: '🏠', label: 'Accueil' },
+    { icon: '👨‍👩‍👧‍👦', label: 'Tâches famille' },
+    { icon: '📅', label: 'Agenda' },
+    { icon: '🍽️', label: 'Menus (mIAm)' },
+    { icon: '🐷', label: 'Tirelire' },
+  ]).current;
+  const [demoScreenIndex, setDemoScreenIndex] = useState(0);
+  const [isDemoPaused, setIsDemoPaused] = useState(false);
+  const demoAutoplayRef = useRef<number | null>(null);
+
+  const goToDemoScreen = useCallback((idx: number) => {
+    const total = DEMO_SCREENS.length;
+    const next = ((idx % total) + total) % total;
+    setDemoScreenIndex(next);
+  }, [DEMO_SCREENS.length]);
+
+  const nextDemoScreen = useCallback(() => {
+    goToDemoScreen(demoScreenIndex + 1);
+  }, [demoScreenIndex, goToDemoScreen]);
+
+  const prevDemoScreen = useCallback(() => {
+    goToDemoScreen(demoScreenIndex - 1);
+  }, [demoScreenIndex, goToDemoScreen]);
+
+  // Slow autoplay (pauses on hover / focus)
+  useEffect(() => {
+    if (demoAutoplayRef.current) {
+      window.clearInterval(demoAutoplayRef.current);
+      demoAutoplayRef.current = null;
+    }
+    if (isDemoPaused) return;
+
+    // ✅ Slower than before (35s CSS loop): 9.5s per screen feels human/readable
+    demoAutoplayRef.current = window.setInterval(() => {
+      setDemoScreenIndex((prev) => (prev + 1) % DEMO_SCREENS.length);
+    }, 9500);
+
+    return () => {
+      if (demoAutoplayRef.current) {
+        window.clearInterval(demoAutoplayRef.current);
+        demoAutoplayRef.current = null;
+      }
+    };
+  }, [isDemoPaused, DEMO_SCREENS.length]);
+
   useEffect(() => {
     let charIndex = 0;
     let isTyping = true;
@@ -353,16 +403,60 @@ export function NestHubLandingPage() {
                     <span className="dm-section-title">Cap Famille O<span className="brand-matrix brand-matrix--sm">{typedSuffix}</span></span>
                   </div>
                   <div className="dm-nav-btns">
-                    <span className="dm-nav-btn dm-nav-btn--active">🏠</span>
-                    <span className="dm-nav-btn">👨‍👩‍👧‍👦</span>
-                    <span className="dm-nav-btn">📅</span>
-                    <span className="dm-nav-btn">🍽️</span>
+                    {DEMO_SCREENS.map((s, idx) => (
+                      <button
+                        key={s.label}
+                        type="button"
+                        className={`dm-nav-btn ${idx === demoScreenIndex ? 'dm-nav-btn--active' : ''}`}
+                        onClick={() => goToDemoScreen(idx)}
+                        aria-label={`Aller à : ${s.label}`}
+                      >
+                        {s.icon}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
                 {/* Cycling screen content */}
                 <div className="device-mockup__viewport">
-                  <div className="device-mockup__track" aria-hidden="true">
+                  {/* Manual controls (also pauses autoplay on hover/focus) */}
+                  <div className="dm-carousel-controls">
+                    <button
+                      type="button"
+                      className="dm-carousel-arrow"
+                      onClick={prevDemoScreen}
+                      aria-label="Écran précédent"
+                      onMouseEnter={() => setIsDemoPaused(true)}
+                      onMouseLeave={() => setIsDemoPaused(false)}
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      className="dm-carousel-arrow"
+                      onClick={nextDemoScreen}
+                      aria-label="Écran suivant"
+                      onMouseEnter={() => setIsDemoPaused(true)}
+                      onMouseLeave={() => setIsDemoPaused(false)}
+                    >
+                      ›
+                    </button>
+                  </div>
+                  <div
+                    className="device-mockup__track"
+                    style={{ transform: `translateX(-${demoScreenIndex * 20}%)` }}
+                    onMouseEnter={() => setIsDemoPaused(true)}
+                    onMouseLeave={() => setIsDemoPaused(false)}
+                    onFocusCapture={() => setIsDemoPaused(true)}
+                    onBlurCapture={() => setIsDemoPaused(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowLeft') prevDemoScreen();
+                      if (e.key === 'ArrowRight') nextDemoScreen();
+                    }}
+                    tabIndex={0}
+                    role="group"
+                    aria-label="Aperçu de l'application (carrousel)"
+                  >
 
                   {/* ── Screen 1: Children / Progress ── */}
                   <article className="dm-screen dm-screen--children">
@@ -1045,13 +1139,12 @@ export function NestHubLandingPage() {
             <div className="ai-menu scroll-reveal scroll-reveal--delay-2">
               <div className="ai-menu__header">
                 <span className="ai-menu__icon">🤖</span>
-                <span className="ai-menu__title">mIAm : votre assistant culinaire</span>
+                <span className="ai-menu__title">La Boussole des Repas</span>
               </div>
               <ul className="ai-menu__features">
                 <li>✨ Menu 7 jours équilibrés</li>
                 <li>🛒 Liste épicerie complète</li>
                 <li>✏️ Modifiable avant validation</li>
-                
               </ul>
               <button type="button" className="ai-menu__cta">
                 ✨ Générer menu et épicerie

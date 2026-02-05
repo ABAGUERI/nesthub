@@ -164,7 +164,7 @@
 /* ---- Cursor ---- */
 .mcc-cursor {
   display: inline-block;
-  animation: mccBlink 0.6s step-end infinite;
+  animation: mccBlink 0.9s step-end infinite; /* ✅ plus lent */
   color: #22d3ee;
   font-weight: 400;
   margin-left: 1px;

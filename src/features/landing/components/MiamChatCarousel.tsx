@@ -87,20 +87,41 @@ export const MiamChatCarousel: React.FC = () => {
       schedule(() => setPhase('user-typing'), 900);
     }
 
+    // ✅ Typing humain (ralenti + pauses naturelles)
     if (phase === 'user-typing') {
       let charIndex = 0;
+
+      const randomBetween = (min: number, max: number) =>
+        Math.floor(Math.random() * (max - min + 1) + min);
+
+      const humanDelay = (ch: string) => {
+        // Pauses naturelles
+        if (ch === ' ') return randomBetween(60, 140);
+        if (ch === ',' || ch === ';' || ch === ':') return randomBetween(160, 260);
+        if (ch === '.' || ch === '!' || ch === '?') return randomBetween(220, 360);
+
+        // Vitesse de frappe variable
+        let base = randomBetween(35, 110);
+
+        // Micro-pause occasionnelle (effet humain)
+        if (Math.random() < 0.03) base += randomBetween(120, 240);
+
+        return base;
+      };
+
       const typeNextChar = () => {
         if (charIndex < USER_MESSAGE.length) {
           setTypedText(USER_MESSAGE.slice(0, charIndex + 1));
+          const ch = USER_MESSAGE[charIndex];
           charIndex++;
-          const ch = USER_MESSAGE[charIndex - 1];
-          const delay = ch === ' ' ? 12 : ch === ',' ? 40 : 18;
-          schedule(typeNextChar, delay);
+          schedule(typeNextChar, humanDelay(ch));
         } else {
-          schedule(() => setPhase('user-done'), 250);
+          schedule(() => setPhase('user-done'), 450);
         }
       };
-      schedule(typeNextChar, 200);
+
+      // Petit temps avant que l'utilisateur "commence à taper"
+      schedule(typeNextChar, 650);
     }
 
     if (phase === 'user-done') {

@@ -185,7 +185,7 @@ export const AIMenuPanel: React.FC<AIMenuPanelProps> = ({ onBackToMenu }) => {
         <div>
           <h2 className="ai-menu-title">
             <span className="ai-icon">🤖</span>
-            La Boussole des Repas
+            mIAm ou la boussole des repas
           </h2>
           <p className="ai-menu-subtitle">
             Des menus qui s'adaptent aux envies de la famille
