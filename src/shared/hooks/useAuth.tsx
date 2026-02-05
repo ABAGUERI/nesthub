@@ -116,8 +116,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
+    if (error) {
+      const isMissingSession =
+        error.name === 'AuthSessionMissingError' ||
+        error.message?.toLowerCase().includes('auth session missing');
+
+      if (!isMissingSession) {
+        throw error;
+      }
+    }
+
     setUser(null);
     setSupabaseUser(null);
   };

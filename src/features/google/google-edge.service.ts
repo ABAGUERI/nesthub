@@ -1,4 +1,4 @@
-import { supabase } from '@/shared/utils/supabase';
+import { ensureSession, supabase } from '@/shared/utils/supabase';
 
 export interface GoogleConnectionSafe {
   id: string;
@@ -32,7 +32,7 @@ const getCached = <T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Pr
 };
 
 const parseFunctionError = (error: unknown) => {
-  const fallback = { message: 'Erreur de synchronisation Google' };
+  const fallback: { message: string; status?: number } = { message: 'Erreur de synchronisation Google' };
 
   if (!error || typeof error !== 'object') {
     return fallback;
@@ -63,7 +63,13 @@ const parseFunctionError = (error: unknown) => {
 };
 
 const invokeFunction = async <T>(name: string, body: Record<string, unknown>): Promise<T> => {
-  const { data, error } = await supabase.functions.invoke(name, { body });
+  const session = await ensureSession();
+  const accessToken = session?.access_token;
+
+  const { data, error } = await supabase.functions.invoke(name, {
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    body,
+  });
   if (error) {
     const parsed = parseFunctionError(error);
     const err = new Error(parsed.message);
