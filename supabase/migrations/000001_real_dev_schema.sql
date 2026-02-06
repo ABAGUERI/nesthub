@@ -52,6 +52,21 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
 
 
+CREATE OR REPLACE FUNCTION "public"."assign_client_number"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if new.client_number is null then
+    new.client_number := nextval('public.client_number_seq');
+  end if;
+  return new;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."assign_client_number"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."cleanup_old_weekly_menus"() RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
@@ -79,6 +94,211 @@ $$;
 
 
 ALTER FUNCTION "public"."create_default_config"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."ensure_weekly_rotation_random"("p_force" boolean DEFAULT false) RETURNS TABLE("week_start" timestamp with time zone, "inserted_count" integer, "closed_count" integer)
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public'
+    AS $$
+declare
+  v_user_id uuid;
+
+  v_reset_dow int;
+  v_local_date date;
+  v_dow int;
+  v_diff int;
+  v_week_start_date date;
+  v_week_start_ts timestamptz;
+  v_week_end_ts timestamptz;
+
+  v_has_active boolean;
+  v_closed int := 0;
+  v_inserted int := 0;
+
+  v_cfg_participants uuid[];
+  v_participants_count int := 0;
+begin
+  -- Force l'utilisateur courant
+  v_user_id := auth.uid();
+  if v_user_id is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  -- 1) rotation_reset_day + rotation_participants
+  select
+    coalesce(cc.rotation_reset_day, 1),
+    cc.rotation_participants
+  into
+    v_reset_dow,
+    v_cfg_participants
+  from public.client_config cc
+  where cc.user_id = v_user_id
+  limit 1;
+
+  -- 2) Calcul week_start basé sur la date locale Montréal
+  v_local_date := (now() at time zone 'America/Montreal')::date;
+  v_dow := extract(dow from v_local_date)::int;  -- 0..6
+  v_diff := (v_dow - v_reset_dow + 7) % 7;
+  v_week_start_date := v_local_date - v_diff;
+
+  -- week_start à 00:00 Montréal (converti en timestamptz)
+  v_week_start_ts := (v_week_start_date::timestamp at time zone 'America/Montreal');
+  v_week_end_ts := v_week_start_ts + interval '7 days';
+
+  -- 3) Rotation active déjà présente ?
+  select exists(
+    select 1
+    from public.rotation_assignments ra
+    where ra.user_id = v_user_id
+      and ra.week_start >= v_week_start_ts
+      and ra.week_start < v_week_end_ts
+      and ra.task_end_date is null
+  )
+  into v_has_active;
+
+  -- Si déjà active et pas de force => no-op idempotent
+  if v_has_active and not p_force then
+    week_start := v_week_start_ts;
+    inserted_count := 0;
+    closed_count := 0;
+    return;
+  end if;
+
+  -- 4) Si force (ou si pas active), clôture les actives de la fenêtre
+  update public.rotation_assignments ra
+  set task_end_date = now()
+  where ra.user_id = v_user_id
+    and ra.week_start >= v_week_start_ts
+    and ra.week_start < v_week_end_ts
+    and ra.task_end_date is null;
+
+  get diagnostics v_closed = row_count;
+
+  /*
+    5) Déterminer les participants
+    - si rotation_participants non-null et non vide, on prend l’intersection avec family_members(user_id=v_user_id)
+    - si intersection vide => fallback enfants
+    - sinon fallback enfants (role=child)
+  */
+  if v_cfg_participants is not null and array_length(v_cfg_participants, 1) is not null then
+    select count(*)
+    into v_participants_count
+    from public.family_members fm
+    where fm.user_id = v_user_id
+      and fm.id = any(v_cfg_participants);
+  else
+    v_participants_count := 0;
+  end if;
+
+  if v_participants_count <= 0 then
+    -- fallback enfants
+    select count(*)
+    into v_participants_count
+    from public.family_members fm
+    where fm.user_id = v_user_id
+      and fm.role = 'child';
+  end if;
+
+  if v_participants_count <= 0 then
+    -- Aucun participant => stop proprement
+    week_start := v_week_start_ts;
+    inserted_count := 0;
+    closed_count := v_closed;
+    return;
+  end if;
+
+  -- 6) Génération aléatoire = shuffle tâches actives + round-robin participants
+  with
+  t as (
+    select
+      rt.id as task_id,
+      row_number() over (order by random()) as rn
+    from public.rotation_tasks rt
+    where rt.user_id = v_user_id
+      and rt.is_active = true
+  ),
+  p as (
+    -- participants: soit liste configurée validée, soit enfants
+    select
+      fm.id as member_id,
+      row_number() over (order by fm.created_at asc, fm.id asc) as rn
+    from public.family_members fm
+    where fm.user_id = v_user_id
+      and (
+        (
+          v_cfg_participants is not null
+          and array_length(v_cfg_participants, 1) is not null
+          and v_participants_count > 0
+          and fm.id = any(v_cfg_participants)
+        )
+        or
+        (
+          (v_cfg_participants is null or array_length(v_cfg_participants, 1) is null)
+          and fm.role = 'child'
+        )
+        or
+        (
+          -- cas fallback enfants si cfg invalide (intersection vide)
+          (v_cfg_participants is not null and array_length(v_cfg_participants, 1) is not null and
+           not exists (
+             select 1 from public.family_members fx
+             where fx.user_id = v_user_id and fx.id = any(v_cfg_participants)
+           )
+          )
+          and fm.role = 'child'
+        )
+      )
+  ),
+  a as (
+    select
+      t.task_id,
+      (select p.member_id from p where p.rn = ((t.rn - 1) % v_participants_count) + 1) as child_id,
+      (t.rn - 1) as sort_order
+    from t
+  )
+  insert into public.rotation_assignments (user_id, week_start, task_id, child_id, sort_order)
+  select
+    v_user_id,
+    v_week_start_ts,
+    a.task_id,
+    a.child_id,
+    a.sort_order
+  from a
+  where a.child_id is not null;
+
+  get diagnostics v_inserted = row_count;
+
+  week_start := v_week_start_ts;
+  inserted_count := v_inserted;
+  closed_count := v_closed;
+  return;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."ensure_weekly_rotation_random"("p_force" boolean) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."get_google_connection"() RETURNS TABLE("id" "uuid", "user_id" "uuid", "gmail_address" "text", "selected_calendar_id" "text", "selected_calendar_name" "text", "expires_at" timestamp with time zone, "scope" "text", "updated_at" timestamp without time zone)
+    LANGUAGE "sql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+  select
+    id,
+    user_id,
+    gmail_address,
+    selected_calendar_id,
+    selected_calendar_name,
+    expires_at,
+    scope,
+    updated_at
+  from public.google_connections
+  where user_id = auth.uid()
+  limit 1;
+$$;
+
+
+ALTER FUNCTION "public"."get_google_connection"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
@@ -266,6 +486,38 @@ $$;
 ALTER FUNCTION "public"."trg_savings_projects_target_guard"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."update_google_connection_settings"("p_selected_calendar_id" "text" DEFAULT NULL::"text", "p_grocery_list_id" "text" DEFAULT NULL::"text", "p_grocery_list_name" "text" DEFAULT NULL::"text") RETURNS "void"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+declare
+  v_user_id uuid;
+  v_updated_count int;
+begin
+  v_user_id := auth.uid();
+  if v_user_id is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  update public.google_connections
+  set selected_calendar_id = coalesce(p_selected_calendar_id, selected_calendar_id),
+      grocery_list_id = coalesce(p_grocery_list_id, grocery_list_id),
+      grocery_list_name = coalesce(p_grocery_list_name, grocery_list_name),
+      updated_at = now()
+  where user_id = v_user_id;
+
+  get diagnostics v_updated_count = row_count;
+
+  if v_updated_count = 0 then
+    raise exception 'No google connection found for user';
+  end if;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."update_google_connection_settings"("p_selected_calendar_id" "text", "p_grocery_list_id" "text", "p_grocery_list_name" "text") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."update_updated_at_column"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -277,6 +529,58 @@ $$;
 
 
 ALTER FUNCTION "public"."update_updated_at_column"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."upsert_google_connection"("p_gmail_address" "text", "p_access_token" "text", "p_refresh_token" "text", "p_expires_at" timestamp with time zone, "p_scope" "text") RETURNS TABLE("id" "uuid", "out_user_id" "uuid", "gmail_address" "text", "expires_at" timestamp with time zone, "scope" "text", "updated_at" timestamp with time zone)
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  return query
+  insert into public.google_connections as gc (
+    user_id,
+    gmail_address,
+    access_token,
+    refresh_token,
+    expires_at,
+    token_expires_at,
+    scope,
+    updated_at
+  )
+  values (
+    auth.uid(),
+    p_gmail_address,
+    p_access_token,
+    p_refresh_token,
+    p_expires_at,
+    p_expires_at,
+    p_scope,
+    now()
+  )
+  on conflict (user_id) do update
+    set gmail_address     = excluded.gmail_address,
+        access_token      = excluded.access_token,
+        refresh_token     = coalesce(excluded.refresh_token, gc.refresh_token),
+        expires_at        = excluded.expires_at,
+        token_expires_at  = excluded.token_expires_at,
+        scope             = coalesce(excluded.scope, gc.scope),
+        updated_at        = now()
+  returning
+    gc.id,
+    gc.user_id,
+    gc.gmail_address,
+    gc.expires_at,
+    gc.scope,
+    gc.updated_at;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."upsert_google_connection"("p_gmail_address" "text", "p_access_token" "text", "p_refresh_token" "text", "p_expires_at" timestamp with time zone, "p_scope" "text") OWNER TO "postgres";
 
 SET default_tablespace = '';
 
@@ -473,6 +777,23 @@ CREATE TABLE IF NOT EXISTS "public"."allowance_transactions" (
 ALTER TABLE "public"."allowance_transactions" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."alpha_waitlist" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "email" "text" NOT NULL,
+    "first_name" "text",
+    "children_ages" "text",
+    "status" "text" DEFAULT 'waiting'::"text" NOT NULL,
+    "invited_at" timestamp with time zone,
+    "registered_at" timestamp with time zone,
+    "source" "text",
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "alpha_waitlist_status_check" CHECK (("status" = ANY (ARRAY['waiting'::"text", 'invited'::"text", 'registered'::"text", 'rejected'::"text"])))
+);
+
+
+ALTER TABLE "public"."alpha_waitlist" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."available_tasks" (
     "id" "uuid" DEFAULT "extensions"."uuid_generate_v4"() NOT NULL,
     "user_id" "uuid" NOT NULL,
@@ -558,13 +879,30 @@ CREATE TABLE IF NOT EXISTS "public"."client_config" (
     "created_at" timestamp without time zone DEFAULT "now"(),
     "updated_at" timestamp without time zone DEFAULT "now"(),
     "rotation_reset_day" integer DEFAULT 1 NOT NULL,
+    "rotation_participants" "uuid"[],
     CONSTRAINT "client_config_reward_system_check" CHECK (("reward_system" = ANY (ARRAY['points'::"text", 'money'::"text", 'hybrid'::"text", 'none'::"text"]))),
     CONSTRAINT "client_config_screen_time_mode_check" CHECK (("screen_time_mode" = ANY (ARRAY['manual'::"text", 'semi-auto'::"text", 'disabled'::"text"]))),
-    CONSTRAINT "client_config_vehicle_brand_check" CHECK ((("vehicle_brand" = ANY (ARRAY['tesla'::"text", 'byd'::"text", 'generic'::"text"])) OR ("vehicle_brand" IS NULL)))
+    CONSTRAINT "client_config_vehicle_brand_check" CHECK ((("vehicle_brand" = ANY (ARRAY['tesla'::"text", 'byd'::"text", 'generic'::"text"])) OR ("vehicle_brand" IS NULL))),
+    CONSTRAINT "rotation_participants_not_empty" CHECK ((("rotation_participants" IS NULL) OR ("array_length"("rotation_participants", 1) >= 1)))
 );
 
 
 ALTER TABLE "public"."client_config" OWNER TO "postgres";
+
+
+COMMENT ON COLUMN "public"."client_config"."rotation_participants" IS 'Liste des family_members.id inclus dans la rotation des tâches. Si NULL/empty => fallback enfants uniquement.';
+
+
+
+CREATE SEQUENCE IF NOT EXISTS "public"."client_number_seq"
+    START WITH 1000
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE "public"."client_number_seq" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."completed_tasks" (
@@ -605,14 +943,14 @@ CREATE TABLE IF NOT EXISTS "public"."google_connections" (
     "user_id" "uuid" NOT NULL,
     "gmail_address" "text" NOT NULL,
     "access_token" "text" NOT NULL,
-    "refresh_token" "text" NOT NULL,
-    "token_expires_at" timestamp without time zone,
+    "refresh_token" "text",
+    "token_expires_at" timestamp with time zone,
     "selected_calendar_id" "text",
     "selected_calendar_name" "text",
     "grocery_list_id" "text",
     "grocery_list_name" "text",
     "created_at" timestamp without time zone DEFAULT "now"(),
-    "updated_at" timestamp without time zone DEFAULT "now"(),
+    "updated_at" timestamp with time zone DEFAULT "now"(),
     "expires_at" timestamp with time zone NOT NULL,
     "scope" "text"
 );
@@ -632,6 +970,7 @@ CREATE TABLE IF NOT EXISTS "public"."profiles" (
     "subscription_status" "text" DEFAULT 'trial'::"text",
     "onboarding_completed" boolean DEFAULT false,
     "created_at" timestamp without time zone DEFAULT "now"(),
+    "client_number" bigint,
     CONSTRAINT "profiles_subscription_status_check" CHECK (("subscription_status" = ANY (ARRAY['trial'::"text", 'active'::"text", 'expired'::"text"])))
 );
 
@@ -685,6 +1024,7 @@ CREATE TABLE IF NOT EXISTS "public"."rotation_assignments" (
     "sort_order" integer DEFAULT 0,
     "attempts_used" integer DEFAULT 0 NOT NULL,
     "task_id" "uuid",
+    "task_end_date" timestamp with time zone,
     CONSTRAINT "attempts_used_range" CHECK ((("attempts_used" >= 0) AND ("attempts_used" <= 3)))
 );
 
@@ -907,6 +1247,11 @@ ALTER TABLE ONLY "public"."allowance_transactions"
 
 
 
+ALTER TABLE ONLY "public"."alpha_waitlist"
+    ADD CONSTRAINT "alpha_waitlist_pkey" PRIMARY KEY ("id");
+
+
+
 ALTER TABLE ONLY "public"."available_tasks"
     ADD CONSTRAINT "available_tasks_pkey" PRIMARY KEY ("id");
 
@@ -949,6 +1294,11 @@ ALTER TABLE ONLY "public"."google_connections"
 
 ALTER TABLE ONLY "public"."google_connections"
     ADD CONSTRAINT "google_connections_user_id_key" UNIQUE ("user_id");
+
+
+
+ALTER TABLE ONLY "public"."profiles"
+    ADD CONSTRAINT "profiles_client_number_key" UNIQUE ("client_number");
 
 
 
@@ -1048,6 +1398,10 @@ CREATE INDEX "allowance_transactions_member_idx" ON "public"."allowance_transact
 
 
 
+CREATE UNIQUE INDEX "alpha_waitlist_email_unique" ON "public"."alpha_waitlist" USING "btree" ("lower"("email"));
+
+
+
 CREATE INDEX "family_members_birth_date_idx" ON "public"."family_members" USING "btree" ("birth_date");
 
 
@@ -1100,6 +1454,10 @@ CREATE INDEX "idx_reward_levels_user_id" ON "public"."reward_levels" USING "btre
 
 
 
+CREATE INDEX "idx_rotation_assignments_active" ON "public"."rotation_assignments" USING "btree" ("user_id", "week_start") WHERE ("task_end_date" IS NULL);
+
+
+
 CREATE INDEX "idx_rotation_assignments_sort" ON "public"."rotation_assignments" USING "btree" ("user_id", "week_start", "sort_order");
 
 
@@ -1128,7 +1486,7 @@ CREATE INDEX "idx_task_lists_user_id" ON "public"."task_lists" USING "btree" ("u
 
 
 
-CREATE UNIQUE INDEX "idx_unique_task_assignment" ON "public"."rotation_assignments" USING "btree" ("user_id", "week_start", "task_id");
+CREATE UNIQUE INDEX "idx_unique_task_assignment_active" ON "public"."rotation_assignments" USING "btree" ("user_id", "week_start", "task_id") WHERE ("task_end_date" IS NULL);
 
 
 
@@ -1160,6 +1518,10 @@ CREATE INDEX "savings_projects_member_idx" ON "public"."savings_projects" USING 
 
 
 
+CREATE UNIQUE INDEX "ux_rotation_active_week_task" ON "public"."rotation_assignments" USING "btree" ("user_id", "week_start", "task_id") WHERE ("task_end_date" IS NULL);
+
+
+
 CREATE OR REPLACE TRIGGER "savings_projects_audit" AFTER INSERT OR UPDATE ON "public"."savings_projects" FOR EACH ROW EXECUTE FUNCTION "public"."trg_savings_projects_audit"();
 
 
@@ -1169,6 +1531,10 @@ CREATE OR REPLACE TRIGGER "savings_projects_limit_active" BEFORE INSERT OR UPDAT
 
 
 CREATE OR REPLACE TRIGGER "savings_projects_target_guard" BEFORE INSERT OR UPDATE OF "target_amount" ON "public"."savings_projects" FOR EACH ROW EXECUTE FUNCTION "public"."trg_savings_projects_target_guard"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_assign_client_number" BEFORE INSERT ON "public"."profiles" FOR EACH ROW EXECUTE FUNCTION "public"."assign_client_number"();
 
 
 
@@ -1332,6 +1698,10 @@ ALTER TABLE ONLY "public"."weekly_menu"
 
 
 
+CREATE POLICY "Allow public insert on alpha_waitlist" ON "public"."alpha_waitlist" FOR INSERT WITH CHECK (true);
+
+
+
 CREATE POLICY "Enable delete for authenticated users" ON "public"."google_connections" FOR DELETE TO "authenticated" USING (("auth"."uid"() = "user_id"));
 
 
@@ -1474,6 +1844,9 @@ ALTER TABLE "public"."ai_family_settings" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."ai_usage_logs" ENABLE ROW LEVEL SECURITY;
 
 
+ALTER TABLE "public"."alpha_waitlist" ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE "public"."available_tasks" ENABLE ROW LEVEL SECURITY;
 
 
@@ -1487,6 +1860,22 @@ ALTER TABLE "public"."client_config" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."google_connections" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "google_connections_delete_own" ON "public"."google_connections" FOR DELETE TO "authenticated" USING (("user_id" = "auth"."uid"()));
+
+
+
+CREATE POLICY "google_connections_insert_own" ON "public"."google_connections" FOR INSERT TO "authenticated" WITH CHECK (("user_id" = "auth"."uid"()));
+
+
+
+CREATE POLICY "google_connections_select_own" ON "public"."google_connections" FOR SELECT TO "authenticated" USING (("user_id" = "auth"."uid"()));
+
+
+
+CREATE POLICY "google_connections_update_own" ON "public"."google_connections" FOR UPDATE TO "authenticated" USING (("user_id" = "auth"."uid"())) WITH CHECK (("user_id" = "auth"."uid"()));
+
 
 
 ALTER TABLE "public"."profiles" ENABLE ROW LEVEL SECURITY;
@@ -1504,7 +1893,15 @@ ALTER TABLE "public"."screen_time_config" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."screen_time_sessions" ENABLE ROW LEVEL SECURITY;
 
 
+CREATE POLICY "select own google connection" ON "public"."google_connections" FOR SELECT USING (("user_id" = "auth"."uid"()));
+
+
+
 ALTER TABLE "public"."task_lists" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "update own google connection" ON "public"."google_connections" FOR UPDATE USING (("user_id" = "auth"."uid"())) WITH CHECK (("user_id" = "auth"."uid"()));
+
 
 
 ALTER TABLE "public"."weekly_menu" ENABLE ROW LEVEL SECURITY;
@@ -1680,6 +2077,12 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."assign_client_number"() TO "anon";
+GRANT ALL ON FUNCTION "public"."assign_client_number"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."assign_client_number"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."cleanup_old_weekly_menus"() TO "anon";
 GRANT ALL ON FUNCTION "public"."cleanup_old_weekly_menus"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."cleanup_old_weekly_menus"() TO "service_role";
@@ -1689,6 +2092,18 @@ GRANT ALL ON FUNCTION "public"."cleanup_old_weekly_menus"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."create_default_config"() TO "anon";
 GRANT ALL ON FUNCTION "public"."create_default_config"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."create_default_config"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."ensure_weekly_rotation_random"("p_force" boolean) TO "anon";
+GRANT ALL ON FUNCTION "public"."ensure_weekly_rotation_random"("p_force" boolean) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."ensure_weekly_rotation_random"("p_force" boolean) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_google_connection"() TO "anon";
+GRANT ALL ON FUNCTION "public"."get_google_connection"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_google_connection"() TO "service_role";
 
 
 
@@ -1728,9 +2143,21 @@ GRANT ALL ON FUNCTION "public"."trg_savings_projects_target_guard"() TO "service
 
 
 
+GRANT ALL ON FUNCTION "public"."update_google_connection_settings"("p_selected_calendar_id" "text", "p_grocery_list_id" "text", "p_grocery_list_name" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."update_google_connection_settings"("p_selected_calendar_id" "text", "p_grocery_list_id" "text", "p_grocery_list_name" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."update_google_connection_settings"("p_selected_calendar_id" "text", "p_grocery_list_id" "text", "p_grocery_list_name" "text") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."update_updated_at_column"() TO "anon";
 GRANT ALL ON FUNCTION "public"."update_updated_at_column"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_updated_at_column"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."upsert_google_connection"("p_gmail_address" "text", "p_access_token" "text", "p_refresh_token" "text", "p_expires_at" timestamp with time zone, "p_scope" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."upsert_google_connection"("p_gmail_address" "text", "p_access_token" "text", "p_refresh_token" "text", "p_expires_at" timestamp with time zone, "p_scope" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."upsert_google_connection"("p_gmail_address" "text", "p_access_token" "text", "p_refresh_token" "text", "p_expires_at" timestamp with time zone, "p_scope" "text") TO "service_role";
 
 
 
@@ -1785,6 +2212,12 @@ GRANT ALL ON TABLE "public"."allowance_transactions" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."alpha_waitlist" TO "anon";
+GRANT ALL ON TABLE "public"."alpha_waitlist" TO "authenticated";
+GRANT ALL ON TABLE "public"."alpha_waitlist" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."available_tasks" TO "anon";
 GRANT ALL ON TABLE "public"."available_tasks" TO "authenticated";
 GRANT ALL ON TABLE "public"."available_tasks" TO "service_role";
@@ -1809,6 +2242,12 @@ GRANT ALL ON TABLE "public"."client_config" TO "service_role";
 
 
 
+GRANT ALL ON SEQUENCE "public"."client_number_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."client_number_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."client_number_seq" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."completed_tasks" TO "anon";
 GRANT ALL ON TABLE "public"."completed_tasks" TO "authenticated";
 GRANT ALL ON TABLE "public"."completed_tasks" TO "service_role";
@@ -1822,6 +2261,7 @@ GRANT ALL ON TABLE "public"."family_members" TO "service_role";
 
 
 GRANT ALL ON TABLE "public"."google_connections" TO "service_role";
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE "public"."google_connections" TO "authenticated";
 
 
 
@@ -1949,72 +2389,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 
 
 
--- ------------------------------------------------------------
--- Triggers (aligned with DEV)
--- ------------------------------------------------------------
-
--- auth.users AFTER INSERT -> handle_new_user()
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-AFTER INSERT ON auth.users
-FOR EACH ROW
-EXECUTE FUNCTION public.handle_new_user();
-
--- public.child_progress BEFORE UPDATE -> update_updated_at_column()
-DROP TRIGGER IF EXISTS update_child_progress_updated_at ON public.child_progress;
-CREATE TRIGGER update_child_progress_updated_at
-BEFORE UPDATE ON public.child_progress
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at_column();
-
--- public.client_config BEFORE UPDATE -> update_updated_at_column()
-DROP TRIGGER IF EXISTS update_client_config_updated_at ON public.client_config;
-CREATE TRIGGER update_client_config_updated_at
-BEFORE UPDATE ON public.client_config
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at_column();
-
--- public.google_connections BEFORE UPDATE -> update_updated_at_column()
-DROP TRIGGER IF EXISTS update_google_connections_updated_at ON public.google_connections;
-CREATE TRIGGER update_google_connections_updated_at
-BEFORE UPDATE ON public.google_connections
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at_column();
-
--- public.rotation_assignments BEFORE UPDATE -> set_rotation_assignments_updated_at()
-DROP TRIGGER IF EXISTS trg_rotation_assignments_updated_at ON public.rotation_assignments;
-CREATE TRIGGER trg_rotation_assignments_updated_at
-BEFORE UPDATE ON public.rotation_assignments
-FOR EACH ROW
-EXECUTE FUNCTION public.set_rotation_assignments_updated_at();
-
--- public.savings_projects AFTER INSERT/UPDATE -> trg_savings_projects_audit()
-DROP TRIGGER IF EXISTS savings_projects_audit ON public.savings_projects;
-CREATE TRIGGER savings_projects_audit
-AFTER INSERT OR UPDATE ON public.savings_projects
-FOR EACH ROW
-EXECUTE FUNCTION public.trg_savings_projects_audit();
-
--- public.savings_projects BEFORE INSERT/UPDATE -> trg_savings_projects_limit_active()
-DROP TRIGGER IF EXISTS savings_projects_limit_active ON public.savings_projects;
-CREATE TRIGGER savings_projects_limit_active
-BEFORE INSERT OR UPDATE ON public.savings_projects
-FOR EACH ROW
-EXECUTE FUNCTION public.trg_savings_projects_limit_active();
-
--- public.savings_projects BEFORE INSERT/UPDATE -> trg_savings_projects_target_guard()
-DROP TRIGGER IF EXISTS savings_projects_target_guard ON public.savings_projects;
-CREATE TRIGGER savings_projects_target_guard
-BEFORE INSERT OR UPDATE ON public.savings_projects
-FOR EACH ROW
-EXECUTE FUNCTION public.trg_savings_projects_target_guard();
-
--- public.weekly_menu BEFORE UPDATE -> update_updated_at_column()
-DROP TRIGGER IF EXISTS update_weekly_menu_updated_at ON public.weekly_menu;
-CREATE TRIGGER update_weekly_menu_updated_at
-BEFORE UPDATE ON public.weekly_menu
-FOR EACH ROW
-EXECUTE FUNCTION public.update_updated_at_column();
 
 
 

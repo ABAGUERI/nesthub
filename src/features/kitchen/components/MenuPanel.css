@@ -500,3 +500,135 @@
     justify-content: space-between;
   }
 }
+
+/* =====================================================
+ * FLOATING mIAm BOT BUTTON
+ * ===================================================== */
+
+.miam-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 211, 238, 0.4);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 6px 20px rgba(34, 211, 238, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+  z-index: 50;
+  animation: miamFloat 3s ease-in-out infinite;
+}
+
+@keyframes miamFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.miam-fab:hover {
+  border-color: rgba(34, 211, 238, 0.7);
+  box-shadow:
+    0 10px 32px rgba(34, 211, 238, 0.45),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  animation: none;
+  transform: translateY(-4px) scale(1.08);
+}
+
+.miam-fab:active {
+  transform: translateY(-1px) scale(0.96);
+}
+
+.miam-fab-icon {
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* =====================================================
+ * mIAm DEMO MODAL WRAPPER
+ * ===================================================== */
+
+.miam-demo-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 460px;
+  width: 100%;
+  animation: rewardsSlideUp 0.25s ease-out;
+}
+
+@keyframes miamSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.miam-coming-soon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  backdrop-filter: blur(12px);
+}
+
+.miam-coming-soon-icon {
+  font-size: 26px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.miam-coming-soon-text {
+  flex: 1;
+  font-size: 14px;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.miam-coming-soon-text strong {
+  color: #22d3ee;
+  font-weight: 800;
+}
+
+.miam-coming-soon-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(168, 85, 247, 0.2));
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+@media (max-width: 639px) {
+  .miam-fab {
+    bottom: 16px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .miam-fab-icon {
+    font-size: 24px;
+  }
+
+  .miam-demo-wrapper {
+    max-width: 100%;
+  }
+}

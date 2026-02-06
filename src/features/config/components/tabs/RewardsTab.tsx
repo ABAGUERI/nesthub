@@ -24,20 +24,23 @@ const TASK_ICON_OPTIONS = [
   '🎮', '🍿', '🎁', '🏆', '🌟', '✨', '🦷',
 ];
 
+const ITEMS_PER_PAGE = 12;
+
 export const RewardsTab: React.FC = () => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<RewardTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const [newTask, setNewTask] = useState(() => ({
+  const [newTask, setNewTask] = useState({
     name: '',
     points: 10,
-    moneyValue: 0.5,
     icon: '⭐',
-    draftKey: crypto.randomUUID(),
-  }));
+  });
+  const [newTaskError, setNewTaskError] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -73,11 +76,15 @@ export const RewardsTab: React.FC = () => {
 
   const handleAddTask = async () => {
     if (!user || !newTask.name.trim()) {
-      setError('Veuillez renseigner un nom de tâche');
+      setNewTaskError('Veuillez renseigner un nom de tâche');
+      return;
+    }
+    if (newTask.points < 1 || newTask.points > 50) {
+      setNewTaskError('Les points doivent être entre 1 et 50');
       return;
     }
     setSaving(true);
-    setError(null);
+    setNewTaskError(null);
     try {
       const { data, error: dbError } = await supabase
         .from('available_tasks')
@@ -85,7 +92,7 @@ export const RewardsTab: React.FC = () => {
           user_id: user.id,
           name: newTask.name.trim(),
           points: newTask.points,
-          money_value: newTask.moneyValue,
+          money_value: 0,
           category: 'special',
           icon: newTask.icon,
         })
@@ -106,46 +113,13 @@ export const RewardsTab: React.FC = () => {
           },
         ]);
       }
-      setNewTask({
-        name: '',
-        points: 10,
-        moneyValue: 0.5,
-        icon: '⭐',
-        draftKey: crypto.randomUUID(),
-      });
+      setNewTask({ name: '', points: 10, icon: '⭐' });
+      setModalOpen(false);
     } catch (err: any) {
-      setError(err.message || 'Impossible d’ajouter la tâche');
+      setNewTaskError(err.message || "Impossible d'ajouter la tâche");
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleUpdateTask = async (task: RewardTask) => {
-    setSaving(true);
-    setError(null);
-    try {
-      const { error: dbError } = await supabase
-        .from('available_tasks')
-        .update({
-          name: task.name.trim(),
-          points: task.points,
-          money_value: task.moneyValue,
-          category: task.category,
-          icon: task.icon,
-        })
-        .eq('id', task.id);
-
-      if (dbError) throw dbError;
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
-    } catch (err: any) {
-      setError(err.message || 'Impossible de mettre à jour la tâche');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const updateLocalTask = (id: string, updates: Partial<RewardTask>) => {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
   };
 
   const handleDeleteTask = async (taskId: string) => {
@@ -162,6 +136,20 @@ export const RewardsTab: React.FC = () => {
     }
   };
 
+  const visibleTasks = showAll ? tasks : tasks.slice(0, ITEMS_PER_PAGE);
+  const hasMore = tasks.length > ITEMS_PER_PAGE;
+
+  const openModal = () => {
+    setNewTask({ name: '', points: 10, icon: '⭐' });
+    setNewTaskError(null);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setNewTaskError(null);
+  };
+
   return (
     <div className="config-tab-panel">
       <div className="panel-header">
@@ -169,7 +157,7 @@ export const RewardsTab: React.FC = () => {
           <p className="panel-kicker">Gamification</p>
           <h2>Tâches qui donnent des récompenses</h2>
           <p className="panel-subtitle">
-            Ajustez les points et la valeur monétaire des tâches. C’est ici que vous modulez la motivation et le niveau de difficulté.
+            Gérez les tâches que vos enfants peuvent accomplir pour gagner des points.
           </p>
         </div>
         <Button variant="secondary" onClick={loadTasks} isLoading={loading}>
@@ -183,129 +171,122 @@ export const RewardsTab: React.FC = () => {
         <div className="config-card-header">
           <div>
             <h3>Tâches récompensées</h3>
-            <p>Les modifications sont prises en compte immédiatement sur le dashboard.</p>
+            <p>{tasks.length} tâche{tasks.length !== 1 ? 's' : ''} configurée{tasks.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
 
         {loading ? (
           <div className="config-placeholder">Chargement...</div>
         ) : tasks.length === 0 ? (
-          <div className="config-placeholder">Aucune tâche. Ajoutez-en ci-dessous.</div>
-        ) : (
-          <div className="task-grid">
-            {tasks.map((task) => (
-              <div key={`reward-${task.id}`} className="task-tile">
-                <div className="task-tile-header">
-                  <span className="chip neutral">Récompense</span>
-                  <button className="ghost-button" onClick={() => handleDeleteTask(task.id)} disabled={saving}>
-                    Supprimer
-                  </button>
-                </div>
-
-                <Input
-                  label="Nom"
-                  value={task.name}
-                  onChange={(e) => updateLocalTask(task.id, { name: e.target.value })}
-                />
-
-                <label className="input-label">Emoji</label>
-                <div className="icon-scroll">
-                  {TASK_ICON_OPTIONS.map((icon, index) => (
-                    <button
-                      key={`reward-${task.id}-${icon}-${index}`}
-                      className={`icon-choice compact ${task.icon === icon ? 'active' : ''}`}
-                      onClick={() => updateLocalTask(task.id, { icon })}
-                      type="button"
-                    >
-                      <span className="icon-emoji">{icon}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="task-inline">
-                  <Input
-                    label="Points"
-                    type="number"
-                    value={task.points}
-                    onChange={(e) => updateLocalTask(task.id, { points: Number(e.target.value) })}
-                  />
-                  <Input
-                    label="Valeur $"
-                    type="number"
-                    step="0.1"
-                    value={task.moneyValue}
-                    onChange={(e) => updateLocalTask(task.id, { moneyValue: Number(e.target.value) })}
-                  />
-                </div>
-
-                <Button
-                  fullWidth
-                  size="small"
-                  onClick={() => handleUpdateTask(task)}
-                  isLoading={saving}
-                  disabled={saving || !task.name.trim()}
-                >
-                  Sauvegarder
-                </Button>
-              </div>
-            ))}
+          <div className="config-placeholder">
+            Aucune tâche configurée. Cliquez sur le bouton ci-dessous pour en ajouter.
           </div>
+        ) : (
+          <>
+            <div className="rewards-grid">
+              {visibleTasks.map((task) => (
+                <div key={`reward-${task.id}`} className="reward-card">
+                  <button
+                    className="reward-card-delete"
+                    onClick={() => handleDeleteTask(task.id)}
+                    disabled={saving}
+                    title="Supprimer"
+                  >
+                    ✕
+                  </button>
+                  <div className="reward-card-emoji">{task.icon}</div>
+                  <div className="reward-card-name">{task.name}</div>
+                  <div className="reward-card-points">
+                    <span className="reward-points-badge">{task.points} pts</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {hasMore && (
+              <button
+                className="rewards-show-more"
+                onClick={() => setShowAll(!showAll)}
+              >
+                {showAll
+                  ? 'Voir moins'
+                  : `Voir les ${tasks.length - ITEMS_PER_PAGE} autres tâches`}
+              </button>
+            )}
+          </>
         )}
       </div>
 
-      <div className="config-card">
-        <div className="config-card-header">
-          <div>
-            <h3>Ajouter une tâche récompensée</h3>
-            <p>Points et valeur monétaire seront visibles dans le widget “Tâches du jour”.</p>
-          </div>
-        </div>
-        <div className="task-inline-form">
-          <Input
-            label="Nom"
-            placeholder="Ex: Ranger sa chambre"
-            value={newTask.name}
-            onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
-          />
-          <label className="input-label">Emoji</label>
-          <div className="icon-scroll">
-            {TASK_ICON_OPTIONS.map((icon, index) => (
-              <button
-                key={`draft-${newTask.draftKey}-${icon}-${index}`}
-                className={`icon-choice compact ${newTask.icon === icon ? 'active' : ''}`}
-                onClick={() => setNewTask({ ...newTask, icon })}
-                type="button"
-              >
-                <span className="icon-emoji">{icon}</span>
-              </button>
-            ))}
-          </div>
-          <div className="task-inline">
-            <Input
-              label="Points"
-              type="number"
-              value={newTask.points}
-              onChange={(e) => setNewTask({ ...newTask, points: Number(e.target.value) })}
-            />
-            <Input
-              label="Valeur $"
-              type="number"
-              step="0.1"
-              value={newTask.moneyValue}
-              onChange={(e) => setNewTask({ ...newTask, moneyValue: Number(e.target.value) })}
-            />
-          </div>
+      {/* Floating Add Button */}
+      <button className="rewards-fab" onClick={openModal}>
+        <span className="rewards-fab-icon">+</span>
+        <span className="rewards-fab-label">Ajouter une tâche</span>
+      </button>
 
-          <Button
-            onClick={handleAddTask}
-            isLoading={saving}
-            disabled={saving || !newTask.name.trim()}
-            fullWidth
-          >
-            Ajouter la tâche
-          </Button>
+      {/* Add Task Modal */}
+      {modalOpen && (
+        <div className="rewards-modal-overlay" onClick={closeModal}>
+          <div className="rewards-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="rewards-modal-header">
+              <h3>Nouvelle tâche</h3>
+              <button className="rewards-modal-close" onClick={closeModal}>✕</button>
+            </div>
+
+            <div className="rewards-modal-body">
+              {newTaskError && (
+                <div className="config-alert error">{newTaskError}</div>
+              )}
+
+              <Input
+                label="Nom de la tâche"
+                placeholder="Ex: Ranger sa chambre"
+                value={newTask.name}
+                onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
+              />
+
+              <div className="rewards-modal-field">
+                <label className="input-label">Choisir une emoji</label>
+                <div className="rewards-emoji-grid">
+                  {TASK_ICON_OPTIONS.map((icon, index) => (
+                    <button
+                      key={`modal-icon-${icon}-${index}`}
+                      className={`rewards-emoji-btn ${newTask.icon === icon ? 'active' : ''}`}
+                      onClick={() => setNewTask({ ...newTask, icon })}
+                      type="button"
+                    >
+                      {icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Input
+                label="Nombre de points"
+                type="number"
+                value={newTask.points}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setNewTask({ ...newTask, points: Math.min(50, Math.max(0, val)) });
+                }}
+                helperText="Maximum 50 points"
+              />
+            </div>
+
+            <div className="rewards-modal-footer">
+              <Button variant="secondary" onClick={closeModal}>
+                Annuler
+              </Button>
+              <Button
+                onClick={handleAddTask}
+                isLoading={saving}
+                disabled={saving || !newTask.name.trim()}
+              >
+                Ajouter
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
