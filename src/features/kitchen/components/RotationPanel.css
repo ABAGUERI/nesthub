@@ -274,77 +274,133 @@
   }
 }
 
-/* Tablet portrait (< 900px) : 2 colonnes */
+/* Tablet portrait (< 900px) : compact horizontal layout */
 @media (max-width: 900px) {
   .rotation-panel-columns {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 10px;
   }
 
   .rotation-column {
-    padding: 12px;
+    padding: 10px;
+    min-height: 140px;
+    background: rgba(255, 255, 255, 0.015);
+    border-color: rgba(255, 255, 255, 0.06);
   }
 
   .rotation-column-header {
+    flex-direction: row;
     gap: 8px;
-    padding-bottom: 10px;
+    padding-bottom: 8px;
   }
 
   .rotation-avatar {
-    width: 48px; /* ↓ 64 -> 48 */
-    height: 48px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .rotation-avatar-placeholder {
+    font-size: 18px;
   }
 
   .rotation-name {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .rotation-task-card {
-    min-height: 44px;
-    padding: 8px 10px;
+    min-height: 36px;
+    padding: 6px 8px;
+    gap: 8px;
+  }
+
+  .task-checkbox {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 5px;
+  }
+
+  .task-check {
+    font-size: 13px;
   }
 
   .task-icon {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .task-name {
     font-size: 12px;
   }
+
+  .rotation-tasks-list {
+    gap: 5px;
+  }
 }
 
-/* Mobile (< 600px) : 1 colonne */
+/* Mobile (< 600px) : 2 cols, ultra compact */
 @media (max-width: 600px) {
   .rotation-panel-columns {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 
   .rotation-column {
-    padding: 16px;
+    padding: 8px;
+    min-height: 120px;
   }
 
-  /* Mobile: tu peux garder grand si tu veux, mais je le mets légèrement réduit */
+  .rotation-column-header {
+    flex-direction: row;
+    gap: 6px;
+    padding-bottom: 6px;
+  }
+
   .rotation-avatar {
-    width: 64px; /* ↓ 80 -> 64 */
-    height: 64px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .rotation-avatar-placeholder {
+    font-size: 16px;
   }
 
   .rotation-name {
-    font-size: 17px;
+    font-size: 12px;
   }
 
   .rotation-task-card {
-    min-height: 48px;
-    padding: 10px 12px;
+    min-height: 32px;
+    padding: 5px 7px;
+    gap: 6px;
+    border-radius: 8px;
+  }
+
+  .task-checkbox {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 4px;
+  }
+
+  .task-check {
+    font-size: 12px;
   }
 
   .task-icon {
-    font-size: 24px;
+    font-size: 16px;
   }
 
   .task-name {
-    font-size: 14px;
+    font-size: 11px;
+  }
+
+  .rotation-tasks-list {
+    gap: 4px;
+  }
+
+  .rotation-empty {
+    padding: 12px 8px;
+    font-size: 11px;
   }
 }
 
