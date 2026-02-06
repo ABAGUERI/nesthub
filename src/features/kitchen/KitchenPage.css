@@ -91,6 +91,7 @@
   }
 }
 
+/* Tablet / mobile: single column, menu first */
 @media (max-width: 899px) {
   .kitchen-page {
     overflow: auto;
@@ -101,5 +102,36 @@
   .kitchen-grid-2col {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+
+  /* Menu takes priority - always first */
+  .kitchen-col-main {
+    order: 1;
+    overflow: visible;
+  }
+
+  /* Main content should not be clipped on mobile */
+  .kitchen-main-content {
+    overflow: visible;
+  }
+
+  /* Rotation sidebar: more discrete, below menu */
+  .kitchen-col-sidebar {
+    order: 2;
+    overflow: visible;
+    padding: 0 4px;
+    opacity: 0.85;
+  }
+}
+
+/* Small mobile: extra compact */
+@media (max-width: 639px) {
+  .kitchen-page {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .kitchen-col-sidebar {
+    opacity: 0.8;
   }
 }

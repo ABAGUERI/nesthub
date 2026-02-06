@@ -62,7 +62,7 @@ const formatWeekRange = (weekStart: string): string => {
   const end = addDays(weekStart, 6);
   const startMonth = start.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
   const endMonth = end.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
-  
+
   if (startMonth === endMonth) {
     return `${start.getDate()} - ${end.getDate()} ${startMonth}`;
   }
@@ -84,7 +84,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
   const [editingMeals, setEditingMeals] = useState<MealDraft[]>([{ label: '', emoji: '' }]);
   const [editingDayLabel, setEditingDayLabel] = useState<string>('');
   const [saving, setSaving] = useState(false);
-  const [showMiamChat, setShowMiamChat] = useState(false);
+  const [showMiamDemo, setShowMiamDemo] = useState(false);
 
   useEffect(() => {
     loadWeekMenu();
@@ -102,13 +102,13 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
     try {
       const data = await getWeekMenu(user.id, weekStart);
       const completeMenu: WeekMenu = {};
-      
+
       // Initialiser tous les jours avec les données chargées ou tableau vide
       WEEK_DAYS.forEach((day) => {
         const key = getDayKey(weekStart, day.offset);
         completeMenu[key] = data[key] || [];
       });
-      
+
       setMenu(completeMenu);
     } catch (err) {
       console.error('Menu load failed', err);
@@ -201,17 +201,8 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
         {/* Zone gauche : Titre + Boutons */}
         <div className="menu-header-left">
           <h2 className="menu-title">Menu de la semaine</h2>
-          
-          <div className="menu-action-btns">
-            <button
-              className={`menu-action-btn ${showMiamChat ? 'active' : ''}`}
-              onClick={() => setShowMiamChat(true)}
-              type="button"
-              title="mIAm - Assistant culinaire"
-            >
-              🍳
-            </button>
 
+          <div className="menu-action-btns">
             <button
               className="menu-action-btn"
               onClick={onShowAIMenu}
@@ -231,14 +222,14 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
             </button>
           </div>
         </div>
-        
+
         {/* Zone droite : Navigation semaine */}
         <div className="week-period-navigation">
           <div className="week-period-text">
             {formatWeekRange(weekStart)}
           </div>
           <div className="week-nav-arrows">
-            <button 
+            <button
               onClick={() => changeWeek(-1)}
               className="week-arrow-btn"
               type="button"
@@ -246,7 +237,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
             >
               ←
             </button>
-            <button 
+            <button
               onClick={() => changeWeek(1)}
               className="week-arrow-btn"
               type="button"
@@ -282,8 +273,8 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
               {/* Liste repas */}
               <div className="day-meals">
                 {meals.length === 0 ? (
-                  <div style={{ 
-                    textAlign: 'center', 
+                  <div style={{
+                    textAlign: 'center',
                     padding: '20px 0',
                     color: '#64748b',
                     fontSize: '12px',
@@ -310,7 +301,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
               </div>
 
               {/* Bouton ajouter */}
-              <button 
+              <button
                 className="add-meal-btn-compact"
                 onClick={(e) => openEditor(dayKey, `${day.fullLabel} ${dayDate.getDate()}`, e)}
                 type="button"
@@ -325,10 +316,27 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
         <TimerCard />
       </div>
 
-      {/* Modal mIAm Chat Demo */}
-      {showMiamChat && (
-        <div className="modal-backdrop" onClick={() => setShowMiamChat(false)}>
-          <div onClick={(e) => e.stopPropagation()}>
+      {/* Floating mIAm Bot Button */}
+      <button
+        className="miam-fab"
+        onClick={() => setShowMiamDemo(true)}
+        type="button"
+        title="mIAm - Assistant culinaire"
+      >
+        <span className="miam-fab-icon">🤖</span>
+      </button>
+
+      {/* mIAm Demo Modal */}
+      {showMiamDemo && (
+        <div className="modal-backdrop" onClick={() => setShowMiamDemo(false)}>
+          <div className="miam-demo-wrapper" onClick={(e) => e.stopPropagation()}>
+            <div className="miam-coming-soon">
+              <span className="miam-coming-soon-icon">🤖</span>
+              <span className="miam-coming-soon-text">
+                <strong>mIAm</strong> — Assistant culinaire IA
+              </span>
+              <span className="miam-coming-soon-badge">Bientôt disponible</span>
+            </div>
             <MiamChatDemo />
           </div>
         </div>
@@ -339,7 +347,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
         <div className="modal-backdrop" onClick={() => setEditingDay(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h3 style={{ marginBottom: '20px', color: '#f8fafc' }}>{editingDayLabel}</h3>
-            
+
             <div className="meal-editor">
               {editingMeals.map((meal, index) => {
                 const charCount = meal.label.length;
@@ -420,9 +428,9 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
               })}
 
               {editingMeals.length < 4 && (
-                <button 
-                  className="ghost-btn" 
-                  type="button" 
+                <button
+                  className="ghost-btn"
+                  type="button"
                   onClick={addMealField}
                   style={{ marginTop: '16px', width: '100%' }}
                 >
@@ -432,7 +440,7 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
             </div>
 
             <div className="modal-actions" style={{ marginTop: '24px' }}>
-              <button 
+              <button
                 className="ghost-btn"
                 type="button"
                 onClick={() => {
@@ -443,10 +451,10 @@ export const MenuPanel: React.FC<MenuPanelProps> = ({ onShowAIMenu, onShowGrocer
               >
                 Annuler
               </button>
-              <button 
-                className="primary-btn" 
-                type="button" 
-                onClick={saveDay} 
+              <button
+                className="primary-btn"
+                type="button"
+                onClick={saveDay}
                 disabled={saving}
               >
                 {saving ? 'Enregistrement...' : 'Enregistrer'}
