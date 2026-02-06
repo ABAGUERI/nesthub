@@ -119,9 +119,12 @@ export const RotationTab: React.FC = () => {
 
   const [rotationResetDay, setRotationResetDay] = useState<number>(config?.rotationResetDay ?? 1);
   const [rotationParticipants, setRotationParticipants] = useState<string[] | null>(config?.rotationParticipants ?? null);
-  const [editingTask, setEditingTask] = useState<string | null>(null);
   const [newTaskName, setNewTaskName] = useState('');
   const [newTaskIcon, setNewTaskIcon] = useState('🍽️');
+  const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
+  const [editModalTask, setEditModalTask] = useState<RotationTask | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editIcon, setEditIcon] = useState('🍽️');
 
   const weekWindow = useMemo(() => getWeekWindow(rotationResetDay), [rotationResetDay]);
   const weekStartISO = weekWindow.weekStartISO;
@@ -288,6 +291,7 @@ export const RotationTab: React.FC = () => {
       setTasks((prev) => [...prev, data]);
       setNewTaskName('');
       setNewTaskIcon('🍽️');
+      setAddTaskModalOpen(false);
       setSuccessMessage('Tâche ajoutée');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: unknown) {
@@ -310,7 +314,7 @@ export const RotationTab: React.FC = () => {
       if (error) throw error;
 
       setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t)));
-      setEditingTask(null);
+      setEditModalTask(null);
       setSuccessMessage('Tâche mise à jour');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: unknown) {
@@ -578,89 +582,158 @@ export const RotationTab: React.FC = () => {
 
         {loading ? (
           <div className="config-placeholder">Chargement...</div>
+        ) : tasks.length === 0 ? (
+          <div className="config-placeholder">
+            Aucune tâche définie. Cliquez sur le bouton ci-dessous pour en ajouter.
+          </div>
         ) : (
-          <>
-            <div className="tasks-list">
-              {tasks.length === 0 ? (
-                <div className="config-placeholder">Aucune tâche définie</div>
-              ) : (
-                tasks.map((task) => (
-                  <div key={task.id} className="task-item">
-                    {editingTask === task.id ? (
-                      <>
-                        <select
-                          className="task-icon-select"
-                          value={task.icon}
-                          onChange={(e) => handleUpdateTask(task.id, { icon: e.target.value })}
-                        >
-                          {TASK_ICONS.map((icon) => (
-                            <option key={icon} value={icon}>
-                              {icon}
-                            </option>
-                          ))}
-                        </select>
-                        <Input
-                          value={task.name}
-                          onChange={(e) =>
-                            setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, name: e.target.value } : t)))
-                          }
-                          placeholder="Nom de la tâche"
-                        />
-                        <button
-                          className="task-btn task-btn-save"
-                          onClick={() => handleUpdateTask(task.id, { name: task.name })}
-                          disabled={saving}
-                          type="button"
-                        >
-                          ✓
-                        </button>
-                        <button className="task-btn task-btn-cancel" onClick={() => setEditingTask(null)} type="button">
-                          ✕
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <span className="task-icon">{task.icon}</span>
-                        <span className="task-name">{task.name}</span>
-                        <button
-                          className="task-btn task-btn-edit"
-                          onClick={() => setEditingTask(task.id)}
-                          disabled={saving}
-                          type="button"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          className="task-btn task-btn-delete"
-                          onClick={() => handleDeleteTask(task.id)}
-                          disabled={saving}
-                          type="button"
-                        >
-                          🗑️
-                        </button>
-                      </>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="add-task-form">
-              <select className="task-icon-select" value={newTaskIcon} onChange={(e) => setNewTaskIcon(e.target.value)}>
-                {TASK_ICONS.map((icon) => (
-                  <option key={icon} value={icon}>
-                    {icon}
-                  </option>
-                ))}
-              </select>
-              <Input placeholder="Ex: Cuisine, Balayer..." value={newTaskName} onChange={(e) => setNewTaskName(e.target.value)} />
-              <Button onClick={handleAddTask} disabled={!newTaskName.trim() || saving}>
-                + Ajouter
-              </Button>
-            </div>
-          </>
+          <div className="rewards-grid">
+            {tasks.map((task) => (
+              <div key={task.id} className="reward-card">
+                <button
+                  className="reward-card-delete"
+                  onClick={() => handleDeleteTask(task.id)}
+                  disabled={saving}
+                  title="Supprimer"
+                >
+                  ✕
+                </button>
+                <div
+                  className="reward-card-emoji reward-card-clickable"
+                  onClick={() => {
+                    setEditModalTask(task);
+                    setEditName(task.name);
+                    setEditIcon(task.icon);
+                  }}
+                  title="Modifier"
+                >
+                  {task.icon}
+                </div>
+                <div className="reward-card-name">{task.name}</div>
+                <button
+                  className="rotation-card-edit-btn"
+                  onClick={() => {
+                    setEditModalTask(task);
+                    setEditName(task.name);
+                    setEditIcon(task.icon);
+                  }}
+                  disabled={saving}
+                  type="button"
+                >
+                  ✏️ Modifier
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
+
+      {/* Floating Add Task Button */}
+      <button
+        className="rewards-fab"
+        onClick={() => {
+          setNewTaskName('');
+          setNewTaskIcon('🍽️');
+          setAddTaskModalOpen(true);
+        }}
+      >
+        <span className="rewards-fab-icon">+</span>
+        <span className="rewards-fab-label">Ajouter une tâche</span>
+      </button>
+
+      {/* Add Task Modal */}
+      {addTaskModalOpen && (
+        <div className="rewards-modal-overlay" onClick={() => setAddTaskModalOpen(false)}>
+          <div className="rewards-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="rewards-modal-header">
+              <h3>Nouvelle tâche de rotation</h3>
+              <button className="rewards-modal-close" onClick={() => setAddTaskModalOpen(false)}>✕</button>
+            </div>
+            <div className="rewards-modal-body">
+              <Input
+                label="Nom de la tâche"
+                placeholder="Ex: Cuisine, Balayer..."
+                value={newTaskName}
+                onChange={(e) => setNewTaskName(e.target.value)}
+              />
+              <div className="rewards-modal-field">
+                <label className="input-label">Choisir une emoji</label>
+                <div className="rewards-emoji-grid">
+                  {TASK_ICONS.map((icon, index) => (
+                    <button
+                      key={`add-icon-${icon}-${index}`}
+                      className={`rewards-emoji-btn ${newTaskIcon === icon ? 'active' : ''}`}
+                      onClick={() => setNewTaskIcon(icon)}
+                      type="button"
+                    >
+                      {icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="rewards-modal-footer">
+              <Button variant="secondary" onClick={() => setAddTaskModalOpen(false)}>
+                Annuler
+              </Button>
+              <Button
+                onClick={handleAddTask}
+                isLoading={saving}
+                disabled={saving || !newTaskName.trim()}
+              >
+                Ajouter
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Task Modal */}
+      {editModalTask && (
+        <div className="rewards-modal-overlay" onClick={() => setEditModalTask(null)}>
+          <div className="rewards-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="rewards-modal-header">
+              <h3>Modifier la tâche</h3>
+              <button className="rewards-modal-close" onClick={() => setEditModalTask(null)}>✕</button>
+            </div>
+            <div className="rewards-modal-body">
+              <Input
+                label="Nom de la tâche"
+                placeholder="Nom de la tâche"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
+              <div className="rewards-modal-field">
+                <label className="input-label">Choisir une emoji</label>
+                <div className="rewards-emoji-grid">
+                  {TASK_ICONS.map((icon, index) => (
+                    <button
+                      key={`edit-icon-${icon}-${index}`}
+                      className={`rewards-emoji-btn ${editIcon === icon ? 'active' : ''}`}
+                      onClick={() => setEditIcon(icon)}
+                      type="button"
+                    >
+                      {icon}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="rewards-modal-footer">
+              <Button variant="secondary" onClick={() => setEditModalTask(null)}>
+                Annuler
+              </Button>
+              <Button
+                onClick={() => handleUpdateTask(editModalTask.id, { name: editName.trim(), icon: editIcon })}
+                isLoading={saving}
+                disabled={saving || !editName.trim()}
+              >
+                Sauvegarder
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Assignations */}
       {tasks.length > 0 && (
