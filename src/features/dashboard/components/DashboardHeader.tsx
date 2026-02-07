@@ -155,7 +155,7 @@ export const DashboardHeader: React.FC = () => {
 
       {/* Titre central */}
       <div className="header-title">
-        <span className="section-title">Nesthub</span>
+        <span className="section-title">Espace des champions</span>
         <p className="section-description">
           Vue globale des tâches, du temps d’écran et de la progression familiale
         </p>
