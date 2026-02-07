@@ -48,3 +48,32 @@
   color: #ef4444;
   font-weight: 600;
 }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .stock-ticker {
+    padding: 8px 0;
+  }
+
+  .stock-ticker-content {
+    gap: 16px;
+    animation-duration: 45s;
+  }
+
+  .stock-item {
+    font-size: 12px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stock-ticker-content {
+    gap: 12px;
+    animation-duration: 35s;
+  }
+
+  .stock-item {
+    font-size: 11px;
+    gap: 4px;
+  }
+}

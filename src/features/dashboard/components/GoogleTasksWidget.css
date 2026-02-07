@@ -110,3 +110,63 @@ details.gtask-group > summary::-webkit-details-marker {
   text-decoration: line-through;
   opacity: 0.5;
 }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .gtask-summary {
+    padding: 14px 12px;
+    font-size: 14px;
+  }
+
+  .gtask-list {
+    padding: 0 12px 12px 12px;
+    gap: 8px;
+  }
+
+  .gtask-row {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .gtask-row span {
+    font-size: 14px;
+  }
+
+  .gtask-checkbox {
+    width: 24px;
+    height: 24px;
+  }
+
+  .task-count {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gtask-summary {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  .gtask-list {
+    padding: 0 10px 10px 10px;
+    gap: 6px;
+  }
+
+  .gtask-row {
+    padding: 8px;
+    gap: 8px;
+    border-radius: 10px;
+  }
+
+  .gtask-row span {
+    font-size: 13px;
+  }
+
+  .gtask-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+  }
+}

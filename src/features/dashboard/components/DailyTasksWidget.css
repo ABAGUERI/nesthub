@@ -360,9 +360,69 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  .daily-tasks-widget .tasks-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
   .daily-tasks-widget .task-row {
-    padding: 8px 8px;
+    padding: 10px 8px;
+    gap: 6px;
+  }
+
+  .daily-tasks-widget .task-icon {
+    font-size: 22px;
+  }
+
+  .daily-tasks-widget .task-name {
+    font-size: 13px;
+    padding: 0 4px;
+  }
+
+  .daily-tasks-widget .widget-title {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 480px) {
+  .daily-tasks-widget .tasks-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto;
+    gap: 8px;
+  }
+
+  .daily-tasks-widget .task-row {
+    padding: 8px 6px;
+    border-radius: 12px;
+  }
+
+  .daily-tasks-widget .task-icon {
+    font-size: 20px;
+  }
+
+  .daily-tasks-widget .task-name {
+    font-size: 12px;
+    -webkit-line-clamp: 1;
+    min-height: calc(1 * 1.2em);
+  }
+
+  .daily-tasks-widget .task-done-badge {
+    top: 4px;
+    right: 4px;
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+
+  .daily-tasks-widget .tasks-nav-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .daily-tasks-widget .tasks-nav-indicator {
+    min-width: 60px;
+    font-size: 11px;
   }
 }
 

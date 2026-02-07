@@ -190,3 +190,95 @@
 .info-icon {
   font-size: 16px;
 }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .vehicle-widget {
+    padding: 14px !important;
+    gap: 12px;
+  }
+
+  .vehicle-widget-header {
+    gap: 10px;
+    padding-bottom: 12px;
+  }
+
+  .vehicle-icon-large {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .vehicle-name {
+    font-size: 16px;
+  }
+
+  .vehicle-status {
+    font-size: 12px;
+  }
+
+  .vehicle-stat-card {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .vehicle-stat-card.primary {
+    padding: 12px;
+  }
+
+  .stat-value-large {
+    font-size: 20px;
+  }
+
+  .vehicle-preheat-btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .vehicle-widget {
+    padding: 10px !important;
+    gap: 10px;
+  }
+
+  .vehicle-icon-large {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .vehicle-name {
+    font-size: 15px;
+  }
+
+  .stat-icon {
+    font-size: 18px;
+  }
+
+  .stat-icon-large {
+    font-size: 22px;
+  }
+
+  .stat-value {
+    font-size: 14px;
+  }
+
+  .stat-value-large {
+    font-size: 18px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .vehicle-preheat-btn {
+    padding: 10px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .info-item {
+    font-size: 12px;
+  }
+}
