@@ -571,12 +571,12 @@
 
 /* Taille large - pour le centre du donut */
 .child-avatar-large {
-  width: clamp(180px, 40vw, 280px);
-  height: clamp(180px, 40vw, 280px);
-  max-width: 280px;
-  max-height: 280px;
-  min-width: 120px;
-  min-height: 120px;
+  width: clamp(120px, 40vw, 280px);
+  height: clamp(120px, 40vw, 280px);
+  max-width: min(280px, 75vw);
+  max-height: min(280px, 75vw);
+  min-width: 100px;
+  min-height: 100px;
 }
 
 /* Icône de fallback dans l'avatar */

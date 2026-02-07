@@ -148,3 +148,89 @@
     margin-left: 0;
   }
 }
+
+@media (max-width: 768px) {
+  .finance-widget {
+    min-height: auto;
+    gap: 10px;
+  }
+
+  .finance-hero {
+    padding: 14px;
+    border-radius: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .finance-total {
+    font-size: 26px;
+  }
+
+  .finance-delta {
+    font-size: 16px;
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+
+  .finance-row {
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+
+  .finance-symbol {
+    gap: 8px;
+  }
+
+  .symbol-pill {
+    padding: 4px 8px;
+    font-size: 13px;
+  }
+
+  .stock-name {
+    font-size: 12px;
+  }
+
+  .finance-values {
+    gap: 8px;
+  }
+
+  .stock-price {
+    font-size: 14px;
+  }
+
+  .stock-change {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .finance-hero {
+    padding: 10px;
+  }
+
+  .finance-total {
+    font-size: 22px;
+  }
+
+  .finance-delta {
+    font-size: 14px;
+    padding: 6px 8px;
+  }
+
+  .finance-row {
+    padding: 8px 10px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .symbol-pill {
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+
+  .market-chip {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
