@@ -1,0 +1,148 @@
+/* Floating fullscreen FAB */
+.floating-fullscreen-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1150;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: linear-gradient(145deg, rgba(8, 14, 26, 0.88), rgba(15, 23, 42, 0.92));
+  backdrop-filter: blur(16px);
+  color: #dbeafe;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 1px rgba(59, 130, 246, 0.12),
+    0 0 20px rgba(59, 130, 246, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.4s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  animation: fab-breathe 8s ease-in-out infinite;
+}
+
+/* Breathing animation */
+@keyframes fab-breathe {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(59, 130, 246, 0.12),
+      0 0 20px rgba(59, 130, 246, 0.15),
+      0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(59, 130, 246, 0.22),
+      0 0 28px rgba(59, 130, 246, 0.25),
+      0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .floating-fullscreen-fab {
+    animation: none;
+  }
+  .floating-fullscreen-fab.is-pressed {
+    transform: none;
+  }
+}
+
+.floating-fullscreen-fab:hover {
+  border-color: rgba(59, 130, 246, 0.55);
+  box-shadow:
+    0 0 0 2px rgba(59, 130, 246, 0.3),
+    0 0 30px rgba(59, 130, 246, 0.3),
+    0 10px 30px rgba(0, 0, 0, 0.45);
+  color: #eff6ff;
+  transform: scale(1.06);
+  animation: none;
+}
+
+.floating-fullscreen-fab:active,
+.floating-fullscreen-fab.is-pressed {
+  transform: scale(0.94);
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.45),
+    0 0 40px rgba(59, 130, 246, 0.35),
+    0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.floating-fullscreen-fab.is-fullscreen {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.3), rgba(16, 185, 129, 0.25));
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Idle state: fade out in fullscreen */
+.floating-fullscreen-fab.is-idle {
+  opacity: 0.25;
+  animation: none;
+}
+
+.floating-fullscreen-fab.is-idle:hover,
+.floating-fullscreen-fab.is-idle:focus-visible {
+  opacity: 1;
+}
+
+/* FAB icon */
+.fab-icon {
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+/* Position above mobile dock */
+@media (max-width: 768px) {
+  .floating-fullscreen-fab {
+    bottom: calc(var(--bottom-nav-h, 96px) + 16px + env(safe-area-inset-bottom));
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+}
+
+/* Onboarding hint */
+.fullscreen-hint {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 1160;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  backdrop-filter: blur(12px);
+  color: #dbeafe;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  animation: hint-fade-in 0.4s ease, hint-fade-out 0.6s ease 4.4s forwards;
+  pointer-events: none;
+}
+
+@keyframes hint-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hint-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (max-width: 768px) {
+  .fullscreen-hint {
+    bottom: calc(var(--bottom-nav-h, 96px) + 72px + env(safe-area-inset-bottom));
+    right: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fullscreen-hint {
+    animation: none;
+  }
+}

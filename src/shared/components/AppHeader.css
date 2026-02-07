@@ -146,40 +146,125 @@
   color: #e0f2fe;
 }
 
-.logout-btn {
-  background: linear-gradient(145deg, rgba(239, 68, 68, 0.35), rgba(190, 24, 93, 0.3));
-  border-color: rgba(239, 68, 68, 0.5);
+/* System menu wrapper */
+.system-menu-wrapper {
+  position: relative;
+}
+
+.system-menu-trigger {
+  position: relative;
+}
+
+/* System menu popover (desktop header) */
+.header-system-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 14, 26, 0.96);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  z-index: 1100;
+  animation: header-system-enter 0.2s ease;
+}
+
+@keyframes header-system-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.header-system-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  min-height: 48px;
+}
+
+.header-system-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.header-system-item--danger {
+  color: #fca5a5;
+}
+
+.header-system-item--danger:hover {
+  background: rgba(239, 68, 68, 0.15);
   color: #fecdd3;
-  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
 }
 
-.logout-btn:hover {
-  background: linear-gradient(145deg, rgba(239, 68, 68, 0.45), rgba(190, 24, 93, 0.35));
-  border-color: rgba(239, 68, 68, 0.7);
+/* Logout confirmation */
+.header-system-confirm {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.header-system-confirm-text {
+  display: block;
+  color: #fca5a5;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.header-system-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.header-system-confirm-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 36px;
+}
+
+.header-system-confirm-btn--cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-system-confirm-btn--cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+}
+
+.header-system-confirm-btn--confirm {
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.5), rgba(190, 24, 93, 0.4));
   color: #ffe4e6;
-  transform: translateY(-2px) scale(1.03);
+  border: 1px solid rgba(239, 68, 68, 0.5);
 }
 
-.logout-btn:active {
-  transform: translateY(0);
-}
-
-.fullscreen-btn {
-  background: linear-gradient(145deg, rgba(59, 130, 246, 0.25), rgba(16, 185, 129, 0.2));
-  border-color: rgba(59, 130, 246, 0.4);
-  color: #dbeafe;
-}
-
-.fullscreen-btn:hover {
-  background: linear-gradient(145deg, rgba(59, 130, 246, 0.35), rgba(16, 185, 129, 0.3));
-  border-color: rgba(59, 130, 246, 0.6);
-  color: #eff6ff;
-}
-
-.fullscreen-btn.active {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4), 0 10px 30px rgba(59, 130, 246, 0.25);
-  background: linear-gradient(145deg, rgba(59, 130, 246, 0.45), rgba(16, 185, 129, 0.4));
-  color: #f8fafc;
+.header-system-confirm-btn--confirm:hover {
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.65), rgba(190, 24, 93, 0.55));
+  border-color: rgba(239, 68, 68, 0.7);
 }
 
 .weather-error {

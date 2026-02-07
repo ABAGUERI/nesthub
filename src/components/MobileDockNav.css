@@ -4,9 +4,9 @@
   right: 0;
   bottom: 0;
   display: none;
-  gap: 10px;
+  gap: 6px;
   height: var(--bottom-nav-h);
-  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   border-radius: 18px 18px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -18,14 +18,14 @@
 
 .mobile-dock-btn {
   flex: 1;
-  min-width: 60px;
-  min-height: 60px;
+  min-width: 52px;
+  min-height: 52px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 12px 8px;
+  gap: 4px;
+  padding: 8px 4px;
   border-radius: 14px;
   border: 1px solid transparent;
   background: transparent;
@@ -48,14 +48,142 @@
 }
 
 .mobile-dock-icon {
-  font-size: 30px;
+  font-size: 26px;
   line-height: 1;
 }
 
 .mobile-dock-label {
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1;
   letter-spacing: 0.2px;
+}
+
+/* System menu container */
+.mobile-dock-system {
+  position: relative;
+  flex: 1;
+  display: flex;
+}
+
+.mobile-dock-btn--system {
+  width: 100%;
+}
+
+/* System menu popover */
+.system-menu-popover {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: -8px;
+  min-width: 200px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 14, 26, 0.96);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  z-index: 1300;
+  animation: system-menu-enter 0.2s ease;
+}
+
+@keyframes system-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.system-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  min-height: 48px;
+}
+
+.system-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.system-menu-item--danger {
+  color: #fca5a5;
+}
+
+.system-menu-item--danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fecdd3;
+}
+
+.system-menu-item-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Logout confirmation */
+.system-menu-confirm {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.system-menu-confirm-text {
+  display: block;
+  color: #fca5a5;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.system-menu-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.system-menu-confirm-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 36px;
+}
+
+.system-menu-confirm-btn--cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.system-menu-confirm-btn--cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+}
+
+.system-menu-confirm-btn--confirm {
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.5), rgba(190, 24, 93, 0.4));
+  color: #ffe4e6;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.system-menu-confirm-btn--confirm:hover {
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.65), rgba(190, 24, 93, 0.55));
+  border-color: rgba(239, 68, 68, 0.7);
 }
 
 @media (max-width: 768px) {
