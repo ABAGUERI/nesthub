@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { useClientConfig } from '@/shared/hooks/useClientConfig';
@@ -17,9 +17,10 @@ export const DashboardHeader: React.FC = () => {
     icon: string;
   } | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [systemMenuOpen, setSystemMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const systemMenuRef = useRef<HTMLDivElement>(null);
 
-  // Mettre à jour l'heure chaque seconde
   useEffect(() => {
     const interval = setInterval(() => {
       setTime(new Date());
@@ -28,19 +29,25 @@ export const DashboardHeader: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Charger la météo au démarrage
   useEffect(() => {
     loadWeather();
   }, [config]);
 
   useEffect(() => {
-    const onFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
+    if (!systemMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (systemMenuRef.current && !systemMenuRef.current.contains(e.target as Node)) {
+        setSystemMenuOpen(false);
+        setShowLogoutConfirm(false);
+      }
     };
-
-    document.addEventListener('fullscreenchange', onFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [systemMenuOpen]);
 
   const loadWeather = async () => {
     if (!config?.moduleWeather) return;
@@ -115,22 +122,11 @@ export const DashboardHeader: React.FC = () => {
     navigate('/login');
   };
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen?.();
-      setIsFullscreen(false);
-    }
-  };
-
   const navItems = [
-    { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
-    { path: '/famille', icon: '👨‍👩‍👧‍👦', label: 'Famille' },
-    { path: '/kitchen', icon: '🍽️', label: 'Cuisine' },
-    { path: '/finances', icon: '💰', label: 'Finances' },
-    { path: '/config', icon: '⚙️', label: 'Paramètres' },
+    { path: '/dashboard', icon: '⭐', label: 'Champions', ariaLabel: 'Ouvrir l\'Espace des champions' },
+    { path: '/famille', icon: '👨‍👩‍👧‍👦', label: 'Famille', ariaLabel: 'Ouvrir l\'Espace famille' },
+    { path: '/kitchen', icon: '🍽️', label: 'Cuisine', ariaLabel: 'Ouvrir la cuisine' },
+    { path: '/finances', icon: '💰', label: 'Finances', ariaLabel: 'Ouvrir les finances' },
   ];
 
   const isActive = (path: string) => location.pathname.startsWith(path);
@@ -157,11 +153,11 @@ export const DashboardHeader: React.FC = () => {
       <div className="header-title">
         <span className="section-title">Espace des champions</span>
         <p className="section-description">
-          Vue globale des tâches, du temps d’écran et de la progression familiale
+          Vue globale des tâches, du temps d'écran et de la progression familiale
         </p>
       </div>
 
-      {/* Menu avec bouton déconnexion */}
+      {/* Menu avec bouton système */}
       {!isMobile && (
         <div className="header-menu">
           <div className="nav-buttons">
@@ -171,26 +167,67 @@ export const DashboardHeader: React.FC = () => {
                 className={`menu-btn ${isActive(item.path) ? 'active' : ''}`}
                 onClick={() => navigate(item.path)}
                 title={item.label}
-                aria-label={item.label}
+                aria-label={item.ariaLabel}
               >
                 {item.icon}
               </button>
             ))}
           </div>
-          <button
-            className={`menu-btn fullscreen-btn ${isFullscreen ? 'active' : ''}`}
-            onClick={toggleFullscreen}
-            title={isFullscreen ? 'Quitter le plein écran' : 'Passer en plein écran'}
-          >
-            {isFullscreen ? '🗗' : '🗖'}
-          </button>
-          <button
-            className="menu-btn logout-btn"
-            onClick={handleLogout}
-            title="Se déconnecter"
-          >
-            🚪
-          </button>
+
+          {/* System menu */}
+          <div className="system-menu-wrapper" ref={systemMenuRef}>
+            <button
+              className={`menu-btn system-menu-trigger${systemMenuOpen || isActive('/config') ? ' active' : ''}`}
+              onClick={() => { setSystemMenuOpen((v) => !v); setShowLogoutConfirm(false); }}
+              aria-label="Ouvrir le menu système"
+              aria-expanded={systemMenuOpen}
+              aria-haspopup="true"
+            >
+              ⚙️
+            </button>
+
+            {systemMenuOpen && (
+              <div className="header-system-popover" role="menu" aria-label="Menu système">
+                <button
+                  className="header-system-item"
+                  role="menuitem"
+                  onClick={() => { navigate('/config'); setSystemMenuOpen(false); }}
+                >
+                  <span aria-hidden="true">⚙️</span>
+                  <span>Paramètres</span>
+                </button>
+
+                {!showLogoutConfirm ? (
+                  <button
+                    className="header-system-item header-system-item--danger"
+                    role="menuitem"
+                    onClick={() => setShowLogoutConfirm(true)}
+                  >
+                    <span aria-hidden="true">🚪</span>
+                    <span>Se déconnecter</span>
+                  </button>
+                ) : (
+                  <div className="header-system-confirm">
+                    <span className="header-system-confirm-text">Confirmer la déconnexion ?</span>
+                    <div className="header-system-confirm-actions">
+                      <button
+                        className="header-system-confirm-btn header-system-confirm-btn--cancel"
+                        onClick={() => setShowLogoutConfirm(false)}
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        className="header-system-confirm-btn header-system-confirm-btn--confirm"
+                        onClick={handleLogout}
+                      >
+                        Déconnexion
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

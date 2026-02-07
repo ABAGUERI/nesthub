@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { AppHeader } from '@/shared/components/AppHeader';
 import { DashboardHeader } from '@/features/dashboard/components/DashboardHeader';
 import { MobileDockNav } from '@/components/MobileDockNav';
+import { FloatingFullscreenButton } from '@/shared/components/FloatingFullscreenButton';
 import './AppLayout.css';
 
 type HeaderMeta = {
@@ -14,8 +15,8 @@ const HEADER_META: Array<{ match: RegExp; meta: HeaderMeta }> = [
   {
     match: /^\/dashboard/,
     meta: {
-      title: 'Tableau de bord',
-      description: 'Vue globale des missions familiales, agendas et finances.',
+      title: 'Espace des champions',
+      description: 'Vue globale des missions, du temps d\u2019écran et de la progression.',
     },
   },
   {
@@ -28,7 +29,7 @@ const HEADER_META: Array<{ match: RegExp; meta: HeaderMeta }> = [
   {
     match: /^\/famille/,
     meta: {
-      title: 'Famille',
+      title: 'Espace famille',
       description: 'Gérez vos tâches et votre agenda Google en un seul endroit.',
     },
   },
@@ -63,6 +64,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       {isDashboard ? <DashboardHeader /> : <AppHeader title={title} description={description} />}
       <div className="app-content">{children}</div>
       <MobileDockNav />
+      <FloatingFullscreenButton />
     </div>
   );
 };
