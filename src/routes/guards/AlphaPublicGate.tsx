@@ -1,8 +1,8 @@
 import { type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 
-// export const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';
-export const ALPHA_MODE = false
+// export const ALPHA_MODE = import.meta.env.VITE_ALPHA_MODE === 'true';q
+export const ALPHA_MODE = true
 // console.log('VITE_ALPHA_MODE', ALPHA_MODE)
 interface AlphaPublicGateProps {
   children: ReactNode;
